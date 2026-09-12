@@ -1,0 +1,159 @@
+---
+// FAQ — adapted from agencianuvion.com.br's FAQ. The original Q5 ("O que é
+// o Método D.R.O.P.S.?") is dropped per the Nuvion repositioning (see
+// project memory); Q2/Q4's answers are reworded to drop that name too,
+// and a new Q5 about timelines replaces it — an honest, common question
+// the old FAQ didn't actually cover.
+//
+// Two-column layout (sticky intro + contact card beside a plain list)
+// instead of a single centered accordion — gives the section the same
+// asymmetry/weight as the rest of the page instead of reading as an
+// afterthought. FAQPage JSON-LD is worth real SEO/GEO value: it's exactly
+// the structured, extractable Q&A shape generative answer engines cite.
+import { waLink } from "../../lib/contact";
+
+const faqs = [
+  {
+    question: "Meu site não gera resultados. A Nuvion pode resolver isso?",
+    answer:
+      "Sim, é exatamente para isso que existimos. Muita gente cria um site bonito e chama de cartão de visitas digital, mas ele nunca traz um cliente sequer. Na Nuvion partimos do zero pensando em aquisição: o design, a estrutura e a arquitetura técnica do site são construídos para atrair o público certo e converter quem chega em cliente de verdade.",
+  },
+  {
+    question: "Qual a diferença entre a Nuvion e outras agências que prometem resultados?",
+    answer:
+      "Está no processo. Seguimos um caminho validado e transparente que vai do diagnóstico até a otimização contínua. Não tratamos o site ou uma campanha como algo isolado: cada etapa do trabalho potencializa a próxima, sempre de olho no retorno real, não em métrica de vaidade.",
+  },
+  {
+    question: "Vocês oferecem apenas criação de sites ou outros serviços?",
+    answer:
+      "Oferecemos uma solução completa: sites de alta performance, SEO técnico para posicionar sua marca no Google e GEO para garantir que ela também apareça como resposta nas buscas feitas por inteligência artificial generativa. Tudo dentro do mesmo processo, não como serviços separados.",
+  },
+  {
+    question: "Quais os valores dos serviços da Nuvion?",
+    answer:
+      "A gente encara nosso serviço como investimento, não como custo. Temos planos diferentes para você escolher o que faz mais sentido para o momento do seu negócio, sempre pensando em um retorno que valha muito mais do que o valor investido.",
+  },
+  {
+    question: "Quanto tempo leva para ver resultado?",
+    answer:
+      "SEO técnico e GEO são investimentos de médio prazo. Os ajustes técnicos e os ganhos em Core Web Vitals aparecem rápido, mas autoridade e posição orgânica se constroem em meses, não em dias. Por isso acompanhamos a performance de forma contínua, não só na entrega do projeto.",
+  },
+];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((faq) => ({
+    "@type": "Question",
+    name: faq.question,
+    acceptedAnswer: { "@type": "Answer", text: faq.answer },
+  })),
+};
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(faqSchema)} is:inline />
+
+<section class="bg-nv-offwhite-light py-24 sm:py-28">
+  <div class="mx-auto max-w-6xl px-6 sm:px-10">
+    <div class="grid grid-cols-1 gap-12 lg:grid-cols-[minmax(0,340px)_1fr] lg:gap-16">
+      <div class="lg:sticky lg:top-28 lg:self-start">
+        <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm">Perguntas frequentes</span>
+        <h2 class="nv-h1 mt-4 text-[32px] text-nv-graphite-900 sm:text-[40px]">
+          Ainda com <strong>dúvidas?</strong>
+        </h2>
+        <p class="mt-4 max-w-sm text-pretty text-base leading-[1.6] text-nv-graphite-600">
+          Se sua pergunta não estiver aqui, é mais rápido falar direto com a gente do que adivinhar.
+        </p>
+
+        <div class="mt-8 rounded-3xl bg-nv-graphite-900 p-7 text-white">
+          <p class="text-sm font-medium text-white/70">Prefere conversar agora?</p>
+          <a
+            href={waLink("Olá! Tenho uma dúvida sobre os serviços da Nuvion.")}
+            target="_blank"
+            rel="noopener"
+            class="nv-cta mt-4 inline-flex h-11 w-full items-center justify-center whitespace-nowrap rounded-full bg-nv-orange px-6 text-sm font-semibold text-white"
+          >
+            Fale com um especialista
+          </a>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-3">
+        {faqs.map((faq, i) => (
+          <div class:list={["nv-faq-item overflow-hidden rounded-2xl border border-nv-hairline bg-white transition-colors", { "is-open": i === 0 }]}>
+            <button
+              type="button"
+              class="nv-faq-trigger flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
+              aria-expanded={i === 0 ? "true" : "false"}
+              aria-controls={`faq-panel-${i}`}
+            >
+              <span class="text-[15px] font-semibold text-nv-graphite-900 sm:text-base">{faq.question}</span>
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="nv-faq-chevron h-5 w-5 flex-none text-nv-orange"
+                aria-hidden="true"
+              >
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+            <div id={`faq-panel-${i}`} class="nv-faq-panel" role="region">
+              <div class="nv-faq-panel-inner">
+                <p class="px-6 pb-5 text-pretty text-sm leading-[1.62] text-nv-graphite-600 sm:text-base">{faq.answer}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .nv-faq-item.is-open {
+    border-color: rgba(204, 78, 20, 0.35);
+  }
+  .nv-faq-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.35s var(--ease-nv);
+  }
+  .nv-faq-panel > .nv-faq-panel-inner {
+    overflow: hidden;
+    min-height: 0;
+  }
+  .nv-faq-item.is-open .nv-faq-panel {
+    grid-template-rows: 1fr;
+  }
+  .nv-faq-chevron {
+    transition: transform 0.3s var(--ease-nv);
+  }
+  .nv-faq-item.is-open .nv-faq-chevron {
+    transform: rotate(180deg);
+  }
+</style>
+
+<script>
+  // grid-template-rows: 0fr -> 1fr is a CSS-only smooth height transition
+  // that doesn't need measuring scrollHeight in JS — the trigger just
+  // toggles a class and the ARIA state. Single-open: picking a new
+  // question closes whichever one was open; clicking the already-open one
+  // does nothing, so there's always exactly one answer showing.
+  const items = document.querySelectorAll(".nv-faq-item");
+  items.forEach((item) => {
+    const trigger = item.querySelector<HTMLButtonElement>(".nv-faq-trigger");
+    trigger?.addEventListener("click", () => {
+      if (item.classList.contains("is-open")) return;
+      items.forEach((other) => {
+        other.classList.remove("is-open");
+        other.querySelector(".nv-faq-trigger")?.setAttribute("aria-expanded", "false");
+      });
+      item.classList.add("is-open");
+      trigger.setAttribute("aria-expanded", "true");
+    });
+  });
+</script>

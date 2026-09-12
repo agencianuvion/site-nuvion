@@ -5,9 +5,10 @@
 // the full spec this pixel-matches.
 import Eyebrow from "../ui/Eyebrow.astro";
 import Button from "../ui/Button.astro";
+import { waLink } from "../../lib/contact";
 ---
 
-<section class="nv-hero relative h-screen min-h-[620px] overflow-hidden bg-white">
+<section class="nv-hero relative flex min-h-[600px] flex-col overflow-hidden bg-white py-28 sm:py-32">
   <video
     id="hero-video"
     class="nv-hero-video"
@@ -23,7 +24,7 @@ import Button from "../ui/Button.astro";
 
   <div class="nv-hero-scrim" aria-hidden="true"></div>
 
-  <div class="relative z-[2] flex h-full flex-col items-center justify-center gap-6 px-6 text-center sm:px-10">
+  <div class="relative z-[2] flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center sm:px-10">
     <Eyebrow>Ecossistema de Crescimento</Eyebrow>
 
     <h1 class="nv-h1 max-w-[17ch] text-[38px] text-nv-graphite-900 md:text-[68px]">
@@ -36,8 +37,13 @@ import Button from "../ui/Button.astro";
     </p>
 
     <div class="mt-1.5 flex flex-col items-center gap-3.5 sm:flex-row">
-      <Button href="#diagnostico">Agendar Meu Diagnóstico</Button>
-      <a href="#pilares" class="nv-soft inline-flex h-[46px] items-center justify-center rounded-full px-6 text-[15px] font-semibold">
+      <Button href={waLink("Olá! Quero agendar um diagnóstico com a Nuvion.")} target="_blank" rel="noopener">
+        Agendar Meu Diagnóstico
+      </Button>
+      <a
+        href="#pilares"
+        class="nv-soft inline-flex h-[46px] items-center justify-center rounded-full px-6 text-[15px] font-semibold"
+      >
         Explorar Soluções em SEO e GEO
       </a>
     </div>

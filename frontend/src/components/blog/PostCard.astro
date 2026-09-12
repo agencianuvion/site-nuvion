@@ -7,16 +7,31 @@ interface Props {
 
 const { post } = Astro.props;
 const href = `/blog/${post.slug}`;
+
+const formattedDate = new Date(post.date).toLocaleDateString("pt-BR", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
 ---
 
-<article class="flex flex-col gap-3 rounded-2xl border border-black/10 p-6">
-  <img src={post.featuredImage} alt={post.title} loading="lazy" class="aspect-video w-full rounded-xl object-cover" />
-  <h2 class="text-xl font-semibold">
-    <a href={href} class="hover:underline">{post.title}</a>
-  </h2>
-  <p class="line-clamp-2 text-sm text-black/60">{post.excerpt}</p>
-  {post.author && <p class="text-xs text-black/50">By {post.author}</p>}
-  <a href={href} class="mt-auto w-fit text-sm font-medium underline underline-offset-2">
-    Read →
+<article class="group flex flex-col gap-4 overflow-hidden rounded-3xl border border-nv-hairline bg-white p-5 shadow-[0_2px_8px_rgba(30,30,30,.06)] transition-shadow hover:shadow-[0_12px_32px_rgba(30,30,30,.1)]">
+  <a href={href} class="block overflow-hidden rounded-2xl">
+    <img
+      src={post.featuredImage}
+      alt={post.title}
+      loading="lazy"
+      class="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
+    />
   </a>
+  <div class="flex flex-1 flex-col gap-2 px-1">
+    <time datetime={post.date} class="text-xs font-medium uppercase tracking-[0.14em] text-nv-orange">{formattedDate}</time>
+    <h2 class="text-lg font-semibold tracking-[-0.02em] text-nv-graphite-900">
+      <a href={href} class="transition-colors hover:text-nv-orange">{post.title}</a>
+    </h2>
+    <p class="line-clamp-2 text-sm leading-[1.6] text-nv-graphite-600">{post.excerpt}</p>
+    <a href={href} class="nv-more mt-2 inline-flex w-fit items-center gap-[7px] text-sm font-medium no-underline">
+      Ler artigo <span aria-hidden="true">›</span>
+    </a>
+  </div>
 </article>

@@ -19,11 +19,11 @@ const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(pageUrl)}&t
 const emailUrl = `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(pageUrl)}`;
 
 const shareButtonClass =
-  "share-btn inline-flex h-10 w-10 items-center justify-center rounded-full border border-black/15 text-black/60 transition-colors hover:border-black hover:text-black";
+  "share-btn inline-flex h-10 w-10 items-center justify-center rounded-full border border-nv-hairline text-nv-graphite-500 transition-colors hover:border-nv-orange hover:text-nv-orange";
 ---
 
 <div class="share-buttons flex flex-wrap items-center gap-3" data-share-url={pageUrl}>
-  <span class="text-xs uppercase tracking-[0.2em] text-black/40">Share</span>
+  <span class="text-xs uppercase tracking-[0.2em] text-nv-graphite-400">Compartilhar</span>
 
   <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" aria-label="Share on WhatsApp" class={shareButtonClass}>
     <svg viewBox="0 0 24 24" fill="currentColor" class="h-4 w-4" aria-hidden="true">
@@ -63,7 +63,7 @@ const shareButtonClass =
     </svg>
   </button>
 
-  <span class="share-feedback text-xs text-black/50" aria-live="polite"></span>
+  <span class="share-feedback text-xs text-nv-graphite-500" aria-live="polite"></span>
 </div>
 
 <script>
@@ -91,7 +91,7 @@ const shareButtonClass =
     }
 
     bar.querySelector("[data-copy-link]")?.addEventListener("click", async () => {
-      showFeedback((await copyLink()) ? "Link copied!" : "Couldn't copy the link.");
+      showFeedback((await copyLink()) ? "Link copiado!" : "Não foi possível copiar o link.");
     });
   });
 </script>

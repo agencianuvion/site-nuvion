@@ -1,0 +1,67 @@
+---
+// Short editorial statement — the old site's "De Clientes a Fãs da Marca"
+// section, without turning it into a fabricated testimonials band (no
+// case studies are published yet — see PerformanceCard.astro's own note
+// on candor about results). Light section (the whole site stays light for
+// now — a dark mode toggle is planned separately later), leaning on a
+// bordered card and the orange accent for weight instead of a dark bg.
+---
+
+<section class="relative overflow-hidden bg-nv-offwhite-light py-24 sm:py-28">
+  <img
+    src="/images/mark-nuvion.png"
+    alt=""
+    aria-hidden="true"
+    class="pointer-events-none absolute -right-20 top-1/2 h-[360px] w-[360px] -translate-y-1/2 object-contain opacity-[0.035] sm:h-[480px] sm:w-[480px]"
+  />
+
+  <div class="nv-reveal-up relative mx-auto max-w-4xl px-6 sm:px-10">
+    <div class="rounded-[32px] border border-nv-hairline bg-white p-8 shadow-[0_20px_56px_rgba(20,20,20,.06)] sm:p-14">
+      <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm">Além da entrega</span>
+
+      <p class="nv-h1 mt-6 text-pretty text-[26px] text-nv-graphite-900 sm:text-[38px]">
+        Um bom resultado não aparece só no número de vendas.{" "}
+        <strong>Aparece na confiança que faz o cliente voltar, indicar a Nuvion e crescer junto com a marca.</strong>
+      </p>
+
+      <div class="mt-10 flex flex-col gap-6 border-t border-nv-hairline pt-8 sm:flex-row sm:gap-10">
+        <p class="max-w-md text-pretty text-base leading-[1.62] text-nv-graphite-600">
+          Por isso pensamos cada entrega para durar: tecnicamente, com uma arquitetura que não fica velha em seis
+          meses, e na relação, com dados abertos e um acompanhamento contínuo de verdade.
+        </p>
+        <div class="flex flex-1 flex-wrap content-start gap-2.5 sm:justify-end">
+          <span class="rounded-full border border-nv-hairline bg-nv-offwhite-light px-4 py-2 text-sm font-medium text-nv-graphite-700">
+            Foco no resultado
+          </span>
+          <span class="rounded-full border border-nv-hairline bg-nv-offwhite-light px-4 py-2 text-sm font-medium text-nv-graphite-700">
+            Transparência estratégica
+          </span>
+          <span class="rounded-full border border-nv-hairline bg-nv-offwhite-light px-4 py-2 text-sm font-medium text-nv-graphite-700">
+            Expertise humana e tecnologia
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll(".nv-reveal-up").forEach((el) => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      el.classList.add("is-visible");
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            el.classList.add("is-visible");
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: 0.4 },
+    );
+    observer.observe(el);
+  });
+</script>

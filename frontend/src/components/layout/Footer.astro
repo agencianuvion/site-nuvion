@@ -2,16 +2,17 @@
 const year = new Date().getFullYear();
 
 const navLinks = [
-  { href: "/#sites-performance", label: "Sites de Alta Performance" },
-  { href: "/#seo-tecnico", label: "SEO Técnico" },
-  { href: "/#geo", label: "Otimização Generativa" },
+  { href: "/sites-de-alta-performance", label: "Sites de Alta Performance" },
+  { href: "/seo-tecnico", label: "SEO Técnico" },
+  { href: "/geo", label: "Otimização Generativa" },
+  { href: "/sobre-nos", label: "Sobre Nós" },
   { href: "/blog", label: "Blog" },
 ];
 ---
 
 <footer class="border-t border-nv-hairline bg-nv-offwhite-light px-6 py-10 sm:px-10">
   <div class="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-    <a href="/" class="block shrink-0" aria-label="Nuvion — Home">
+    <a href="/" class="block shrink-0" aria-label="Nuvion, página inicial">
       <img src="/images/logo-horizontal-dark.png" alt="Nuvion" class="h-5 w-auto" />
     </a>
 
@@ -23,6 +24,6 @@ const navLinks = [
       ))}
     </nav>
 
-    <p class="text-xs text-nv-graphite-400">&copy; {year} Nuvion — Todos os direitos reservados.</p>
+    <p class="text-xs text-nv-graphite-400">&copy; {year} Nuvion. Todos os direitos reservados.</p>
   </div>
 </footer>

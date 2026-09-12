@@ -1,0 +1,208 @@
+---
+// "Sinergia que Gera Resultados" — light band with a radial diagram
+// showing the 3 pillars (Sites / SEO Técnico / GEO) connected to one
+// core instead of working in isolation. Adapted from the old
+// agencianuvion.com.br site's "Sinergia que Gera Resultados" section,
+// reframed around the new SEO/GEO-focused positioning (no "Gestão de
+// Tráfego" pillar — see project memory).
+//
+// Everything in the diagram (ring, connecting lines, node circles) lives
+// in one <svg> with a single 0-100 coordinate system — an earlier version
+// mixed percentage-based CSS divs with a separate SVG overlay and the two
+// never quite agreed on where "center" was. Labels are the only HTML
+// overlay, positioned from the same 0-100 numbers so they can never drift
+// out of sync with the SVG they're labeling.
+const nodes = [
+  {
+    x: 50,
+    y: 18,
+    label: "Sites de Alta Performance",
+    icon: `<rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M9 9v11"></path><path d="M12.5 13h6M12.5 16.5h6"></path>`,
+  },
+  {
+    x: 78,
+    y: 65,
+    label: "SEO Técnico",
+    icon: `<path d="M12 3 21 7.5 12 12 3 7.5z"></path><path d="M3 12l9 4.5 9-4.5"></path><path d="M3 16.5 12 21l9-4.5"></path>`,
+  },
+  {
+    x: 22,
+    y: 65,
+    label: "GEO",
+    icon: `<circle cx="5" cy="6" r="2"></circle><circle cx="5" cy="18" r="2"></circle><circle cx="12" cy="12" r="2.4"></circle><circle cx="19" cy="6" r="2"></circle><circle cx="19" cy="18" r="2"></circle><path d="M6.8 7.1 10 10.3M6.8 16.9 10 13.7M14.1 10.4 17.3 7.3M14.1 13.6l3.2 3.1"></path>`,
+  },
+];
+const CENTER = { x: 50, y: 50 };
+---
+
+<section class="relative overflow-hidden bg-white py-24 sm:py-32">
+  <div
+    class="pointer-events-none absolute left-1/2 top-0 h-[600px] w-[900px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-nv-orange/[0.07] blur-[120px]"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="relative mx-auto max-w-5xl px-6 sm:px-10">
+    <div class="mx-auto max-w-2xl text-center">
+      <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm">Sinergia</span>
+      <h2 class="nv-h1 mt-4 text-[32px] text-nv-graphite-900 sm:text-[44px]">
+        A força de um <strong>ecossistema conectado.</strong>
+      </h2>
+      <p class="mt-5 text-pretty text-base leading-[1.6] text-nv-graphite-600 sm:text-lg">
+        Site, SEO técnico e GEO não funcionam bem separados. Aqui eles andam juntos desde o primeiro dia de projeto,
+        e é trabalhando assim que conseguimos fazer o investimento render mais do que a soma das partes.
+      </p>
+    </div>
+
+    <div id="synergy-diagram" class="relative mx-auto mt-16 aspect-square w-full max-w-[420px] sm:mt-20">
+      <svg viewBox="0 0 100 100" class="absolute inset-0 h-full w-full overflow-visible">
+        <circle
+          cx={CENTER.x}
+          cy={CENTER.y}
+          r="34"
+          fill="none"
+          stroke="#2A2A2A"
+          stroke-opacity="0.08"
+          stroke-width="0.4"
+          pathLength="1"
+          stroke-dasharray="0.012 0.024"
+          class="nv-synergy-ring"
+        />
+
+        {nodes.map((node) => (
+          <line
+            class="nv-synergy-line"
+            x1={CENTER.x}
+            y1={CENTER.y}
+            x2={node.x}
+            y2={node.y}
+            pathLength="1"
+            stroke="#CC4E14"
+            stroke-width="0.5"
+            stroke-linecap="round"
+          />
+        ))}
+
+        <circle cx={CENTER.x} cy={CENTER.y} r="12.5" class="nv-synergy-pulse" fill="#CC4E14" fill-opacity="0.12" />
+        <circle cx={CENTER.x} cy={CENTER.y} r="10.5" fill="#FDFDFD" stroke="#CC4E14" stroke-opacity="0.35" stroke-width="0.4" />
+      </svg>
+
+      <img
+        src="/images/mark-nuvion.png"
+        alt="Nuvion"
+        class="absolute left-1/2 top-1/2 h-[13%] w-[13%] -translate-x-1/2 -translate-y-1/2 object-contain"
+      />
+
+      {nodes.map((node, i) => (
+        <div
+          class="nv-synergy-node absolute -translate-x-1/2 -translate-y-1/2"
+          style={`top:${node.y}%; left:${node.x}%; transition-delay:${0.15 + i * 0.15}s`}
+        >
+          <div class="nv-synergy-float flex flex-col items-center gap-2" style={`animation-delay:${i * 0.4}s`}>
+            <div class="flex h-14 w-14 items-center justify-center rounded-full border border-nv-hairline bg-white text-nv-orange shadow-[0_8px_20px_rgba(30,30,30,.08)] sm:h-16 sm:w-16">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-6 w-6"
+                set:html={node.icon}
+              />
+            </div>
+            <span class="max-w-[9em] text-center text-xs font-medium leading-tight text-nv-graphite-700 sm:text-sm">
+              {node.label}
+            </span>
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<style>
+  @keyframes nv-spin {
+    to {
+      /* With pathLength="1" on the ring, -1 is exactly one full lap of the
+         normalized path, so the dash pattern always lines back up perfectly
+         at the loop point instead of jumping (a fractional offset here was
+         the actual bug: it never quite matched up, so the ring visibly
+         "skipped" once per animation cycle). */
+      stroke-dashoffset: -1;
+    }
+  }
+  @keyframes nv-pulse {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.6;
+    }
+    50% {
+      transform: scale(1.35);
+      opacity: 0;
+    }
+  }
+  @keyframes nv-float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-6px);
+    }
+  }
+
+  .nv-synergy-ring {
+    animation: nv-spin 14s linear infinite;
+  }
+  .nv-synergy-pulse {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: nv-pulse 3s ease-in-out infinite;
+  }
+  .nv-synergy-line {
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+    transition: stroke-dashoffset 0.9s var(--ease-nv);
+  }
+  .nv-synergy-node {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+    transition:
+      opacity 0.6s var(--ease-nv),
+      transform 0.6s var(--ease-nv);
+  }
+  #synergy-diagram.is-visible .nv-synergy-line {
+    stroke-dashoffset: 0;
+  }
+  #synergy-diagram.is-visible .nv-synergy-node {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  #synergy-diagram.is-visible .nv-synergy-float {
+    animation: nv-float 5s ease-in-out infinite;
+  }
+</style>
+
+<script>
+  const diagram = document.getElementById("synergy-diagram");
+  if (diagram) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      diagram.classList.add("is-visible");
+    } else {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              diagram.classList.add("is-visible");
+              observer.disconnect();
+            }
+          }
+        },
+        { threshold: 0.3 },
+      );
+      observer.observe(diagram);
+    }
+  }
+</script>

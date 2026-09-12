@@ -1,0 +1,108 @@
+---
+// Sobre Nós — mission/vision/values adapted from agencianuvion.com.br's
+// own About page, reworded to drop the retired "Método D.R.O.P.S." name
+// (see project memory on the Nuvion repositioning). The founder quote is
+// a FIRST DRAFT only, written to be edited/replaced by Juan himself before
+// publishing — E-E-A-T content needs to be genuinely his voice, not
+// something invented on his behalf (see PerformanceCard.astro's own note
+// on this brand's candor value: same principle applies to authorship).
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import FinalCta from "../components/home/FinalCta.astro";
+
+const values = [
+  { title: "Foco no resultado", description: "O seu retorno é a métrica que importa. Não trabalhamos por vaidade, trabalhamos por ROI." },
+  { title: "Transparência estratégica", description: "Dados claros, sem enrolação, para você tomar decisão com segurança." },
+  { title: "Expertise humana e tecnologia", description: "Tecnologia sozinha não resolve. É a combinação com julgamento humano que faz a diferença." },
+];
+
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Juan C. Fabra Gomez",
+  jobTitle: "Fundador",
+  worksFor: { "@type": "Organization", name: "Nuvion" },
+};
+---
+
+<BaseLayout
+  title="Sobre a Nuvion — Arquitetura digital para SEO técnico e GEO"
+  description="Conheça a Nuvion: missão, visão e os valores por trás dos sites de alta performance que construímos para SEO técnico e GEO."
+  jsonLd={personSchema}
+>
+  <PageHero eyebrow="Sobre a Nuvion" description="Somos uma agência focada em uma coisa só: transformar sites em ativos que trazem cliente de verdade, através de SEO técnico e GEO.">
+    Construímos sites que funcionam como <strong>máquinas de aquisição.</strong>
+  </PageHero>
+
+  <section class="bg-nv-offwhite-light py-20 sm:py-24">
+    <div class="mx-auto max-w-4xl px-6 sm:px-10">
+      <div class="grid grid-cols-1 gap-8 rounded-[32px] border border-nv-hairline bg-white p-8 shadow-[0_20px_56px_rgba(20,20,20,.06)] sm:grid-cols-[auto_1fr] sm:gap-10 sm:p-12">
+        <div class="flex flex-col items-center gap-3 sm:items-start">
+          <div class="flex h-20 w-20 items-center justify-center rounded-full bg-nv-graphite-900 text-xl font-semibold text-white">
+            JF
+          </div>
+          <div class="text-center sm:text-left">
+            <p class="text-sm font-semibold text-nv-graphite-900">Juan C. Fabra Gomez</p>
+            <p class="text-xs text-nv-graphite-500">Fundador da Nuvion</p>
+          </div>
+        </div>
+        <div>
+          <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange">Direto do fundador</span>
+          <p class="nv-lead mt-4 text-pretty text-lg text-nv-graphite-800">
+            "Fundei a Nuvion depois de ver o mesmo problema se repetir em dezenas de negócios: um site bonito, feito
+            com carinho, que não trazia um cliente sequer. A internet mudou. Hoje não basta aparecer no Google, é
+            preciso aparecer também na resposta que a inteligência artificial dá quando alguém pergunta por um
+            produto ou serviço como o seu. Por isso decidi focar a Nuvion inteiramente nisso: arquitetura de site,
+            SEO técnico e GEO trabalhando juntos, sem prometer o que a gente não vai entregar."
+          </p>
+          <p class="mt-4 text-xs italic text-nv-graphite-400">
+            Rascunho para o Juan revisar e deixar com a própria voz antes de publicar.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-white py-20 sm:py-24">
+    <div class="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-6 sm:grid-cols-2 sm:gap-10 sm:px-10">
+      <div class="rounded-3xl border border-nv-hairline bg-white p-8 shadow-[0_2px_8px_rgba(30,30,30,.06)]">
+        <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange">Missão</span>
+        <p class="mt-4 text-pretty text-lg leading-[1.5] text-nv-graphite-800">
+          Simplificar o crescimento digital das empresas que atendemos, construindo sites que funcionam como ativos
+          de aquisição, não só cartões de visita.
+        </p>
+      </div>
+      <div class="rounded-3xl border border-nv-hairline bg-white p-8 shadow-[0_2px_8px_rgba(30,30,30,.06)]">
+        <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange">Visão</span>
+        <p class="mt-4 text-pretty text-lg leading-[1.5] text-nv-graphite-800">
+          Ser a principal referência em arquitetura digital para SEO técnico e GEO, reconhecida por transformar a
+          presença online dos nossos clientes em um ativo previsível.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="bg-nv-offwhite-light py-20 sm:py-24">
+    <div class="mx-auto max-w-5xl px-6 sm:px-10">
+      <div class="mx-auto max-w-2xl text-center">
+        <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm">Valores</span>
+        <h2 class="nv-h1 mt-4 text-[28px] text-nv-graphite-900 sm:text-[38px]">O que é inegociável pra gente.</h2>
+      </div>
+      <div class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
+        {values.map((value) => (
+          <div class="rounded-3xl border border-nv-hairline bg-white p-7 shadow-[0_2px_8px_rgba(30,30,30,.06)]">
+            <h3 class="text-lg font-semibold tracking-[-0.02em] text-nv-graphite-900">{value.title}</h3>
+            <p class="mt-3 text-pretty text-sm leading-[1.62] text-nv-graphite-600">{value.description}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <FinalCta
+    eyebrow="Vamos conversar"
+    description="Se você chegou até aqui, já sabe o que a Nuvion valoriza. Agora é só marcar uma conversa e ver se faz sentido pro seu momento."
+    buttonLabel="Agendar Minha Conversa"
+    waMessage="Olá! Vi a página Sobre a Nuvion e quero conversar sobre o meu projeto."
+  />
+</BaseLayout>

@@ -3,19 +3,22 @@
 // (see PROJECT_PREFERENCES.md): background rgba(255,255,255,.42) + blur,
 // meant to sit over the hero video and remain consistent on every other
 // (plain white) page below it.
+import { waLink } from "../../lib/contact";
+
 const pathname = Astro.url.pathname;
 const isActive = (path: string) =>
   path === "/" ? pathname === "/" : pathname === path || pathname.startsWith(`${path}/`);
 
 const navLinks = [
-  { href: "/#sites-performance", label: "Sites de Alta Performance" },
-  { href: "/#seo-tecnico", label: "SEO Técnico" },
-  { href: "/#geo", label: "Otimização Generativa" },
+  { href: "/sites-de-alta-performance", label: "Sites de Alta Performance" },
+  { href: "/seo-tecnico", label: "SEO Técnico" },
+  { href: "/geo", label: "Otimização Generativa" },
+  { href: "/sobre-nos", label: "Sobre Nós" },
 ];
 ---
 
 <header class="nv-glass sticky top-0 z-50 flex items-center justify-between px-6 py-4 sm:px-10">
-  <a href="/" class="block shrink-0" aria-label="Nuvion — Home">
+  <a href="/" class="block shrink-0" aria-label="Nuvion, página inicial">
     <img src="/images/logo-horizontal-dark.png" alt="Nuvion" class="h-[22px] w-auto sm:h-[26px]" />
   </a>
 
@@ -26,7 +29,9 @@ const navLinks = [
       </a>
     ))}
     <a
-      href="#diagnostico"
+      href={waLink("Olá! Quero agendar um diagnóstico com a Nuvion.")}
+      target="_blank"
+      rel="noopener"
       class="nv-cta inline-flex h-9 items-center justify-center whitespace-nowrap rounded-full bg-nv-orange px-5 text-sm font-semibold text-white"
     >
       Agendar Meu Diagnóstico
@@ -58,7 +63,9 @@ const navLinks = [
       </a>
     ))}
     <a
-      href="#diagnostico"
+      href={waLink("Olá! Quero agendar um diagnóstico com a Nuvion.")}
+      target="_blank"
+      rel="noopener"
       class="nv-cta mt-2 inline-flex h-10 items-center justify-center rounded-full bg-nv-orange px-5 text-sm font-semibold text-white"
     >
       Agendar Meu Diagnóstico

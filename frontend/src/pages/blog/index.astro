@@ -1,18 +1,31 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/shared/PageHero.astro";
 import PostCard from "../../components/blog/PostCard.astro";
 import { getPosts } from "../../lib/wp";
 
 const posts = await getPosts();
 ---
 
-<BaseLayout title="Blog — Your Site Name">
-  <main class="mx-auto max-w-6xl px-6 py-24">
-    <h1 class="mb-10 text-4xl font-semibold">Blog</h1>
-    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {posts.map((post) => (
-        <PostCard post={post} />
-      ))}
+<BaseLayout
+  title="Blog — Nuvion"
+  description="Artigos sobre SEO técnico, GEO e arquitetura de sites de alta performance, direto da equipe da Nuvion."
+>
+  <PageHero eyebrow="Blog da Nuvion" description="Notas práticas sobre SEO técnico, GEO e o que realmente muda o resultado de um site.">
+    Ideias sobre <strong>sites que performam de verdade.</strong>
+  </PageHero>
+
+  <main class="bg-nv-offwhite-light pb-24 pt-4 sm:pb-28">
+    <div class="mx-auto max-w-6xl px-6 sm:px-10">
+      {posts.length > 0 ? (
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {posts.map((post) => (
+            <PostCard post={post} />
+          ))}
+        </div>
+      ) : (
+        <p class="text-center text-nv-graphite-500">Nenhum artigo publicado ainda.</p>
+      )}
     </div>
   </main>
 </BaseLayout>

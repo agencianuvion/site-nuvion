@@ -13,8 +13,10 @@
   --color-nv-orange-hover: #b54212;
   --color-nv-orange-soft: #e8825a;
 
-  /* Graphite scale (text/UI, not backgrounds). */
+  /* Graphite scale (text/UI, not backgrounds — except 900/800, used as the
+     dark section backgrounds, e.g. the Performance Card and Synergy). */
   --color-nv-graphite-900: #2a2a2a;
+  --color-nv-graphite-800: #222222;
   --color-nv-graphite-700: #3a3a3a;
   --color-nv-graphite-600: #5a5a5a;
   --color-nv-graphite-500: #6e6e6e;
@@ -51,6 +53,15 @@ body {
   background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-sans);
+}
+
+/* Tailwind's preflight matches the browser default (arrow cursor on
+   <button>), which reads as broken on anything that visibly acts like a
+   link or toggle (FAQ triggers, carousel arrows, the mobile menu button). */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+summary {
+  cursor: pointer;
 }
 
 /* Glassmorphism is reserved for the header/nav overlaid on the hero video
@@ -186,6 +197,40 @@ body {
 .nv-reveal.is-visible {
   opacity: 1;
   transform: scale(1);
+}
+
+/* Simple fade-up reveal for plain text/editorial blocks (Manifesto,
+   section intros) — lighter-weight than .nv-reveal's scale treatment. */
+.nv-reveal-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.7s var(--ease-nv),
+    transform 0.7s var(--ease-nv);
+}
+.nv-reveal-up.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Brand palette for @tailwindcss/typography's `.prose` output (blog post
+   body) — overriding its CSS custom properties instead of fighting its
+   generated selectors with !important. */
+.prose-nv {
+  --tw-prose-body: var(--color-nv-graphite-700);
+  --tw-prose-headings: var(--color-nv-graphite-900);
+  --tw-prose-links: var(--color-nv-orange);
+  --tw-prose-bold: var(--color-nv-graphite-900);
+  --tw-prose-bullets: var(--color-nv-orange);
+  --tw-prose-quotes: var(--color-nv-graphite-800);
+  --tw-prose-quote-borders: var(--color-nv-orange);
+  --tw-prose-hr: var(--color-nv-hairline);
+  --tw-prose-th-borders: var(--color-nv-hairline);
+  --tw-prose-td-borders: var(--color-nv-hairline);
+}
+.prose-nv a {
+  font-weight: 600;
+  text-decoration-color: rgba(204, 78, 20, 0.35);
 }
 
 .nv-h1 {

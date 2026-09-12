@@ -11,7 +11,7 @@ if (!API_URL) {
   throw new Error("Missing PUBLIC_WP_API_URL environment variable (see .env.example)");
 }
 
-const FALLBACK_IMAGE = "/images/fallback.jpg"; // TODO: add a real fallback image for posts without a featured image.
+const FALLBACK_IMAGE = "/images/fallback.jpg";
 
 interface WpRenderedField {
   rendered: string;

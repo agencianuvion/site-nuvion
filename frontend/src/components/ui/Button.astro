@@ -5,14 +5,18 @@ interface Props {
   href: string;
   size?: "sm" | "md";
   class?: string;
+  target?: string;
+  rel?: string;
 }
-const { href, size = "md", class: className = "" } = Astro.props;
+const { href, size = "md", class: className = "", target, rel } = Astro.props;
 
 const sizeClasses = size === "sm" ? "h-9 px-5 text-sm" : "h-[46px] px-7 text-[15px]";
 ---
 
 <a
   href={href}
+  target={target}
+  rel={rel}
   class:list={[
     "nv-cta inline-flex items-center justify-center whitespace-nowrap rounded-full bg-nv-orange font-semibold text-white shadow-nv-accent",
     sizeClasses,

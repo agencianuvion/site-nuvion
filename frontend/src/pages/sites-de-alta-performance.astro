@@ -1,0 +1,88 @@
+---
+// Copy adapted from agencianuvion.com.br's "Desenvolvimento de Sites"
+// section, expanded into a full page. Reuses PerformanceCard.astro
+// directly (it's literally the site talking about its own Core Web
+// Vitals) instead of re-describing the same idea in prose.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import PerformanceCard from "../components/home/PerformanceCard.astro";
+import FinalCta from "../components/home/FinalCta.astro";
+
+const features = [
+  {
+    title: "Core Web Vitals",
+    description: "Carregamento rápido, resposta instantânea e nada de layout pulando na tela. O Google mede isso, e o seu visitante sente na pele.",
+    icon: `<polyline points="3 16 9.5 9.5 13.5 13.5 21 6"></polyline><polyline points="14.5 6 21 6 21 12.5"></polyline>`,
+  },
+  {
+    title: "UI/UX pensado pra converter",
+    description: "Cada tela é desenhada com um objetivo claro: guiar quem chega até a ação que importa pro seu negócio.",
+    icon: `<rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M9 9v11"></path><path d="M12.5 13h6M12.5 16.5h6"></path>`,
+  },
+  {
+    title: "Arquitetura de informação",
+    description: "Estrutura clara desde o primeiro dia, pensada tanto pra quem navega quanto pra quem indexa (Google e, cada vez mais, IA generativa).",
+    icon: `<path d="M12 3 21 7.5 12 12 3 7.5z"></path><path d="M3 12l9 4.5 9-4.5"></path><path d="M3 16.5 12 21l9-4.5"></path>`,
+  },
+  {
+    title: "Mobile-first de verdade",
+    description: "Desenhado primeiro pra tela pequena, não adaptado depois. É de lá que vem a maior parte do seu tráfego.",
+    icon: `<rect x="7" y="2" width="10" height="20" rx="2"></rect><line x1="11" y1="18" x2="13" y2="18"></line>`,
+  },
+];
+---
+
+<BaseLayout
+  title="Sites de Alta Performance — Nuvion"
+  description="Sites construídos para converter: Core Web Vitals, UI/UX orientado a resultado e arquitetura pronta para SEO técnico e GEO desde o primeiro dia."
+>
+  <PageHero
+    eyebrow="Sites de Alta Performance"
+    description="Um site bonito que não converte é só um cartão de visitas caro. A gente constrói pra ser uma máquina de aquisição desde a fundação."
+    ctaLabel="Quero um Site que Converte"
+    waMessage="Olá! Quero saber mais sobre desenvolvimento de sites com a Nuvion."
+  >
+    O seu site não devia ser um <strong>panfleto digital.</strong>
+  </PageHero>
+
+  <section class="bg-nv-offwhite-light py-20 sm:py-24">
+    <div class="mx-auto max-w-3xl px-6 text-center sm:px-10">
+      <p class="text-pretty text-lg leading-[1.62] text-nv-graphite-700">
+        Muita empresa investe num site e o abandona como uma página estática, que não gera valor nenhum depois de
+        pronta. A gente pensa diferente: seu site é construído com um propósito claro, atrair o público certo,
+        construir autoridade pra sua marca e converter visitante em cliente de forma contínua.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-14 grid max-w-5xl grid-cols-1 gap-6 px-6 sm:grid-cols-2 sm:px-10">
+      {features.map((feature) => (
+        <div class="flex gap-5 rounded-3xl border border-nv-hairline bg-white p-7 shadow-[0_2px_8px_rgba(30,30,30,.06)]">
+          <div class="flex h-11 w-11 flex-none items-center justify-center rounded-full border border-nv-orange/30 text-nv-orange">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" set:html={feature.icon} />
+          </div>
+          <div>
+            <h3 class="text-base font-semibold tracking-[-0.02em] text-nv-graphite-900">{feature.title}</h3>
+            <p class="mt-2 text-pretty text-sm leading-[1.62] text-nv-graphite-600">{feature.description}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="bg-white py-20 sm:py-24">
+    <div class="mx-auto max-w-3xl px-6 text-center sm:px-10">
+      <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm">Prova real, não promessa</span>
+      <h2 class="nv-h1 mt-4 text-[28px] text-nv-graphite-900 sm:text-[38px]">É assim que medimos o próprio trabalho.</h2>
+    </div>
+    <div class="mt-12">
+      <PerformanceCard />
+    </div>
+  </section>
+
+  <FinalCta
+    eyebrow="Vamos construir"
+    description="Conte pra gente como está o seu site hoje e a gente te mostra, sem compromisso, o que dá pra melhorar."
+    buttonLabel="Quero um Diagnóstico do Meu Site"
+    waMessage="Olá! Quero um diagnóstico do meu site atual com a Nuvion."
+  />
+</BaseLayout>

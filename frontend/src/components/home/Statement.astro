@@ -44,25 +44,31 @@ const icons = [
 ---
 
 <section class="bg-nv-offwhite-light py-[100px] px-6">
-  <div class="mx-auto mb-14 flex max-w-[900px] justify-center gap-2 sm:gap-5">
+  <div class="mx-auto mb-10 max-w-2xl text-center">
+    <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm">A nova era das buscas</span>
+  </div>
+
+  <div id="icon-wave" class="mx-auto mb-14 flex max-w-[900px] justify-center gap-2 sm:gap-5">
     {icons.map((icon, i) => (
-      <div
-        class:list={[
-          "flex h-10 w-10 flex-none items-center justify-center rounded-full border bg-white shadow-[0_8px_16px_rgba(0,0,0,.04)] sm:h-16 sm:w-16",
-          icon.orange ? "border-[rgba(204,78,20,.3)] text-nv-orange" : "border-[rgba(42,42,42,.1)] text-nv-graphite-900",
-        ]}
-        style={`animation: nv-float-wave 4s ease-in-out ${(i * 0.2).toFixed(1)}s infinite`}
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          class="block h-[15px] w-[15px] sm:h-6 sm:w-6"
-          set:html={icon.inner}
-        />
+      <div class="nv-icon-repel">
+        <div
+          class:list={[
+            "nv-icon-float flex h-10 w-10 flex-none items-center justify-center rounded-full border bg-white shadow-[0_8px_16px_rgba(0,0,0,.04)] sm:h-16 sm:w-16",
+            icon.orange ? "border-[rgba(204,78,20,.3)] text-nv-orange" : "border-[rgba(42,42,42,.1)] text-nv-graphite-900",
+          ]}
+          style={`animation: nv-float-wave 4s ease-in-out ${(i * 0.2).toFixed(1)}s infinite`}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="block h-[15px] w-[15px] sm:h-6 sm:w-6"
+            set:html={icon.inner}
+          />
+        </div>
       </div>
     ))}
   </div>
@@ -81,3 +87,66 @@ const icons = [
     <strong class="font-normal text-nv-orange">GEO</strong>.
   </h2>
 </section>
+
+<style>
+  .nv-icon-repel {
+    transition: transform 0.35s var(--ease-nv);
+  }
+</style>
+
+<script>
+  // Icons gently move away from the cursor when it passes nearby, then
+  // spring back — mouse-only (no equivalent on touch, so it's skipped
+  // there entirely) and off under prefers-reduced-motion. The floatWave
+  // idle animation stays on a separate inner element (.nv-icon-float) so
+  // the two transforms (idle bob + cursor push) apply independently
+  // instead of one CSS property fighting the other.
+  const wave = document.getElementById("icon-wave");
+  const canHover = window.matchMedia("(pointer: fine)").matches;
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (wave && canHover && !reducedMotion) {
+    const icons = Array.from(wave.querySelectorAll<HTMLElement>(".nv-icon-repel"));
+    const RADIUS = 90;
+    const MAX_PUSH = 20;
+    let ticking = false;
+    let lastEvent: MouseEvent | null = null;
+
+    const applyRepel = () => {
+      ticking = false;
+      if (!lastEvent) return;
+      const waveRect = wave.getBoundingClientRect();
+      const cursorX = lastEvent.clientX - waveRect.left;
+      const cursorY = lastEvent.clientY - waveRect.top;
+
+      for (const icon of icons) {
+        const rect = icon.getBoundingClientRect();
+        const iconX = rect.left - waveRect.left + rect.width / 2;
+        const iconY = rect.top - waveRect.top + rect.height / 2;
+        const dx = iconX - cursorX;
+        const dy = iconY - cursorY;
+        const distance = Math.hypot(dx, dy);
+
+        if (distance < RADIUS && distance > 0.01) {
+          const push = ((RADIUS - distance) / RADIUS) * MAX_PUSH;
+          icon.style.transform = `translate(${(dx / distance) * push}px, ${(dy / distance) * push}px)`;
+        } else {
+          icon.style.transform = "";
+        }
+      }
+    };
+
+    wave.addEventListener("mousemove", (event) => {
+      lastEvent = event;
+      if (!ticking) {
+        ticking = true;
+        requestAnimationFrame(applyRepel);
+      }
+    });
+
+    wave.addEventListener("mouseleave", () => {
+      lastEvent = null;
+      icons.forEach((icon) => (icon.style.transform = ""));
+    });
+  }
+</script>

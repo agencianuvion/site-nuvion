@@ -1,0 +1,73 @@
+---
+// Copy adapted from agencianuvion.com.br's "SEO Expert" section.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import FinalCta from "../components/home/FinalCta.astro";
+
+const steps = [
+  {
+    number: "01",
+    title: "Auditoria técnica",
+    description: "Analisamos o código, a estrutura e a indexação do seu site pra achar exatamente o que está segurando o seu ranking hoje.",
+  },
+  {
+    number: "02",
+    title: "Arquitetura e schema",
+    description: "Organizamos a estrutura de páginas e implementamos dados estruturados pra facilitar a leitura do Google e das IAs.",
+  },
+  {
+    number: "03",
+    title: "Conteúdo otimizado",
+    description: "Trabalhamos o conteúdo existente e orientamos o novo pra responder de verdade o que o seu público está buscando.",
+  },
+  {
+    number: "04",
+    title: "Monitoramento contínuo",
+    description: "Acompanhamos rankings, tráfego orgânico e Core Web Vitals mês a mês, e ajustamos a rota conforme os dados mostram.",
+  },
+];
+---
+
+<BaseLayout
+  title="SEO Técnico — Nuvion"
+  description="SEO técnico de verdade: auditoria, arquitetura, schema e monitoramento contínuo para colocar e manter sua marca no topo das buscas."
+>
+  <PageHero
+    eyebrow="SEO Técnico e Estrutural"
+    description="De que adianta ter um site incrível se ninguém encontra ele? A gente resolve isso na raiz, não só na superfície."
+    ctaLabel="Quero Aparecer no Google"
+    waMessage="Olá! Quero saber mais sobre SEO técnico com a Nuvion."
+  >
+    Seu site no topo não é sorte. <strong>É engenharia.</strong>
+  </PageHero>
+
+  <section class="bg-nv-offwhite-light py-20 sm:py-24">
+    <div class="mx-auto max-w-3xl px-6 text-center sm:px-10">
+      <p class="text-pretty text-lg leading-[1.62] text-nv-graphite-700">
+        SEO técnico vai muito além de otimização básica. É um trabalho contínuo de análise, estratégia e execução,
+        focado em colocar o seu negócio no topo dos resultados de busca com tráfego qualificado e um crescimento que
+        não depende só de anúncio pago.
+      </p>
+    </div>
+
+    <div class="mx-auto mt-14 grid max-w-5xl grid-cols-1 gap-6 px-6 sm:grid-cols-2 sm:px-10 lg:grid-cols-4">
+      {steps.map((step) => (
+        <div class="relative overflow-hidden rounded-3xl border border-nv-hairline bg-white p-7 shadow-[0_2px_8px_rgba(30,30,30,.06)]">
+          <span class="pointer-events-none absolute -right-2 -top-6 select-none font-mono text-[80px] font-bold leading-none text-nv-orange/[0.06]" aria-hidden="true">
+            {step.number}
+          </span>
+          <span class="relative font-mono text-xs font-semibold tracking-[0.1em] text-nv-orange">{step.number}</span>
+          <h3 class="relative mt-3 text-base font-semibold tracking-[-0.02em] text-nv-graphite-900">{step.title}</h3>
+          <p class="relative mt-2 text-pretty text-sm leading-[1.62] text-nv-graphite-600">{step.description}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <FinalCta
+    eyebrow="Vamos analisar"
+    description="Antes de prometer qualquer coisa, a gente audita o seu site de verdade. Sem custo, sem letra miúda."
+    buttonLabel="Quero uma Auditoria de SEO"
+    waMessage="Olá! Quero uma auditoria de SEO técnico do meu site com a Nuvion."
+  />
+</BaseLayout>

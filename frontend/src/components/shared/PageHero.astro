@@ -1,0 +1,39 @@
+---
+// Intro band for interior pages (Sobre Nós, service pages) — same visual
+// language as the home Hero (eyebrow, nv-h1, lead, orange glow) but
+// without the video, since that treatment is specific to the home page.
+import Button from "../ui/Button.astro";
+import { waLink } from "../../lib/contact";
+
+interface Props {
+  eyebrow: string;
+  description: string;
+  ctaLabel?: string;
+  waMessage?: string;
+}
+const { eyebrow, description, ctaLabel, waMessage } = Astro.props;
+---
+
+<section class="relative overflow-hidden bg-white pb-20 pt-20 sm:pb-24 sm:pt-28">
+  <div
+    class="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[720px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-nv-orange/[0.06] blur-[110px]"
+    aria-hidden="true"
+  >
+  </div>
+
+  <div class="relative mx-auto max-w-3xl px-6 text-center sm:px-10">
+    <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm">{eyebrow}</span>
+    <h1 class="nv-h1 mt-4 text-[34px] text-nv-graphite-900 sm:text-[52px]">
+      <slot />
+    </h1>
+    <p class="nv-lead mx-auto mt-5 text-pretty text-base sm:text-[18px]">{description}</p>
+
+    {ctaLabel && (
+      <div class="mt-8 flex justify-center">
+        <Button href={waLink(waMessage ?? "Olá! Quero saber mais sobre a Nuvion.")} target="_blank" rel="noopener">
+          {ctaLabel}
+        </Button>
+      </div>
+    )}
+  </div>
+</section>
