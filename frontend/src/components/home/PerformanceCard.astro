@@ -1,0 +1,135 @@
+---
+// Abstract social-proof card — Core Web Vitals + organic-traffic curve —
+// sitting inside Statement.astro between the icon wave and the H2. See
+// design-reference/README.md, section "3. Performance Card".
+//
+// NOTE: LCP/CLS/INP/click-lift numbers below are the prototype's
+// placeholders. Swap them for a real Nuvion audit's numbers before this
+// goes live — the brand's whole pitch is candor about results, never an
+// invented number (see design-reference/README.md).
+const metrics = [
+  { value: "0,9s", label: "LCP" },
+  { value: "0,00", label: "CLS" },
+  { value: "112ms", label: "INP" },
+  { value: "+184%", label: "Cliques" },
+];
+
+const scores = [
+  { value: 99, label: "Performance" },
+  { value: 100, label: "SEO" },
+  { value: 98, label: "Acessível" },
+];
+---
+
+<aside
+  aria-label="Relatório de performance"
+  data-parallax="0.03"
+  class="relative z-[5] mx-auto my-2 mb-11 w-[640px] max-w-[calc(100%-44px)] will-change-transform"
+>
+  <div id="perf-card" class="nv-perf nv-reveal flex flex-col gap-6 rounded-[22px] border border-[rgba(242,242,242,.12)] bg-nv-graphite-900 px-6 py-[30px] sm:px-[34px]">
+    <header class="flex items-center justify-between gap-4">
+      <span class="text-[11px] font-semibold uppercase tracking-[0.14em] text-[rgba(242,242,242,.5)]">
+        Core Web Vitals · Auditoria real
+      </span>
+      <span class="flex items-center gap-[7px] text-[11px] font-semibold text-nv-success">
+        <span class="block h-1.5 w-1.5 rounded-full bg-nv-success"></span>
+        Aprovado
+      </span>
+    </header>
+
+    <div class="flex flex-wrap items-center gap-7">
+      <div class="flex gap-[22px]">
+        {scores.map((score) => (
+          <div class="flex flex-col items-center gap-[9px]">
+            <div class="flex h-14 w-14 items-center justify-center rounded-full border-[2.5px] border-nv-success font-sans text-[21px] font-bold tracking-[-0.02em] text-nv-success">
+              {score.value}
+            </div>
+            <span class="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.14em] text-[rgba(242,242,242,.45)]">
+              {score.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div class="flex min-w-[200px] flex-1 flex-col gap-[10px]">
+        <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-[rgba(242,242,242,.42)]">
+          Tráfego orgânico · 6 meses
+        </span>
+        <svg viewBox="0 0 300 56" preserveAspectRatio="none" fill="none" class="block h-14 w-full" aria-hidden="true">
+          <path
+            d="M2 52C38 50 60 45 92 34s54-16 84-11 44 14 74-12"
+            stroke="#CC4E14"
+            stroke-width="1.2"
+            stroke-linecap="round"></path>
+          <circle cx="252" cy="11" r="4" fill="#CC4E14"></circle>
+        </svg>
+      </div>
+    </div>
+
+    <footer class="flex flex-wrap gap-8 border-t border-[rgba(242,242,242,.1)] pt-5">
+      {metrics.map((metric) => (
+        <div class="flex flex-col gap-1">
+          <span class="font-mono text-[17px] font-semibold tracking-[-0.01em] text-nv-offwhite">{metric.value}</span>
+          <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-[rgba(242,242,242,.42)]">
+            {metric.label}
+          </span>
+        </div>
+      ))}
+    </footer>
+  </div>
+</aside>
+
+<script>
+  // Reveal-on-scroll: IntersectionObserver (the doc's prototype had to poll
+  // rAF instead because its preview host never fired `scroll` — that was an
+  // environment workaround, not a pattern to keep; this is the real thing).
+  const card = document.getElementById("perf-card");
+  if (card) {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reducedMotion) {
+      card.classList.add("is-visible");
+    } else {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              card.classList.add("is-visible");
+              observer.disconnect();
+            }
+          }
+        },
+        { threshold: 0.2, rootMargin: "0px 0px -6% 0px" },
+      );
+      observer.observe(card);
+      // Failsafe in case the card is already off-screen in a way the
+      // observer never catches (e.g. a very short viewport).
+      setTimeout(() => card.classList.add("is-visible"), 4000);
+    }
+  }
+
+  // Subtle parallax — translates any [data-parallax] element by a factor
+  // of the scroll position. Single shared rAF loop, throttled with a
+  // `ticking` flag so it never runs more than once per frame.
+  const parallaxEls = document.querySelectorAll<HTMLElement>("[data-parallax]");
+  if (parallaxEls.length && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    let ticking = false;
+    const applyParallax = () => {
+      const scrollY = window.scrollY;
+      parallaxEls.forEach((el) => {
+        const factor = Number(el.dataset.parallax ?? 0);
+        el.style.transform = `translate3d(0, ${scrollY * factor}px, 0)`;
+      });
+      ticking = false;
+    };
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (!ticking) {
+          requestAnimationFrame(applyParallax);
+          ticking = true;
+        }
+      },
+      { passive: true },
+    );
+  }
+</script>

@@ -1,0 +1,35 @@
+---
+// Visual breadcrumb trail (Home / Section / Title). The matching JSON-LD
+// (BreadcrumbList) is built separately — see src/lib/breadcrumbs.ts — and
+// passed to BaseLayout's "jsonLd" prop by whatever page uses this.
+import type { BreadcrumbItem } from "../../lib/breadcrumbs";
+
+interface Props {
+  items: BreadcrumbItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<nav aria-label="Breadcrumb" class="mb-8 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-black/50">
+  {
+    items.map((item, index) => (
+      <span class="flex items-center gap-2">
+        {index > 0 && (
+          <span aria-hidden="true" class="text-black/25">
+            /
+          </span>
+        )}
+        {item.href ? (
+          <a href={item.href} class="transition-colors hover:text-black">
+            {item.label}
+          </a>
+        ) : (
+          <span aria-current="page" class="text-black/80">
+            {item.label}
+          </span>
+        )}
+      </span>
+    ))
+  }
+</nav>

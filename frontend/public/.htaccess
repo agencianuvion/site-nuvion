@@ -1,0 +1,25 @@
+# Caching for static files served directly by Apache/LiteSpeed.
+#
+# HTML is never cached: any deploy can change any page's content, and the
+# filename (index.html) never changes to signal that. Images/video/fonts
+# without a hash in their filename get a moderate cache — long enough to
+# help repeat visits, short enough that a replaced file shows up within a
+# few days without needing manual cache-busting. Files under /_astro/ (see
+# that folder's own .htaccess) DO have a content hash in their name, so
+# those get a full year, immutable.
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.html$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+  <FilesMatch "\.(jpg|jpeg|png|webp|avif|svg|gif|ico|mp4|webm)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+  <FilesMatch "\.(woff2?|ttf)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
+</IfModule>

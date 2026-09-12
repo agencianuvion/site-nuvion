@@ -1,0 +1,225 @@
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+
+/* Nuvion brand tokens — extracted from design-reference/Hero Nuvion.dc.html
+   and PROJECT_PREFERENCES.md. Tailwind v4's CSS-first config: tokens live
+   here, not in a JS config file. */
+@theme {
+  --color-bg: #ffffff;
+  --color-fg: #2a2a2a;
+
+  /* Primary orange + its hover/soft variants. */
+  --color-nv-orange: #cc4e14;
+  --color-nv-orange-hover: #b54212;
+  --color-nv-orange-soft: #e8825a;
+
+  /* Graphite scale (text/UI, not backgrounds). */
+  --color-nv-graphite-900: #2a2a2a;
+  --color-nv-graphite-700: #3a3a3a;
+  --color-nv-graphite-600: #5a5a5a;
+  --color-nv-graphite-500: #6e6e6e;
+  --color-nv-graphite-400: #8a8a8a;
+
+  /* Off-whites — #FDFDFD and #F2F2F2 are deliberately distinct, not
+     interchangeable (see PROJECT_PREFERENCES.md / design-reference). */
+  --color-nv-offwhite: #f2f2f2;
+  --color-nv-offwhite-light: #fdfdfd;
+  --color-nv-hairline: #e4e4e4;
+
+  /* Semantic success green — not part of a broader DS, used only for the
+     Performance Card's "Aprovado" badge and CWV rings. */
+  --color-nv-success: #22c55e;
+
+  --font-sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --shadow-nv-accent: 0 10px 28px rgba(204, 78, 20, 0.28);
+  --ease-nv: cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+:root {
+  --pad-x: clamp(1.25rem, 4vw, 3rem);
+}
+
+html {
+  /* Reserves the scrollbar's width on every page, even ones without
+     scroll — otherwise a fixed-position header/nav visibly shifts by the
+     scrollbar's width between pages that do and don't scroll. */
+  scrollbar-gutter: stable;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+}
+
+/* Glassmorphism is reserved for the header/nav overlaid on the hero video
+   only — never on hero text blocks, buttons, or content cards (see
+   PROJECT_PREFERENCES.md). Shared here so any future overlay (floating
+   bars, menus) can reuse the same recipe instead of inventing a new one. */
+.nv-glass {
+  background: rgba(255, 255, 255, 0.42);
+  border-bottom: 1px solid rgba(42, 42, 42, 0.06);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+/* Shared interactive classes, lifted from design-reference's prototype
+   styles so Hero/Statement/PerformanceCard/PillarsCarousel components all
+   reuse the exact same hover/transition values instead of re-declaring
+   them per component. */
+
+/* Primary CTA pill (orange). The prototype forces border-color:transparent
+   on all states here as a workaround for a since-removed DS Button bug —
+   not needed anymore since this project has no such component, but the
+   transparent border is kept so no border ever "leaks" on focus/hover. */
+.nv-cta {
+  border: 1px solid transparent;
+  transition:
+    background 0.16s ease,
+    transform 0.24s var(--ease-nv);
+}
+.nv-cta:hover {
+  background: var(--color-nv-orange-hover);
+  transform: translateY(-3px);
+}
+.nv-cta:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(204, 78, 20, 0.16);
+}
+
+/* Secondary pill — soft graphite border, never darkens to black. Used
+   instead of a "loud" secondary button on top of the hero video. */
+.nv-soft {
+  border: 1px solid rgba(42, 42, 42, 0.13);
+  background: transparent;
+  color: #3a3a3a;
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    transform 0.24s var(--ease-nv);
+}
+.nv-soft:hover {
+  background: rgba(42, 42, 42, 0.04);
+  border-color: rgba(42, 42, 42, 0.2);
+  color: var(--color-nv-graphite-900);
+  transform: translateY(-2px);
+}
+
+/* Outline orange pill (carousel "Entender o método" style CTAs elsewhere). */
+.nv-outline {
+  border: 2px solid var(--color-nv-orange);
+  background: transparent;
+  color: var(--color-nv-orange);
+  transition:
+    background 0.16s ease,
+    color 0.16s ease,
+    transform 0.24s ease;
+}
+.nv-outline:hover {
+  background: var(--color-nv-orange);
+  color: #fff;
+  transform: translateY(-3px);
+}
+
+/* "Entender o método"-style link — arrow gap widens and color deepens. */
+.nv-more {
+  color: var(--color-nv-orange);
+  transition:
+    gap 0.2s ease,
+    color 0.16s ease;
+}
+.nv-more:hover {
+  gap: 12px;
+  color: var(--color-nv-orange-hover);
+}
+
+/* Performance card hover lift. */
+.nv-perf {
+  transition:
+    transform 0.32s var(--ease-nv),
+    box-shadow 0.32s var(--ease-nv),
+    border-color 0.32s ease;
+}
+.nv-perf:hover {
+  transform: translateY(-4px);
+  border-color: rgba(204, 78, 20, 0.42);
+  box-shadow: 0 26px 64px rgba(20, 20, 20, 0.34);
+}
+
+/* Circular carousel nav arrows. */
+.nv-nav {
+  transition:
+    background 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    transform 0.24s var(--ease-nv);
+}
+.nv-nav:hover {
+  background: var(--color-nv-graphite-900);
+  border-color: var(--color-nv-graphite-900);
+  color: #fff;
+  transform: translateY(-2px);
+}
+.nv-nav:disabled {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Horizontal scroll-snap rail — hides the scrollbar cross-browser. */
+.nv-rail {
+  scrollbar-width: none;
+}
+.nv-rail::-webkit-scrollbar {
+  display: none;
+}
+
+/* Reveal-on-scroll starting state, flipped to visible via
+   IntersectionObserver (see PerformanceCard.astro). */
+.nv-reveal {
+  opacity: 0;
+  transform: scale(0.86);
+  transition:
+    opacity 0.62s var(--ease-nv),
+    transform 0.62s var(--ease-nv);
+}
+.nv-reveal.is-visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.nv-h1 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  margin: 0;
+}
+.nv-h1 strong {
+  font-weight: 800;
+}
+
+.nv-lead {
+  font-weight: 400;
+  line-height: 1.55;
+  margin: 0;
+  max-width: 52ch;
+  color: #666666;
+}
+
+@keyframes nv-float-wave {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-24px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

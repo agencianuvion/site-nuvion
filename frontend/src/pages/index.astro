@@ -1,0 +1,16 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/home/Hero.astro";
+import Statement from "../components/home/Statement.astro";
+import PillarsCarousel from "../components/home/PillarsCarousel.astro";
+---
+
+<BaseLayout
+  title="Nuvion — Arquitetura digital para a nova era das buscas"
+  description="Sites de alta performance, SEO técnico e GEO (Generative Engine Optimization) para dominar as buscas — da nova geração de motores de busca às IAs generativas."
+  preloadImage="/images/hero-poster.webp"
+>
+  <Hero />
+  <Statement />
+  <PillarsCarousel />
+</BaseLayout>

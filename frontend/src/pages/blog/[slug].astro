@@ -1,0 +1,74 @@
+---
+// Reference implementation — shows the full pattern (breadcrumbs, author,
+// Article schema, share buttons) wired together on a real post. Copy this
+// file's structure for any other single/detail page in the project.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Breadcrumbs from "../../components/shared/Breadcrumbs.astro";
+import ShareButtons from "../../components/shared/ShareButtons.astro";
+import { getPosts } from "../../lib/wp";
+import { buildBreadcrumbSchema, type BreadcrumbItem } from "../../lib/breadcrumbs";
+import type { Post } from "../../types/content";
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({
+    params: { slug: post.slug },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: Post;
+}
+
+const { post } = Astro.props;
+const siteUrl = (Astro.site ?? Astro.url).href;
+
+const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
+
+const articleSchema = {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: post.title,
+  description: post.excerpt,
+  image: post.featuredImage,
+  datePublished: post.date,
+  ...(post.author && { author: { "@type": "Person", name: post.author } }),
+  mainEntityOfPage: Astro.url.href,
+};
+
+const breadcrumbItems: BreadcrumbItem[] = [
+  { label: "Home", href: "/" },
+  { label: "Blog", href: "/blog" },
+  { label: post.title },
+];
+const breadcrumbSchema = buildBreadcrumbSchema(breadcrumbItems, Astro.url.href, siteUrl);
+---
+
+<BaseLayout
+  title={`${post.title} — Your Site Name`}
+  description={post.excerpt}
+  image={post.featuredImage}
+  jsonLd={[articleSchema, breadcrumbSchema]}
+>
+  <article class="mx-auto max-w-3xl px-6 py-24">
+    <Breadcrumbs items={breadcrumbItems} />
+
+    <time datetime={post.date} class="block text-xs uppercase tracking-[0.2em] text-black/50">{formattedDate}</time>
+    <h1 class="mt-3 text-4xl font-semibold">{post.title}</h1>
+    {post.author && <p class="mt-2 text-sm text-black/60">By {post.author}</p>}
+
+    <img src={post.featuredImage} alt={post.title} class="mt-10 aspect-video w-full rounded-2xl object-cover" />
+
+    {/* content.rendered is trusted HTML from WP's own editor. */}
+    <div class="prose mt-10 max-w-none" set:html={post.content} />
+
+    <div class="mt-12 border-t border-black/10 pt-8">
+      <ShareButtons title={post.title} />
+    </div>
+  </article>
+</BaseLayout>

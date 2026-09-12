@@ -1,0 +1,114 @@
+name: Build and deploy
+
+# Three ways this fires:
+#  - push to main: code changes in this repo.
+#  - repository_dispatch (type "wp-content-updated"): WordPress calls
+#    GitHub's API to fire this whenever someone saves content — see
+#    wordpress/auto-deploy.php.
+#  - workflow_dispatch: manual "Run workflow" button, to force a rebuild.
+on:
+  push:
+    branches: [main]
+  repository_dispatch:
+    types: [wp-content-updated]
+  workflow_dispatch: {}
+
+# If a new run starts while one is still going, cancel the older one —
+# only the latest content actually matters.
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Write production .env
+        run: |
+          echo "PUBLIC_WP_API_URL=${{ secrets.PUBLIC_WP_API_URL }}" >> .env
+          # TODO: add any other PUBLIC_ env vars this project needs, e.g.:
+          # echo "PUBLIC_STRIPE_MEMBERSHIP_LINK=${{ secrets.PUBLIC_STRIPE_MEMBERSHIP_LINK }}" >> .env
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Retries a few times before giving up. On the reference build, every
+      # failure here traced back to Cloudflare momentarily blocking THAT
+      # run's IP on the WP REST API fetch (bot-fighting against cloud/
+      # datacenter IPs) — not a real outage, and a fresh IP on retry almost
+      # always gets through cleanly.
+      - name: Build (with retries)
+        run: |
+          for attempt in 1 2 3; do
+            npm run build && exit 0
+            echo "Build attempt $attempt failed."
+            if [ "$attempt" -lt 3 ]; then
+              echo "Retrying in 20s..."
+              sleep 20
+            fi
+          done
+          echo "All 3 build attempts failed."
+          exit 1
+
+      # --delete removes anything at the destination not in dist/ — needed
+      # so removed pages actually get cleaned up on the server too.
+      #
+      # !!! IMPORTANT — READ BEFORE CHANGING DEPLOY_PATH, AND AGAIN EVERY
+      # TIME SOMETHING NEW IS PUT ON THE SERVER BY HAND !!!
+      # --delete wipes ANY folder inside DEPLOY_PATH that isn't part of
+      # the Astro build. Two cases bite people:
+      #  1. A separate WordPress install in a subfolder of the same domain
+      #     root (e.g. the headless WP at system.example.com living under
+      #     the SAME hosting account's public_html) — add --exclude=<that
+      #     folder>.
+      #  2. Any one-off folder uploaded straight to the server later —
+      #     hand-built landing pages, a client's PDF drop, a redirect
+      #     stub. The moment it exists and isn't excluded here, the next
+      #     deploy deletes it. Both of these have already happened on real
+      #     projects; recovering took hours / a host backup restore.
+      # This is not a one-time setup step — it's a standing rule: new
+      # server-side folder => new --exclude line, same day.
+      # If WordPress and the Astro site are on fully separate
+      # domains/hosting accounts and nothing else is ever put in
+      # DEPLOY_PATH by hand, none of this applies.
+      - name: Deploy over SSH (rsync)
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          # --exclude=system: the WordPress install lives in a subfolder of
+          # this same hosting account's public_html (system.agencianuvion.com.br
+          # -> public_html/system/). Without this, --delete treats it as
+          # leftover cruft from the Astro build and wipes it on every deploy.
+          # Add another --exclude=<folder> here for any other hand-managed
+          # folder ever placed inside DEPLOY_PATH by hand.
+          switches: -avzr --delete --exclude=system
+          path: dist/
+          remote_path: ${{ secrets.DEPLOY_PATH }}
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_port: ${{ secrets.SSH_PORT }}
+          remote_user: ${{ secrets.SSH_USER }}
+          remote_key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # Lets a non-technical client find out a publish succeeded (or
+      # didn't) from right inside wp-admin, without ever needing to look at
+      # GitHub — see the sidebar indicator in wordpress/client-access.php.
+      # `if: always()` runs this regardless of the outcome above;
+      # `job.status` at this point already reflects that.
+      #
+      # TODO: add DEPLOY_STATUS_TOKEN as a repo secret (any random string —
+      # also set as the matching constant in wp-config.php, see
+      # wordpress/auto-deploy.php's docblock).
+      - name: Report deploy status to WordPress
+        if: always()
+        run: |
+          curl -s -X POST "https://system.agencianuvion.com.br/wp-json/site/v1/deploy-status" \
+            -H "X-Deploy-Token: ${{ secrets.DEPLOY_STATUS_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d "{\"status\":\"${{ job.status }}\"}" \
+            --max-time 10 || true

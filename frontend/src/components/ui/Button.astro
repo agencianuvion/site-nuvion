@@ -1,0 +1,23 @@
+---
+// Primary CTA pill. See global.css's .nv-cta for the shared hover/focus
+// behavior (also reused directly by Header.astro's own CTAs).
+interface Props {
+  href: string;
+  size?: "sm" | "md";
+  class?: string;
+}
+const { href, size = "md", class: className = "" } = Astro.props;
+
+const sizeClasses = size === "sm" ? "h-9 px-5 text-sm" : "h-[46px] px-7 text-[15px]";
+---
+
+<a
+  href={href}
+  class:list={[
+    "nv-cta inline-flex items-center justify-center whitespace-nowrap rounded-full bg-nv-orange font-semibold text-white shadow-nv-accent",
+    sizeClasses,
+    className,
+  ]}
+>
+  <slot />
+</a>

@@ -1,0 +1,111 @@
+---
+// Base layout — carries the SEO/GEO scaffolding forward from the
+// Spoudaios build (Open Graph, Twitter Card, canonical URL, JSON-LD,
+// async font loading, LCP image preload) without any of its content or
+// branding. Fill in ORG_NAME/ORG_LOGO_PATH below once they're known.
+import "../styles/global.css";
+import Header from "../components/layout/Header.astro";
+import Footer from "../components/layout/Footer.astro";
+
+const ORG_NAME = "Nuvion";
+const ORG_LOGO_PATH = "/images/logo-horizontal-dark.png";
+
+interface Props {
+  title: string;
+  description?: string;
+  /** Absolute URL or local path (e.g. "/images/...") — resolved against astro.config's "site" if local. Used for Open Graph/Twitter Card previews. */
+  image?: string;
+  /** Local path to preload with high priority — use on whatever image is likely this page's LCP element (e.g. a hero image). */
+  preloadImage?: string;
+  /** Extra schema.org object(s) for this specific page (Article, BreadcrumbList, etc.) on top of the Organization/WebSite schema every page already gets. */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+const {
+  title,
+  description = `${ORG_NAME} — Arquitetura digital, SEO técnico e GEO para a nova era das buscas.`,
+  image = ORG_LOGO_PATH,
+  preloadImage,
+  jsonLd,
+} = Astro.props;
+
+const canonicalUrl = Astro.url.href;
+const siteUrl = (Astro.site ?? Astro.url).href;
+const absoluteImageUrl = image.startsWith("http") ? image : new URL(image, Astro.site ?? Astro.url).href;
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: ORG_NAME,
+  url: siteUrl,
+  logo: new URL(ORG_LOGO_PATH, siteUrl).href,
+};
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: ORG_NAME,
+  url: siteUrl,
+};
+const pageSchemas = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+---
+
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+
+    {/* Link previews (WhatsApp, Facebook, Telegram, etc.) — see ShareButtons.astro if this project uses it. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={ORG_NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={absoluteImageUrl} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={absoluteImageUrl} />
+
+    {preloadImage && <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />}
+
+    {/* Inter Tight, async (media="print" until onload swaps it to "all") so
+       the font CSS never blocks first render — see BaseLayout's own note
+       on why this beats a plain blocking <link rel="stylesheet">. */}
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
+
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} is:inline />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} is:inline />
+    {pageSchemas.map((schema) => (
+      <script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />
+    ))}
+  </head>
+  <body class="flex min-h-dvh flex-col">
+    <Header />
+    <div class="flex-1">
+      <slot />
+    </div>
+    <Footer />
+  </body>
+</html>

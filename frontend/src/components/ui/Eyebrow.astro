@@ -1,0 +1,13 @@
+---
+// Small uppercase label used above a headline. The only two eyebrows in
+// the design (Hero, Pillars carousel) both use wide tracking (.32em) — see
+// design-reference/README.md's Design Tokens section.
+interface Props {
+  class?: string;
+}
+const { class: className = "" } = Astro.props;
+---
+
+<span class:list={["text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm", className]}>
+  <slot />
+</span>

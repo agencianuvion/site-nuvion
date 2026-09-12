@@ -1,0 +1,18 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PostCard from "../../components/blog/PostCard.astro";
+import { getPosts } from "../../lib/wp";
+
+const posts = await getPosts();
+---
+
+<BaseLayout title="Blog — Your Site Name">
+  <main class="mx-auto max-w-6xl px-6 py-24">
+    <h1 class="mb-10 text-4xl font-semibold">Blog</h1>
+    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {posts.map((post) => (
+        <PostCard post={post} />
+      ))}
+    </div>
+  </main>
+</BaseLayout>

@@ -1,0 +1,124 @@
+---
+// Home hero — looping background video, 100vh, headline + CTAs.
+// Recreated from design-reference/Hero Nuvion.dc.html (section #1d), the
+// approved hi-fi prototype. See design-reference/README.md's "1. Hero" for
+// the full spec this pixel-matches.
+import Eyebrow from "../ui/Eyebrow.astro";
+import Button from "../ui/Button.astro";
+---
+
+<section class="nv-hero relative h-screen min-h-[620px] overflow-hidden bg-white">
+  <video
+    id="hero-video"
+    class="nv-hero-video"
+    muted
+    loop
+    playsinline
+    disablepictureinpicture
+    preload="metadata"
+    poster="/images/hero-poster.webp"
+  >
+    <source src="/videos/hero-loop-nuvion.mp4" type="video/mp4" />
+  </video>
+
+  <div class="nv-hero-scrim" aria-hidden="true"></div>
+
+  <div class="relative z-[2] flex h-full flex-col items-center justify-center gap-6 px-6 text-center sm:px-10">
+    <Eyebrow>Ecossistema de Crescimento</Eyebrow>
+
+    <h1 class="nv-h1 max-w-[17ch] text-[38px] text-nv-graphite-900 md:text-[68px]">
+      Arquitetura digital para a <strong>nova era das buscas.</strong>
+    </h1>
+
+    <p class="nv-lead text-pretty text-base sm:text-[19px]">
+      Estruturamos o ecossistema digital do seu negócio para dominar SEO técnico, GEO e Core Web Vitals. O site
+      deixa de ser cartão de visita e passa a operar como máquina de aquisição.
+    </p>
+
+    <div class="mt-1.5 flex flex-col items-center gap-3.5 sm:flex-row">
+      <Button href="#diagnostico">Agendar Meu Diagnóstico</Button>
+      <a href="#pilares" class="nv-soft inline-flex h-[46px] items-center justify-center rounded-full px-6 text-[15px] font-semibold">
+        Explorar Soluções em SEO e GEO
+      </a>
+    </div>
+
+    <div class="mt-2.5 flex flex-wrap items-center justify-center gap-3 text-[13px] tracking-[0.01em] text-nv-graphite-400">
+      <span>Domine as Buscas</span>
+      <span class="block h-1.5 w-1.5 rounded-full bg-nv-orange-soft"></span>
+      <span>Sites Otimizados para IA</span>
+      <span class="block h-1.5 w-1.5 rounded-full bg-nv-orange-soft"></span>
+      <span>SEO Técnico e GEO</span>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Pixel values straight from the approved prototype — kept scoped here
+     since they're specific to this one hero, not reusable tokens. */
+  .nv-hero-video {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    transform: translateY(-50%);
+    width: 100%;
+    height: 660px;
+    object-fit: cover;
+    z-index: 0;
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.55) 8%,
+      #000 22%,
+      #000 74%,
+      rgba(0, 0, 0, 0.5) 90%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    mask-image: linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.55) 8%,
+      #000 22%,
+      #000 74%,
+      rgba(0, 0, 0, 0.5) 90%,
+      rgba(0, 0, 0, 0) 100%
+    );
+  }
+
+  .nv-hero-scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.1) 45%, rgba(255, 255, 255, 0.45) 100%);
+  }
+</style>
+
+<script>
+  // Video autoplay is triggered entirely from here (never a native
+  // `autoplay` attribute) so it never competes with the page's LCP. On a
+  // slow connection, data-saver mode, or prefers-reduced-motion, the video
+  // is never even fetched — the poster stays as a static image forever.
+  const video = document.getElementById("hero-video") as HTMLVideoElement | null;
+  if (video) {
+    const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } })
+      .connection;
+    const isSlow = Boolean(connection?.saveData) || /\b2g\b/.test(connection?.effectiveType ?? "");
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (isSlow || reducedMotion) {
+      video.setAttribute("preload", "none");
+      video.querySelectorAll("source").forEach((source) => source.remove());
+    } else {
+      const startPlayback = () => {
+        requestAnimationFrame(() => {
+          video.load();
+          video.play().catch(() => {});
+        });
+      };
+      window.addEventListener("load", startPlayback, { once: true });
+      video.addEventListener("loadeddata", () => video.play().catch(() => {}), { once: true });
+    }
+  }
+</script>
