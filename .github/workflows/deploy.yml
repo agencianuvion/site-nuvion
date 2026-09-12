@@ -22,6 +22,12 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    # This repo is a monorepo (frontend/ + wordpress/ + design-reference/),
+    # not just the Astro project at its root — every npm/build step below
+    # runs inside frontend/.
+    defaults:
+      run:
+        working-directory: frontend
     steps:
       - uses: actions/checkout@v4
 
@@ -29,6 +35,7 @@ jobs:
         with:
           node-version: 24
           cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
       - name: Write production .env
         run: |
@@ -60,35 +67,29 @@ jobs:
       # --delete removes anything at the destination not in dist/ — needed
       # so removed pages actually get cleaned up on the server too.
       #
-      # !!! IMPORTANT — READ BEFORE CHANGING DEPLOY_PATH, AND AGAIN EVERY
-      # TIME SOMETHING NEW IS PUT ON THE SERVER BY HAND !!!
-      # --delete wipes ANY folder inside DEPLOY_PATH that isn't part of
-      # the Astro build. Two cases bite people:
-      #  1. A separate WordPress install in a subfolder of the same domain
-      #     root (e.g. the headless WP at system.example.com living under
-      #     the SAME hosting account's public_html) — add --exclude=<that
-      #     folder>.
-      #  2. Any one-off folder uploaded straight to the server later —
-      #     hand-built landing pages, a client's PDF drop, a redirect
-      #     stub. The moment it exists and isn't excluded here, the next
-      #     deploy deletes it. Both of these have already happened on real
-      #     projects; recovering took hours / a host backup restore.
-      # This is not a one-time setup step — it's a standing rule: new
-      # server-side folder => new --exclude line, same day.
-      # If WordPress and the Astro site are on fully separate
-      # domains/hosting accounts and nothing else is ever put in
-      # DEPLOY_PATH by hand, none of this applies.
+      # !!! IMPORTANT — READ BEFORE CHANGING DEPLOY_PATH !!!
+      # --delete wipes ANY folder inside DEPLOY_PATH that isn't part of the
+      # Astro build. Right now DEPLOY_PATH is
+      # domains/agencianuvion.com.br/public_html/preview — an isolated
+      # staging subfolder for a NEW subdomain (preview.agencianuvion.com.br),
+      # so this is safe: it can never touch the live Elementor site at
+      # public_html root or the headless WordPress at public_html/system.
+      #
+      # When cutting over to production (DEPLOY_PATH -> public_html root):
+      #  1. Back up / remove the current Elementor site there first — this
+      #     is a manual, deliberate step, not something to automate away.
+      #  2. Add --exclude=system to the switches below — public_html/system
+      #     is the headless WordPress backend; without this, --delete wipes
+      #     it on the very next deploy. This exact mistake has already
+      #     happened once on a past project; recovery took hours.
+      #  3. Any other hand-managed folder ever placed inside DEPLOY_PATH
+      #     needs its own --exclude=<folder>, same day it's added — not a
+      #     one-time setup step, a standing rule.
       - name: Deploy over SSH (rsync)
         uses: burnett01/rsync-deployments@7.0.1
         with:
-          # --exclude=system: the WordPress install lives in a subfolder of
-          # this same hosting account's public_html (system.agencianuvion.com.br
-          # -> public_html/system/). Without this, --delete treats it as
-          # leftover cruft from the Astro build and wipes it on every deploy.
-          # Add another --exclude=<folder> here for any other hand-managed
-          # folder ever placed inside DEPLOY_PATH by hand.
-          switches: -avzr --delete --exclude=system
-          path: dist/
+          switches: -avzr --delete
+          path: frontend/dist/
           remote_path: ${{ secrets.DEPLOY_PATH }}
           remote_host: ${{ secrets.SSH_HOST }}
           remote_port: ${{ secrets.SSH_PORT }}
@@ -100,10 +101,6 @@ jobs:
       # GitHub — see the sidebar indicator in wordpress/client-access.php.
       # `if: always()` runs this regardless of the outcome above;
       # `job.status` at this point already reflects that.
-      #
-      # TODO: add DEPLOY_STATUS_TOKEN as a repo secret (any random string —
-      # also set as the matching constant in wp-config.php, see
-      # wordpress/auto-deploy.php's docblock).
       - name: Report deploy status to WordPress
         if: always()
         run: |
