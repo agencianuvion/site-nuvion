@@ -1,0 +1,78 @@
+---
+// Light/dark pill toggle, same idea as Astro's own dev error overlay
+// switch. Wires up the mechanism now (data-theme on <html>, persisted to
+// localStorage) — the actual dark palette for every section is a
+// separate, later piece of work; today this only flips the base
+// --color-bg/--color-fg tokens (see global.css), so most sections (they
+// use explicit bg-white/bg-nv-offwhite-light utility classes) won't
+// visibly change yet. That's expected, not a bug.
+---
+
+<div class="nv-theme-toggle" role="group" aria-label="Tema">
+  <button type="button" data-theme-btn="light" aria-label="Tema claro" aria-pressed="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="4.5"></circle>
+      <path d="M12 2.5v2M12 19.5v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M2.5 12h2M19.5 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4"></path>
+    </svg>
+  </button>
+  <button type="button" data-theme-btn="dark" aria-label="Tema escuro" aria-pressed="false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 14.5A8.5 8.5 0 1 1 9.5 4a7 7 0 0 0 10.5 10.5z"></path>
+    </svg>
+  </button>
+</div>
+
+<style>
+  .nv-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 999px;
+    background: rgba(42, 42, 42, 0.06);
+  }
+  .nv-theme-toggle button {
+    display: flex;
+    height: 28px;
+    width: 28px;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    color: var(--color-nv-graphite-500);
+    transition:
+      background 0.16s ease,
+      color 0.16s ease;
+  }
+  .nv-theme-toggle button svg {
+    height: 15px;
+    width: 15px;
+  }
+  .nv-theme-toggle button[aria-pressed="true"] {
+    background: #fff;
+    color: var(--color-nv-orange);
+    box-shadow: 0 1px 3px rgba(30, 30, 30, 0.12);
+  }
+</style>
+
+<script>
+  const STORAGE_KEY = "nv-theme";
+  const root = document.documentElement;
+
+  function applyTheme(theme: "light" | "dark") {
+    root.setAttribute("data-theme", theme);
+    document.querySelectorAll<HTMLButtonElement>("[data-theme-btn]").forEach((btn) => {
+      btn.setAttribute("aria-pressed", String(btn.dataset.themeBtn === theme));
+    });
+  }
+
+  const saved = localStorage.getItem(STORAGE_KEY);
+  applyTheme(saved === "dark" ? "dark" : "light");
+
+  document.querySelectorAll<HTMLButtonElement>("[data-theme-btn]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const theme = btn.dataset.themeBtn === "dark" ? "dark" : "light";
+      localStorage.setItem(STORAGE_KEY, theme);
+      applyTheme(theme);
+    });
+  });
+</script>

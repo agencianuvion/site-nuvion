@@ -4,6 +4,7 @@
 // meant to sit over the hero video and remain consistent on every other
 // (plain white) page below it.
 import { waLink } from "../../lib/contact";
+import ThemeToggle from "../ui/ThemeToggle.astro";
 
 const pathname = Astro.url.pathname;
 const isActive = (path: string) =>
@@ -28,6 +29,7 @@ const navLinks = [
         {link.label}
       </a>
     ))}
+    <ThemeToggle />
     <a
       href={waLink("Olá! Quero agendar um diagnóstico com a Nuvion.")}
       target="_blank"
@@ -38,19 +40,21 @@ const navLinks = [
     </a>
   </nav>
 
-  <button
-    id="mobile-menu-toggle"
-    type="button"
-    class="lg:hidden"
-    aria-label="Menu"
-    aria-haspopup="true"
-    aria-expanded="false"
-    aria-controls="mobile-menu"
-  >
-    <svg viewBox="0 0 24 24" fill="none" class="h-6 w-6 text-nv-graphite-900" aria-hidden="true">
-      <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
-    </svg>
-  </button>
+  <div class="flex items-center gap-3 lg:hidden">
+    <ThemeToggle />
+    <button
+      id="mobile-menu-toggle"
+      type="button"
+      aria-label="Menu"
+      aria-haspopup="true"
+      aria-expanded="false"
+      aria-controls="mobile-menu"
+    >
+      <svg viewBox="0 0 24 24" fill="none" class="h-6 w-6 text-nv-graphite-900" aria-hidden="true">
+        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+      </svg>
+    </button>
+  </div>
 
   <nav
     id="mobile-menu"

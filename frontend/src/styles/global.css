@@ -42,6 +42,18 @@
   --pad-x: clamp(1.25rem, 4vw, 3rem);
 }
 
+/* Dark mode: the toggle (ThemeToggle.astro) is wired up and persists a
+   choice, but the palette below is only the base bg/fg flip — most
+   sections use explicit bg-white/bg-nv-offwhite-light classes, so they
+   won't visually change until each is given a real dark treatment (later
+   work). Deliberately gated on the explicit [data-theme="dark"] attribute
+   only, not prefers-color-scheme — the site shouldn't silently switch an
+   unfinished dark mode on for visitors whose OS is set to dark. */
+:root[data-theme="dark"] {
+  --color-bg: #111111;
+  --color-fg: #f2f2f2;
+}
+
 html {
   /* Reserves the scrollbar's width on every page, even ones without
      scroll — otherwise a fixed-position header/nav visibly shifts by the
