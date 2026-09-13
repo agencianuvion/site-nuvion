@@ -1,0 +1,30 @@
+---
+import { waLink } from "../../lib/contact";
+---
+
+<section style="padding:10vw 6vw; max-width:1100px; margin:0 auto;">
+  <div class="lp-cta-final-grid" style="display:grid; grid-template-columns:1.3fr 0.7fr; gap:40px; align-items:end; border-top:1px solid var(--line); padding-top:6vw;">
+    <div style="display:flex; flex-direction:column; gap:20px;">
+      <p style="font-family:'Manrope', sans-serif; font-weight:200; font-size:clamp(28px,4vw,48px); line-height:1.15; color:var(--ink); margin:0; max-width:18ch;">
+        Pronto para transformar seu site numa máquina de aquisição?
+      </p>
+      <p style="font-size:15.5px; line-height:1.7; color:var(--ink-muted); margin:0; max-width:50ch;">
+        Agende um diagnóstico gratuito e descubra onde sua arquitetura digital está perdendo oportunidades.
+      </p>
+    </div>
+    <div style="display:flex; justify-content:flex-start;">
+      <a href={waLink("Olá! Quero agendar meu diagnóstico gratuito com a Nuvion.")} target="_blank" rel="noopener" class="lp-cta lp-cta-filled" style="padding:18px 30px; font-size:12.5px;">
+        Agendar diagnóstico<span>→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  @media (max-width: 640px) {
+    .lp-cta-final-grid {
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+  }
+</style>

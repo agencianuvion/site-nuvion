@@ -1,0 +1,51 @@
+---
+import { waLink } from "../../lib/contact";
+
+const offerings = [
+  { n: "01", title: "Sites de Alta Performance", desc: "Desenvolvimento focado em Core Web Vitals, UI/UX e conversão." },
+  { n: "02", title: "SEO Técnico e Estrutural", desc: "Otimização profunda do código e da arquitetura da informação." },
+  { n: "03", title: "GEO", desc: "Posicionamento para a nova era das inteligências artificiais generativas." },
+];
+---
+
+<section style="position:relative; overflow:hidden; background:var(--panel); padding:8vw 6vw;">
+  <div data-parallax="0.06" class="lp-grid-tile" style="position:absolute; inset:-15% -5%; opacity:0.18; pointer-events:none; z-index:0;"></div>
+  <div style="position:relative; z-index:1; max-width:1100px; margin:0 auto;">
+    <div style="display:flex; flex-direction:column; gap:16px; margin-bottom:32px;">
+      <div class="lp-eyebrow">Oferta</div>
+      <div>
+        <h2 style="font-family:'Manrope', sans-serif; font-weight:200; font-size:clamp(26px,3.2vw,40px); margin:0 0 14px; color:var(--ink);">Três frentes, um só ecossistema</h2>
+        <p style="font-size:15.5px; line-height:1.7; color:var(--ink-muted); max-width:56ch; margin:0;">
+          Cada projeto é sob medida. O escopo exato depende do momento do seu negócio, definido junto com você no
+          diagnóstico.
+        </p>
+      </div>
+    </div>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); margin-bottom:32px;">
+      {offerings.map((o) => (
+        <div class="lp-offer-card" style="background:var(--panel); padding:32px 28px; display:flex; flex-direction:column; gap:14px; transition:background .25s ease;">
+          <div style="font-family:'JetBrains Mono', monospace; font-size:12px; color:var(--accent);">{o.n}</div>
+          <div style="font-size:17px; color:var(--ink); font-weight:500;">{o.title}</div>
+          <div style="font-size:14px; line-height:1.6; color:var(--ink-muted);">{o.desc}</div>
+        </div>
+      ))}
+    </div>
+    <div class="lp-grid-2col" style="align-items:center;">
+      <div></div>
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:24px; flex-wrap:wrap;">
+        <p style="font-size:14.5px; line-height:1.6; color:var(--ink-muted); max-width:44ch; margin:0;">
+          Escopo e prazo próprios, definidos depois de entender o que o seu negócio precisa de verdade.
+        </p>
+        <a href={waLink("Olá! Quero estruturar meu projeto com a Nuvion.")} target="_blank" rel="noopener" class="lp-cta" style="padding:15px 24px; font-size:12px;">
+          Estruturar meu projeto<span>→</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .lp-offer-card:hover {
+    background: var(--bg);
+  }
+</style>
