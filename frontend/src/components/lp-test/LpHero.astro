@@ -10,7 +10,7 @@
 import { waLink } from "../../lib/contact";
 ---
 
-<section style="position:relative; min-height:92vh; display:flex; flex-direction:column; justify-content:space-between; align-items:center; padding:120px 6vw 6vw; overflow:hidden;">
+<section style="position:relative; min-height:85vh; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:56px; padding:64px 6vw 6vw; overflow:hidden;">
   <video
     id="lp-hero-video"
     muted
@@ -53,20 +53,13 @@ import { waLink } from "../../lib/contact";
   <div style="position:absolute; bottom:24px; left:24px; width:32px; height:32px; border:1px solid var(--line-faint); opacity:0; animation:lp-word-appear 1s ease-out 3.6s forwards;"></div>
   <div style="position:absolute; bottom:24px; right:24px; width:32px; height:32px; border:1px solid var(--line-faint); opacity:0; animation:lp-word-appear 1s ease-out 3.7s forwards;"></div>
 
-  <div style="position:relative; z-index:2; text-align:center;">
+  <div style="position:relative; z-index:2; text-align:center; max-width:1000px;">
     <div style="font-family:'JetBrains Mono', monospace; font-size:12px; letter-spacing:0.28em; text-transform:uppercase; color:var(--ink-muted);">
       <span class="lp-word" style="animation-delay:0s;">Ecossistema</span>{" "}
       <span class="lp-word" style="animation-delay:.15s;">de</span>{" "}
       <span class="lp-word" style="animation-delay:.3s;">crescimento</span>
     </div>
-    <div style="margin:16px auto 0; width:64px; height:1px; background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:0; animation:lp-word-appear 1s ease-out .55s forwards;"></div>
-  </div>
-
-  <div style="position:relative; z-index:2; text-align:center; max-width:1000px;">
-    <div style="position:relative; display:inline-block; margin-bottom:22px;">
-      <div style="position:absolute; top:50%; left:50%; width:300px; height:120px; transform:translate(-50%,-50%); background:radial-gradient(circle, var(--accent-glow), transparent 70%); filter:blur(14px); animation:lp-pulse-dot 4.5s ease-in-out infinite; z-index:-1;"></div>
-      <img src="/images/logo-horizontal-white.png" alt="Nuvion" style="height:26px; display:block; opacity:0; animation:lp-word-appear .9s ease-out .55s forwards, lp-logo-sheen 4s ease-in-out 1.5s infinite;" />
-    </div>
+    <div style="margin:16px auto 22px; width:64px; height:1px; background:linear-gradient(90deg,transparent,var(--accent),transparent); opacity:0; animation:lp-word-appear 1s ease-out .55s forwards;"></div>
     <h1 style="font-family:'Manrope', sans-serif; font-weight:200; font-size:clamp(34px,6vw,68px); line-height:1.14; letter-spacing:-0.01em; margin:0 0 20px; color:var(--ink);">
       <span class="lp-word" style="animation-delay:.9s;">Arquitetura</span>{" "}
       <span class="lp-word" style="animation-delay:1.02s;">digital</span>{" "}

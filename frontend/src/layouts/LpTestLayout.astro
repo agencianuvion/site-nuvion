@@ -47,6 +47,14 @@ const { title } = Astro.props;
         --accent-soft: rgba(204, 78, 20, 0.08);
         --accent-glow: rgba(204, 78, 20, 0.11);
         color-scheme: dark;
+
+        /* Aliases so shared components built for the light site's token
+           names (ThemeToggle.astro, etc.) resolve correctly here too,
+           without forking them into LP-specific copies. */
+        --color-nv-orange: var(--accent);
+        --color-nv-graphite-500: var(--ink-faint);
+        --color-nv-graphite-700: var(--ink-muted);
+        --color-nv-graphite-900: var(--ink);
       }
 
       [data-lp-test] body {
@@ -301,7 +309,6 @@ const { title } = Astro.props;
       // rAF-free direct scroll handler (matches the design reference's own
       // approach) since this is a one-off test page, not production.
       const progress = document.getElementById("lp-progress");
-      const nav = document.querySelector<HTMLElement>("[data-lp-nav]");
       const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
       const onScroll = () => {
@@ -309,11 +316,7 @@ const { title } = Astro.props;
         const docH = document.documentElement.scrollHeight - window.innerHeight;
         const pct = docH > 0 ? Math.min(100, (y / docH) * 100) : 0;
         if (progress) progress.style.width = pct + "%";
-        if (nav) {
-          nav.style.background = y > 40 ? "rgba(7,9,12,0.82)" : "rgba(7,9,12,0)";
-          nav.style.boxShadow = y > 40 ? "0 1px 0 rgba(255,255,255,0.06)" : "none";
-          nav.style.backdropFilter = y > 40 ? "blur(14px)" : "none";
-        }
+        // Nav background transition lives in LpNav.astro's own script now.
         if (!reducedMotion) {
           document.querySelectorAll<HTMLElement>("[data-parallax]").forEach((el) => {
             if (el.dataset.baseTop === undefined) {
