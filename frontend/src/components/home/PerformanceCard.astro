@@ -26,8 +26,7 @@ const scores = [
 
 <aside
   aria-label="Relatório de performance"
-  data-parallax="0.03"
-  class="relative z-[5] mx-auto my-2 mb-11 w-[640px] max-w-[calc(100%-44px)] will-change-transform"
+  class="relative z-[5] mx-auto my-2 mb-11 w-[640px] max-w-[calc(100%-44px)]"
 >
   <div id="perf-card" class="nv-perf nv-reveal flex flex-col gap-6 rounded-[22px] border border-nv-hairline bg-white px-6 py-[30px] shadow-[0_20px_56px_rgba(20,20,20,.08)] sm:px-[34px]">
     <header class="flex items-center justify-between gap-4">
@@ -45,7 +44,7 @@ const scores = [
         {scores.map((score, i) => (
           <div class="flex flex-col items-center gap-[9px]">
             <div class="flex h-14 w-14 items-center justify-center rounded-full border-[2.5px] border-nv-success font-sans text-[21px] font-bold tracking-[-0.02em] text-nv-success">
-              <span class="nv-score-count" data-target={score.value} data-delay={i * 350}>0</span>
+              <span class="nv-score-count" data-target={score.value} data-delay={i * 550}>0</span>
             </div>
             <span class="whitespace-nowrap text-[10px] font-semibold uppercase tracking-[0.14em] text-nv-graphite-500">
               {score.label}
@@ -88,13 +87,13 @@ const scores = [
   #perf-graph-line {
     stroke-dasharray: 1;
     stroke-dashoffset: 1;
-    /* Starts once all 3 score rings have finished counting up (3 x 350ms
-       stagger + ~900ms count duration each ≈ 1.6s), not at the same time. */
-    transition: stroke-dashoffset 1.1s var(--ease-nv) 1.7s;
+    /* Starts once all 3 score rings have finished counting up (2 x 550ms
+       stagger + ~1.5s count duration ≈ 2.6s), not at the same time. */
+    transition: stroke-dashoffset 1.7s var(--ease-nv) 2.8s;
   }
   #perf-graph-dot {
     opacity: 0;
-    transition: opacity 0.3s ease 2.75s;
+    transition: opacity 0.4s ease 4.5s;
   }
   #perf-card.is-visible #perf-graph-line {
     stroke-dashoffset: 0;
@@ -117,7 +116,7 @@ const scores = [
       el.textContent = String(target);
       return;
     }
-    const duration = 900;
+    const duration = 1500;
     const start = performance.now();
     function tick(now: number) {
       const progress = Math.min((now - start) / duration, 1);
@@ -156,31 +155,5 @@ const scores = [
       // observer never catches (e.g. a very short viewport).
       setTimeout(reveal, 4000);
     }
-  }
-
-  // Subtle parallax — translates any [data-parallax] element by a factor
-  // of the scroll position. Single shared rAF loop, throttled with a
-  // `ticking` flag so it never runs more than once per frame.
-  const parallaxEls = document.querySelectorAll<HTMLElement>("[data-parallax]");
-  if (parallaxEls.length && !reducedMotion) {
-    let ticking = false;
-    const applyParallax = () => {
-      const scrollY = window.scrollY;
-      parallaxEls.forEach((el) => {
-        const factor = Number(el.dataset.parallax ?? 0);
-        el.style.transform = `translate3d(0, ${scrollY * factor}px, 0)`;
-      });
-      ticking = false;
-    };
-    window.addEventListener(
-      "scroll",
-      () => {
-        if (!ticking) {
-          requestAnimationFrame(applyParallax);
-          ticking = true;
-        }
-      },
-      { passive: true },
-    );
   }
 </script>

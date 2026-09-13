@@ -87,6 +87,20 @@ summary {
   -webkit-backdrop-filter: blur(14px);
 }
 
+/* Subtle line-grid section background — an alternative to a blurred
+   gradient blob (Synergy/Manifesto/FinalCta/PageHero). Fades out toward
+   the edges via a radial mask so it reads as texture, not a hard
+   checkerboard. Apply to an absolutely-positioned, pointer-events-none
+   div covering the section. */
+.nv-grid-bg {
+  background-image:
+    linear-gradient(rgba(42, 42, 42, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(42, 42, 42, 0.05) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(ellipse 65% 60% at 50% 40%, black 40%, transparent 100%);
+  -webkit-mask-image: radial-gradient(ellipse 65% 60% at 50% 40%, black 40%, transparent 100%);
+}
+
 /* Shared interactive classes, lifted from design-reference's prototype
    styles so Hero/Statement/PerformanceCard/PillarsCarousel components all
    reuse the exact same hover/transition values instead of re-declaring

@@ -15,11 +15,7 @@ const { eyebrow, description, ctaLabel, waMessage } = Astro.props;
 ---
 
 <section class="relative overflow-hidden bg-white py-20 sm:py-24">
-  <div
-    class="pointer-events-none absolute left-1/2 top-0 h-[420px] w-[720px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-nv-orange/[0.06] blur-[110px]"
-    aria-hidden="true"
-  >
-  </div>
+  <div class="nv-grid-bg pointer-events-none absolute inset-0" aria-hidden="true"></div>
 
   <div class="relative mx-auto max-w-3xl px-6 text-center sm:px-10">
     <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm">{eyebrow}</span>

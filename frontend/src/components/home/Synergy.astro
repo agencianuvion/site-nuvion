@@ -16,6 +16,7 @@ const nodes = [
   {
     x: 50,
     y: 18,
+    labelAbove: true,
     label: "Sites de Alta Performance",
     icon: `<rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M9 9v11"></path><path d="M12.5 13h6M12.5 16.5h6"></path>`,
   },
@@ -36,11 +37,7 @@ const CENTER = { x: 50, y: 50 };
 ---
 
 <section class="relative overflow-hidden bg-white py-20 sm:py-24">
-  <div
-    class="pointer-events-none absolute left-1/2 top-0 h-[600px] w-[900px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-nv-orange/[0.07] blur-[120px]"
-    aria-hidden="true"
-  >
-  </div>
+  <div class="nv-grid-bg pointer-events-none absolute inset-0" aria-hidden="true"></div>
 
   <div class="relative mx-auto max-w-5xl px-6 sm:px-10">
     <div class="mx-auto max-w-2xl text-center">
@@ -129,7 +126,16 @@ const CENTER = { x: 50, y: 50 };
               set:html={node.icon}
             />
           </div>
-          <span class="absolute left-1/2 top-full mt-2 max-w-[9em] -translate-x-1/2 text-center text-xs font-medium leading-tight text-nv-graphite-700 sm:text-sm">
+          <span
+            class:list={[
+              "absolute left-1/2 max-w-[9em] -translate-x-1/2 text-center text-xs font-medium leading-tight text-nv-graphite-700 sm:text-sm",
+              // The top node's connecting line runs straight up from the
+              // hub through the space right below its icon — a label there
+              // would sit on top of the line. Every other node has its line
+              // arriving diagonally, so below is clear for them.
+              node.labelAbove ? "bottom-full mb-2" : "top-full mt-2",
+            ]}
+          >
             {node.label}
           </span>
         </div>
