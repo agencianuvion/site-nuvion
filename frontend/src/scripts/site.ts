@@ -1170,6 +1170,7 @@ function stickyPanel(panel: HTMLElement, screens: number) {
   return {
     trigger: wrapper,
     pinTop,
+    dist,
     start: () => "top " + pinTop() + "px",
     end: () => "+=" + dist(),
     cleanup: () => {
@@ -1480,13 +1481,19 @@ function init() {
       // finished tweens straight to their end without calling their onUpdate, and the pile came out straight.
       const covers: (() => void)[] = [];
       const runCovers = () => covers.forEach((f) => f());
+      // scrub adds 0.8s of deliberate lag (so the cards glide instead of snapping to the raw scroll position), but the
+      // panel's own release from position:sticky has NO lag — it lets go the instant the wrapper's real, un-lagged
+      // scroll distance (dist()) is behind it. Scroll fast enough and the panel can let go before the (lagged)
+      // animation has actually finished sliding the last card into place, leaving a sliver of it visible over the
+      // next section for a moment. Ending the animation itself a bit earlier than the panel's real release gives the
+      // lag time to fully resolve — the cards are already still by the time the panel actually lets go.
       const tl = gsap.timeline({
         defaults: { ease: "none" },
         onUpdate: runCovers,
         scrollTrigger: {
           trigger: sticky.trigger,
           start: sticky.start,
-          end: sticky.end,
+          end: () => "+=" + sticky.dist() * 0.82,
           scrub: 0.8,
           invalidateOnRefresh: true,
           onScrubComplete: runCovers,
@@ -1633,7 +1640,9 @@ function init() {
         scrollTrigger: {
           trigger: sticky.trigger,
           start: sticky.start,
-          end: sticky.end,
+          // ends a bit before the panel's own (un-lagged) release — see the matching comment in the Process
+          // block above for why scrub's deliberate lag needs that head start.
+          end: () => "+=" + sticky.dist() * 0.82,
           scrub: 0.8,
           invalidateOnRefresh: true,
           onScrubComplete: runCovers,
