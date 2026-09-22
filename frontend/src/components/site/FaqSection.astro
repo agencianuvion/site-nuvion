@@ -1,0 +1,40 @@
+---
+// Numbered FAQ accordion on a light panel (behaviour: [data-acc] in scripts/site.ts). Pair with faqSchema()
+// from lib/faq.ts in the page's jsonLd so the same Q&As are also available to Google and to AI answers.
+interface Item {
+  question: string;
+  answer: string;
+}
+interface Props {
+  items: Item[];
+  title?: string;
+  em?: string;
+  chip?: string;
+}
+const { items, title = "Perguntas", em = "frequentes", chip = "FAQ" } = Astro.props;
+---
+
+<section class="t3-panel t3-light t3-pad" aria-labelledby="t3-faq-h">
+  <div class="t3-head">
+    <h2 id="t3-faq-h" class="t3-title" data-t3-title>{title} <em>{em}</em></h2>
+    <span class="t3-chip"><i></i>{chip}</span>
+  </div>
+  <div class="t3-faq-list" data-acc>
+    {
+      items.map((f, i) => (
+        <div class="t3-faq-row" data-acc-item>
+          <button type="button" class="t3-faq-btn" data-acc-trigger aria-expanded="false" aria-controls={`t3-faq-${i}`}>
+            <span class="t3-num">{`${String(i + 1).padStart(2, "0")}.`}</span>
+            <h3>{f.question}</h3>
+            <span class="t3-plus" aria-hidden="true" />
+          </button>
+          <div id={`t3-faq-${i}`} class="t3-acc-panel" role="region">
+            <div class="t3-acc-inner">
+              <p class="t3-faq-answer">{f.answer}</p>
+            </div>
+          </div>
+        </div>
+      ))
+    }
+  </div>
+</section>

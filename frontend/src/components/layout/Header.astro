@@ -1,8 +1,8 @@
 ---
-// Sticky glass header — the only place glassmorphism is used on this site
-// (see PROJECT_PREFERENCES.md): background rgba(255,255,255,.42) + blur,
-// meant to sit over the hero video and remain consistent on every other
-// (plain white) page below it.
+// Sticky glass header — the only place glassmorphism is used on this site: background rgba(255,255,255,.42) + blur.
+// Three service pillars, one "A Nuvion" menu (About, Portfolio, Sectors, Blog) and the contact button. Every link
+// is in the HTML even while the menu is closed (only visually hidden), so crawlers and AI agents see them on all pages.
+// While the header sits over a dark panel it turns dark with light text (data-over, see global.css).
 import { waLink } from "../../lib/contact";
 import ThemeToggle from "../ui/ThemeToggle.astro";
 
@@ -13,22 +13,67 @@ const isActive = (path: string) =>
 const navLinks = [
   { href: "/sites-de-alta-performance", label: "Sites de Alta Performance" },
   { href: "/seo-tecnico", label: "SEO Técnico" },
-  { href: "/geo", label: "Otimização Generativa" },
-  { href: "/sobre-nos", label: "Sobre Nós" },
+  { href: "/geo-generative-engine-optimization", label: "Otimização Generativa" },
 ];
+
+const moreLinks = [
+  { href: "/sobre-nos", label: "Sobre Nós" },
+  { href: "/portfolio", label: "Portfólio" },
+  { href: "/setores", label: "Setores" },
+  { href: "/blog", label: "Blog" },
+];
+const homeIcon = '<path d="M4 11.2 12 4l8 7.2"/><path d="M6 10v9.5h12V10M10 19.5v-5h4v5"/>';
+const icons: Record<string, string> = {
+  "/": homeIcon,
+  "/sites-de-alta-performance": '<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/>',
+  "/seo-tecnico": '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
+  "/geo-generative-engine-optimization": '<path d="M12 3l1.8 4.7L18.5 9.5l-4.7 1.8L12 16l-1.8-4.7L5.5 9.5l4.7-1.8z"/><path d="M18.5 15v4M16.5 17h4"/>',
+  "/sobre-nos": '<circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3 3-4.6 5.5-4.6s4.9 1.6 5.5 4.6"/><path d="M16 5.2a3.2 3.2 0 0 1 0 5.8M17.5 14.6c1.7.5 2.8 1.9 3.2 3.9"/>',
+  "/portfolio": '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
+  "/setores": '<path d="M4 20V6.5L12 3l8 3.5V20"/><path d="M9 20v-5h6v5M8.5 9.5h.01M12 9.5h.01M15.5 9.5h.01"/>',
+  "/blog": '<path d="M12 6.5C10 5 7 4.6 4 5v13c3-.4 6 0 8 1.5 2-1.5 5-1.9 8-1.5V5c-3-.4-6 0-8 1.5zM12 6.5v13"/>',
+};
+const moreActive = moreLinks.some((l) => isActive(l.href));
 ---
 
 <header class="nv-glass sticky top-0 z-50 flex items-center justify-between px-6 py-4 sm:px-10">
-  <a href="/" class="block shrink-0" aria-label="Nuvion, página inicial">
-    <img src="/images/logo-horizontal-dark.png" alt="Nuvion" class="h-[22px] w-auto sm:h-[26px]" />
+  <a href="/" class="nv-logo-link block shrink-0" aria-label="Nuvion, página inicial">
+    <img src="/images/logo-horizontal-dark.png" width="350" height="52" alt="Nuvion" class="nv-logo-on-light h-[22px] w-auto sm:h-[26px]" />
+    <img src="/images/logo-nuvion-light.png" width="350" height="52" alt="" aria-hidden="true" class="nv-logo-on-dark h-[22px] w-auto sm:h-[26px]" />
   </a>
 
-  <nav class="hidden items-center gap-7 text-sm font-medium text-nv-graphite-500 lg:flex" aria-label="Main">
+  <nav class="hidden items-center gap-7 text-sm font-medium text-nv-graphite-500 min-[1280px]:flex" aria-label="Main">
+    <div class="nv-menu">
+    <a href="/" class="nv-home" aria-label="Início" title="Início" aria-current={pathname === "/" ? "page" : undefined}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={homeIcon} />
+    </a>
     {navLinks.map((link) => (
-      <a href={link.href} class:list={["transition-colors hover:text-nv-graphite-900", { "text-nv-graphite-900": isActive(link.href) }]}>
+      <a href={link.href} aria-current={isActive(link.href) ? "page" : undefined} class:list={["transition-colors hover:text-nv-graphite-900", { "text-nv-graphite-900": isActive(link.href) }]}>
         {link.label}
       </a>
     ))}
+
+    <div class="nv-drop" data-drop>
+      <button
+        type="button"
+        class:list={["nv-drop-btn transition-colors hover:text-nv-graphite-900", { "is-current": moreActive }]}
+        aria-expanded="false"
+        aria-haspopup="true"
+        aria-controls="nav-more"
+      >
+        A Nuvion
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg>
+      </button>
+      <ul id="nav-more" class="nv-drop-menu" role="list">
+        {moreLinks.map((link) => (
+          <li>
+            <a href={link.href} class="nv-drop-link" aria-current={isActive(link.href) ? "page" : undefined}>{link.label}</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+    </div>
+
     <ThemeToggle />
     <a
       href={waLink("Olá! Quero agendar um diagnóstico com a Nuvion.")}
@@ -40,7 +85,7 @@ const navLinks = [
     </a>
   </nav>
 
-  <div class="flex items-center gap-3 lg:hidden">
+  <div class="flex items-center gap-3 min-[1280px]:hidden">
     <ThemeToggle />
     <button
       id="mobile-menu-toggle"
@@ -50,34 +95,404 @@ const navLinks = [
       aria-expanded="false"
       aria-controls="mobile-menu"
     >
-      <svg viewBox="0 0 24 24" fill="none" class="h-6 w-6 text-nv-graphite-900" aria-hidden="true">
-        <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+      <svg viewBox="0 0 24 24" fill="none" class="nv-burger h-6 w-6 text-nv-graphite-900" aria-hidden="true">
+        <path class="b1" d="M4 7h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        <path class="b2" d="M4 12h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+        <path class="b3" d="M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
       </svg>
     </button>
   </div>
-
-  <nav
-    id="mobile-menu"
-    class="nv-glass absolute left-0 right-0 top-full hidden flex-col gap-1 p-4 lg:hidden"
-    aria-label="Main (mobile)"
-  >
-    {navLinks.map((link) => (
-      <a href={link.href} class="rounded px-3 py-2 text-sm font-medium text-nv-graphite-700 hover:bg-black/5">
-        {link.label}
-      </a>
-    ))}
-    <a
-      href={waLink("Olá! Quero agendar um diagnóstico com a Nuvion.")}
-      target="_blank"
-      rel="noopener"
-      class="nv-cta mt-2 inline-flex h-10 items-center justify-center rounded-full bg-nv-orange px-5 text-sm font-semibold text-white"
-    >
-      Agendar Meu Diagnóstico
-    </a>
-  </nav>
 </header>
 
+<nav id="mobile-menu" class="nv-mm" aria-label="Main (mobile)">
+  {
+    [{ href: "/", label: "Início" }, ...navLinks, null, ...moreLinks].map((link) =>
+      link === null ? (
+        <p class="nv-mm-group" aria-hidden="true">A Nuvion</p>
+      ) : (
+        <a href={link.href} class="nv-mm-link" aria-current={isActive(link.href) ? "page" : undefined}>
+          <span class="nv-mm-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icons[link.href]} />
+          </span>
+          <span class="nv-mm-txt">{link.label}</span>
+          <span class="nv-mm-go" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9.5 6 6 6-6 6" /></svg></span>
+        </a>
+      )
+    )
+  }
+  <a
+    href={waLink("Olá! Quero agendar um diagnóstico com a Nuvion.")}
+    target="_blank"
+    rel="noopener"
+    class="nv-cta nv-mm-cta"
+  >
+    Agendar Meu Diagnóstico <span aria-hidden="true">→</span>
+  </a>
+</nav>
+
+<style is:global>
+  /* Mobile menu: a floating glass card under the header. Closed = invisible and slightly raised; opening fades and drops it and the
+     rows follow in turn. Always dark glass, whatever the theme (it floats over the page, like the header pieces). It is a sibling of
+     the header (not inside it) because a backdrop-filter inside another backdrop-filter shows no blur. */
+  .nv-mm {
+    position: fixed;
+    z-index: 49;
+    left: 12px;
+    right: 12px;
+    top: 80px;
+    max-height: calc(100dvh - 96px);
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px;
+    border-radius: 26px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    /* two soft orange lights: one from the top-left corner, one from the bottom-right corner, over dark glass; the blur behind stays */
+    background:
+      radial-gradient(ellipse 72% 46% at 20% -10%, rgba(214, 84, 24, 0.5) 0%, rgba(160, 56, 14, 0.24) 48%, rgba(160, 56, 14, 0) 76%),
+      radial-gradient(ellipse 66% 44% at 92% 108%, rgba(214, 84, 24, 0.46) 0%, rgba(160, 56, 14, 0.22) 48%, rgba(160, 56, 14, 0) 76%),
+      linear-gradient(180deg, rgba(34, 22, 16, 0.22) 0%, rgba(8, 10, 13, 0.4) 100%),
+      rgba(14, 17, 21, 0.62);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    backdrop-filter: blur(24px) saturate(1.4);
+    box-shadow:
+      0 26px 60px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    color: #fff;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-14px) scale(0.94);
+    transform-origin: 100% 0;
+    clip-path: inset(0 0 100% 0 round 26px);
+    transition:
+      opacity 0.3s ease,
+      transform 0.45s var(--ease-nv),
+      clip-path 0.5s var(--ease-nv),
+      visibility 0s linear 0.5s;
+  }
+  .nv-mm.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    clip-path: inset(0 0 0 0 round 26px);
+    transition-delay: 0s;
+  }
+  /* hamburger <-> close: the three bars morph into an X */
+  .nv-burger path {
+    transform-box: fill-box;
+    transform-origin: center;
+    transition:
+      transform 0.35s var(--ease-nv),
+      opacity 0.2s ease;
+  }
+  #mobile-menu-toggle[aria-expanded="true"] .b1 {
+    transform: translateY(5px) rotate(45deg);
+  }
+  #mobile-menu-toggle[aria-expanded="true"] .b2 {
+    opacity: 0;
+    transform: scaleX(0.2);
+  }
+  #mobile-menu-toggle[aria-expanded="true"] .b3 {
+    transform: translateY(-5px) rotate(-45deg);
+  }
+  @media (min-width: 1280px) {
+    .nv-mm {
+      display: none;
+    }
+  }
+  .nv-mm > * {
+    opacity: 0;
+    transform: translateY(-6px);
+    transition:
+      opacity 0.3s ease,
+      transform 0.4s var(--ease-nv);
+  }
+  .nv-mm.is-open > * {
+    opacity: 1;
+    transform: none;
+    transition-delay: calc(0.05s + var(--k, 0) * 0.03s);
+  }
+  .nv-mm {
+    padding: 8px 8px 10px;
+  }
+  .nv-mm-link {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 10px 12px;
+    border-radius: 18px;
+    color: rgba(255, 255, 255, 0.94);
+    font-size: 16px;
+    font-weight: 300;
+    letter-spacing: -0.005em;
+    line-height: 1.2;
+    transition: background 0.2s ease;
+  }
+  .nv-mm-link:hover,
+  .nv-mm-link:active {
+    background: rgba(255, 255, 255, 0.07);
+  }
+  /* round icon; the row number sits on its corner like a small badge */
+  .nv-mm-ico {
+    position: relative;
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    background: rgba(255, 255, 255, 0.06);
+    color: rgba(255, 255, 255, 0.88);
+  }
+  .nv-mm-ico svg {
+    width: 18px;
+    height: 18px;
+  }
+  /* chevron in a small circle, at the right end of the row (it slides a little and lights up on press) */
+  .nv-mm-go {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.16);
+    color: rgba(255, 255, 255, 0.6);
+    transition:
+      background 0.2s ease,
+      color 0.2s ease,
+      transform 0.25s var(--ease-nv);
+  }
+  .nv-mm-go svg {
+    width: 13px;
+    height: 13px;
+  }
+  .nv-mm-link:hover .nv-mm-go,
+  .nv-mm-link:active .nv-mm-go {
+    background: var(--color-nv-orange);
+    border-color: var(--color-nv-orange);
+    color: #fff;
+    transform: translateX(3px);
+  }
+  .nv-mm-txt {
+    flex: 1;
+  }
+  .nv-mm-link[aria-current="page"] .nv-mm-ico {
+    color: var(--color-nv-orange);
+    border-color: rgba(204, 78, 20, 0.55);
+  }
+  .nv-mm-link[aria-current="page"] .nv-mm-go {
+    color: var(--color-nv-orange);
+    border-color: rgba(204, 78, 20, 0.55);
+  }
+  .nv-mm-group {
+    margin: 8px 12px 2px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  .nv-mm-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 12px 6px 0;
+    height: 48px;
+    border-radius: 999px;
+    background: var(--color-nv-orange);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  /* wrapper of the desktop links (no visual effect by default; pages can turn it into a pill, see site.css) */
+  .nv-menu {
+    display: contents;
+  }
+  /* "A Nuvion" dropdown. Closed = visibility:hidden (out of the tab order and the visual flow, still in the HTML). */
+  .nv-drop {
+    position: relative;
+  }
+  .nv-drop-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    color: inherit;
+  }
+  .nv-drop-btn.is-current {
+    color: var(--color-nv-graphite-900);
+  }
+  .nv-drop-btn svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.2s ease;
+  }
+  .nv-drop.is-open .nv-drop-btn svg {
+    transform: rotate(180deg);
+  }
+  .nv-drop-menu {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 18px);
+    min-width: 220px;
+    margin: 0;
+    padding: 8px;
+    list-style: none;
+    border-radius: 16px;
+    border: 1px solid var(--color-nv-hairline);
+    background: var(--color-nv-surface);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, 0.16);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 6px);
+    transition:
+      opacity 0.18s ease,
+      transform 0.18s ease,
+      visibility 0s linear 0.18s;
+  }
+  /* invisible bridge so the pointer can travel from the button to the menu without closing it */
+  .nv-drop-menu::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -20px;
+    height: 20px;
+  }
+  .nv-drop.is-open .nv-drop-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+    transition-delay: 0s;
+  }
+  @media (hover: hover) {
+    .nv-drop:hover .nv-drop-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translate(-50%, 0);
+      transition-delay: 0s;
+    }
+    .nv-drop:hover .nv-drop-btn svg {
+      transform: rotate(180deg);
+    }
+  }
+  .nv-drop-link {
+    display: block;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-nv-graphite-700);
+    white-space: nowrap;
+    transition:
+      background 0.15s ease,
+      color 0.15s ease;
+  }
+  .nv-drop-link:hover,
+  .nv-drop-link:focus-visible {
+    background: var(--color-nv-line);
+    color: var(--color-nv-graphite-900);
+    outline: none;
+  }
+  .nv-drop-link[aria-current="page"] {
+    color: var(--color-nv-orange);
+  }
+  .nv-mobile-group {
+    margin: 10px 12px 2px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-nv-line);
+    font-family: "JetBrains Mono", ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.55;
+  }
+</style>
+
 <script>
+  // Tells the header what is behind it: over a dark panel (.t3-dark) it turns dark with light text (see the
+  // data-over rules in global.css), so it never fades into a black section.
+  const bar = document.querySelector<HTMLElement>("header.nv-glass");
+  if (bar) {
+    let queued = false;
+    const paint = () => {
+      queued = false;
+      const y = bar.offsetHeight / 2;
+      const dark = [...document.querySelectorAll<HTMLElement>(".t3-dark")].some((el) => {
+        const r = el.getBoundingClientRect();
+        return r.top <= y && r.bottom >= y;
+      });
+      const next = dark ? "dark" : "light";
+      if (bar.dataset.over !== next) bar.dataset.over = next;
+      // at the very top the header can be see-through (only used by pages with a full-screen hero)
+      if (window.scrollY < 24 && document.querySelector(".t3-hero-full")) bar.setAttribute("data-top", "");
+      else bar.removeAttribute("data-top");
+    };
+    const queue = () => {
+      if (!queued) {
+        queued = true;
+        requestAnimationFrame(paint);
+      }
+    };
+    window.addEventListener("scroll", queue, { passive: true });
+    window.addEventListener("resize", queue);
+    window.addEventListener("load", queue);
+    paint();
+  }
+
+  // "A Nuvion" dropdown: opens on click (touch and keyboard friendly) and, with a mouse, on hover (CSS).
+  // Enter/Space/ArrowDown open it and move focus in; arrows move between items; Esc closes and returns focus.
+  document.querySelectorAll<HTMLElement>("[data-drop]").forEach((drop) => {
+    const btn = drop.querySelector<HTMLButtonElement>(".nv-drop-btn");
+    const links = [...drop.querySelectorAll<HTMLAnchorElement>(".nv-drop-link")];
+    if (!btn || !links.length) return;
+    const setOpen = (open: boolean) => {
+      drop.classList.toggle("is-open", open);
+      btn.setAttribute("aria-expanded", String(open));
+    };
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setOpen(!drop.classList.contains("is-open"));
+    });
+    btn.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setOpen(true);
+        links[0].focus();
+      }
+    });
+    drop.addEventListener("keydown", (e) => {
+      const i = links.indexOf(document.activeElement as HTMLAnchorElement);
+      if (e.key === "Escape") {
+        setOpen(false);
+        btn.focus();
+      } else if (i >= 0 && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
+        e.preventDefault();
+        links[(i + (e.key === "ArrowDown" ? 1 : -1) + links.length) % links.length].focus();
+      } else if (i >= 0 && e.key === "Home") {
+        e.preventDefault();
+        links[0].focus();
+      } else if (i >= 0 && e.key === "End") {
+        e.preventDefault();
+        links[links.length - 1].focus();
+      }
+    });
+    document.addEventListener("click", (e) => {
+      if (!drop.contains(e.target as Node)) setOpen(false);
+    });
+    drop.addEventListener("focusout", (e) => {
+      if (!drop.contains((e as FocusEvent).relatedTarget as Node)) setOpen(false);
+    });
+  });
+
   // Click-to-toggle (not just hover) so it works on touch; closes on an
   // outside click or on picking a link (this is a multi-page site — every
   // navigation is a full reload anyway, so closing first avoids the menu
@@ -85,25 +500,20 @@ const navLinks = [
   const toggle = document.getElementById("mobile-menu-toggle");
   const menu = document.getElementById("mobile-menu");
 
+  const setMenu = (open: boolean) => {
+    menu?.classList.toggle("is-open", open);
+    toggle?.setAttribute("aria-expanded", String(open));
+  };
+  menu?.querySelectorAll<HTMLElement>(":scope > *").forEach((el, i) => el.style.setProperty("--k", String(i)));
   toggle?.addEventListener("click", (event) => {
     event.stopPropagation();
-    const isOpen = menu?.classList.toggle("flex");
-    menu?.classList.toggle("hidden");
-    toggle.setAttribute("aria-expanded", String(Boolean(isOpen)));
+    setMenu(!menu?.classList.contains("is-open"));
   });
-
   document.addEventListener("click", (event) => {
-    if (menu && !menu.classList.contains("hidden") && !menu.contains(event.target as Node) && event.target !== toggle) {
-      menu.classList.add("hidden");
-      menu.classList.remove("flex");
-      toggle?.setAttribute("aria-expanded", "false");
-    }
+    if (menu?.classList.contains("is-open") && !menu.contains(event.target as Node) && event.target !== toggle) setMenu(false);
   });
-
-  menu?.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => {
-      menu.classList.add("hidden");
-      menu.classList.remove("flex");
-    });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") setMenu(false);
   });
+  menu?.querySelectorAll("a").forEach((link) => link.addEventListener("click", () => setMenu(false)));
 </script>

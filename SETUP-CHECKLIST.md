@@ -85,6 +85,11 @@ credentials/decisions and can't be automated from inside the code.
       avoids them outright.
 - [ ] Verify SSH access (host/port/user + key or password) before
       configuring the `SSH_*` secrets.
+- [ ] While `DEPLOY_PATH` still points at a staging/preview subfolder (not
+      real production yet), `deploy.yml` sets `PUBLIC_NOINDEX=true` so that
+      copy can't get indexed (see the comment right above that line) — the
+      day `DEPLOY_PATH` moves to the real production path, remove that one
+      line too, in the same commit.
 
 ## 4. Local development
 

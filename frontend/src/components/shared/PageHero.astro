@@ -1,35 +1,73 @@
 ---
-// Intro band for interior pages (Sobre Nós, service pages) — same visual
-// language as the home Hero (eyebrow, nv-h1, lead, orange glow) but
-// without the video, since that treatment is specific to the home page.
-import Button from "../ui/Button.astro";
+// Hero panel of every interior page: a dark split panel (text left, a page-specific visual right) with a faint grid and
+// two orange lights. It sits below the floating header, inset like every other panel. The <h1> is the default slot (wrap
+// the word to highlight in <em>); the visual goes in slot="visual" (omit it for a single-column hero).
+// Motion (h1 words, .t3-fade blocks) comes from scripts/site.ts.
 import { waLink } from "../../lib/contact";
 
+interface Crumb {
+  label: string;
+  href?: string;
+}
 interface Props {
   eyebrow: string;
-  description: string;
+  description?: string;
+  crumbs?: Crumb[];
   ctaLabel?: string;
   waMessage?: string;
+  secondary?: { label: string; href: string };
+  compact?: boolean;
+  /** false when the visual holds real content (e.g. the About numbers), so screen readers keep it */
+  visualDecorative?: boolean;
+  /** kept so older callers keep compiling; the new hero has no photo */
+  frame?: string;
 }
-const { eyebrow, description, ctaLabel, waMessage } = Astro.props;
+const { eyebrow, description, crumbs, ctaLabel, waMessage, secondary, compact = false, visualDecorative = true } = Astro.props;
+const hasVisual = Astro.slots.has("visual");
 ---
 
-<section class="relative overflow-hidden bg-white py-20 sm:py-24">
-  <div class="nv-grid-bg pointer-events-none absolute inset-0" aria-hidden="true"></div>
-
-  <div class="relative mx-auto max-w-3xl px-6 text-center sm:px-10">
-    <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm">{eyebrow}</span>
-    <h1 class="nv-h1 mt-4 text-[34px] text-nv-graphite-900 sm:text-[52px]">
-      <slot />
-    </h1>
-    <p class="nv-lead mx-auto mt-5 text-pretty text-base sm:text-[18px]">{description}</p>
-
-    {ctaLabel && (
-      <div class="mt-8 flex justify-center">
-        <Button href={waLink(waMessage ?? "Olá! Quero saber mais sobre a Nuvion.")} target="_blank" rel="noopener">
-          {ctaLabel}
-        </Button>
-      </div>
-    )}
+<section class:list={["t3-panel t3-dark ph", { "is-compact": compact, "is-solo": !hasVisual }]} aria-labelledby="t3-h1">
+  <div class="ph-bg" aria-hidden="true"></div>
+  <div class="ph-in">
+    <div class="ph-copy">
+      {
+        crumbs && (
+          <nav class="t3-crumbs t3-fade" aria-label="Você está em">
+            <ol>
+              {crumbs.map((c, i) => (
+                <li>{c.href && i < crumbs.length - 1 ? <a href={c.href}>{c.label}</a> : <span aria-current="page">{c.label}</span>}</li>
+              ))}
+            </ol>
+          </nav>
+        )
+      }
+      {!crumbs && <span class="t3-chip t3-fade" style="padding-top:0"><i></i>{eyebrow}</span>}
+      <h1 id="t3-h1" class="t3-h1"><slot /></h1>
+      {description && <p class="t3-hero-desc t3-fade">{description}</p>}
+      {Astro.slots.has("meta") && <div class="ph-meta t3-fade"><slot name="meta" /></div>}
+      {
+        (ctaLabel || secondary) && (
+          <div class="t3-phero-actions t3-fade">
+            {ctaLabel && (
+              <a class="nv-cta t3-btn" href={waLink(waMessage ?? "Olá! Vim pelo site da Nuvion e quero conversar sobre o meu projeto.")} target="_blank" rel="noopener">
+                {ctaLabel}
+              </a>
+            )}
+            {secondary && (
+              <a class="t3-btn-ghost" href={secondary.href}>
+                {secondary.label}
+              </a>
+            )}
+          </div>
+        )
+      }
+    </div>
+    {
+      hasVisual && (
+        <div class="ph-vis" aria-hidden={visualDecorative ? "true" : undefined}>
+          <slot name="visual" />
+        </div>
+      )
+    }
   </div>
 </section>

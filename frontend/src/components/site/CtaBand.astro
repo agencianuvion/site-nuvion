@@ -1,0 +1,71 @@
+---
+// Dark contact band. The headline talks about the visitor's own brand and does not assume they already have a
+// site: the card offers a way in for each starting point. Defaults are the home texts; interior pages can
+// override the copy. Every CTA on the site resolves to WhatsApp (see lib/contact.ts).
+import { waLink } from "../../lib/contact";
+
+interface Option {
+  title: string;
+  text: string;
+}
+interface Props {
+  chip?: string;
+  title?: string;
+  /** Highlighted (orange) tail of the title. */
+  em?: string;
+  text?: string;
+  kicker?: string;
+  options?: Option[];
+  button?: string;
+  waMessage?: string;
+}
+const {
+  chip = "Vamos conversar",
+  title = "A sua marca pode ser a próxima a",
+  em = "liderar as buscas.",
+  text = "Já tem site ou ainda vai criar o primeiro? Em uma conversa rápida, mostramos o melhor caminho para a sua marca ser encontrada no Google e nas respostas das IAs.",
+  kicker = "Por onde começamos",
+  options = [
+    { title: "Ainda não tem site", text: "Planejamos e criamos um já pronto para ser encontrado." },
+    { title: "Já tem site", text: "Analisamos velocidade, SEO técnico e presença nas IAs." },
+    { title: "Quer refazer", text: "Reconstruímos sobre uma base técnica sólida." },
+  ],
+  button = "Quero conversar sobre o meu projeto",
+  waMessage = "Olá! Vim pelo site da Nuvion e quero conversar sobre o meu projeto.",
+} = Astro.props;
+
+// A static build freezes the month it ran in; scripts/site.ts refreshes it in the visitor's browser.
+const monthNow = new Date().toLocaleDateString("pt-BR", { month: "long" });
+---
+
+<section class="t3-panel t3-dark t3-pad t3-band" aria-labelledby="t3-band-h">
+  <svg class="t3-band-mark" viewBox="0 0 250 278" fill="none" aria-hidden="true">
+    <path d="M21 192V125a104 104 0 0 1 208 0V237" stroke="currentColor" stroke-width="42" stroke-linecap="round" />
+    <circle class="t3-band-mark-dot" cx="23" cy="255" r="23" />
+  </svg>
+  <div class="t3-band-in">
+    <div class="t3-band-copy">
+      <span class="t3-chip"><i></i>{chip}</span>
+      <h2 id="t3-band-h" class="t3-band-title">{title} <em>{em}</em></h2>
+      <p>{text}</p>
+    </div>
+    <div class="t3-band-card">
+      <p class="t3-band-kicker">{kicker}</p>
+      <ul class="t3-band-list" role="list">
+        {
+          options.map((o) => (
+            <li>
+              <i aria-hidden="true" />
+              <span>
+                <b>{o.title}</b>
+                {o.text}
+              </span>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="nv-cta t3-btn t3-band-btn" href={waLink(waMessage)} target="_blank" rel="noopener">{button}</a>
+      <p class="t3-band-alt t3-status"><i aria-hidden="true"></i>Vagas abertas para novos projetos em <b data-month>{monthNow}</b></p>
+    </div>
+  </div>
+</section>

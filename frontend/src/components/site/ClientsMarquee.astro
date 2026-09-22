@@ -1,0 +1,67 @@
+---
+// Light panel, bento style: a text card on the left and, next to it, a dark "stage" with the client logos (lib/clients.ts,
+// white on transparent, so they stay crisp on the dark card) in three slowly moving rows that alternate direction. Each row
+// holds its logos twice so the loop is seamless; the second copy is hidden from assistive tech. The rows never pause; for
+// visitors who ask for less motion they become a static wrapped grid.
+import { clientLogos } from "../../lib/clients";
+
+interface Props {
+  title?: string;
+  em?: string;
+  tailTitle?: string;
+  chip?: string;
+}
+const { title = "Empresas que já", em = "confiaram", tailTitle = "na Nuvion", chip = "Clientes" } = Astro.props;
+
+// width capped at ~150px, height between 20 and 44px, so wide and tall logos look balanced
+const logoH = (l: { w: number; h: number }) => Math.round(Math.max(20, Math.min(44, 150 / (l.w / l.h))));
+const rows = [0, 1, 2].map((r) => clientLogos.filter((_, i) => i % 3 === r));
+const labels = ["Empresas atendidas pela Nuvion", "Mais empresas atendidas pela Nuvion", "Outras empresas atendidas pela Nuvion"];
+---
+
+<section class="t3-panel t3-light t3-pad mq" aria-labelledby="mq-h">
+  <div class="t3-head">
+    <h2 id="mq-h" class="t3-title" data-t3-title>{title} <em>{em}</em> {tailTitle}</h2>
+    <span class="t3-chip"><i></i>{chip}</span>
+  </div>
+  <div class="mq-bento">
+    <div class="mq-text" data-reveal>
+      <span class="mq-k">Quem já passou por aqui</span>
+      <h3>Segmentos diferentes, a mesma base técnica</h3>
+      <p>Clínicas, indústria, comércio e serviços: cada projeto parte de um site rápido, estruturado para o Google e para as respostas das IAs.</p>
+      <div class="mq-links">
+        <a class="t3-link" href="/portfolio">Ver o portfólio <span aria-hidden="true">→</span></a>
+        <a class="t3-link" href="/setores">Setores que atendemos <span aria-hidden="true">→</span></a>
+      </div>
+    </div>
+    <div class="mq-stage" data-reveal>
+      <div class="mq-rows">
+        {
+          rows.map((row, r) => (
+            <div class:list={["mq-row", { "is-rev": r % 2 === 1 }]} style={`--dur:${84 + r * 14}s`}>
+              <div class="mq-track">
+                {[0, 1].map((copy) => (
+                  <ul class="mq-set" aria-label={copy === 0 ? labels[r] : undefined} aria-hidden={copy === 1 ? "true" : undefined}>
+                    {row.map((l) => (
+                      <li>
+                        <img
+                          src={`/images/clients/${l.slug}.webp`}
+                          alt={copy === 0 ? l.name : ""}
+                          width={l.w}
+                          height={l.h}
+                          style={`--lh:${logoH(l)}px`}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>

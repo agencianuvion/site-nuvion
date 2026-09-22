@@ -1,26 +1,438 @@
 ---
+// Home. Long-scroll page built from the patterns of the Flowrix Webflow template the client shared:
+// alternating light/dark rounded panels, pinned About with word-by-word text fill, hover-accordion services,
+// sticky stacking cards, project slider, blur-in cards, numbered FAQ. All copy is Nuvion's own; no invented
+// stats, testimonials, team photos or prices (the numbers in "stats" were given by the client).
 import BaseLayout from "../layouts/BaseLayout.astro";
-import Hero from "../components/home/Hero.astro";
-import Statement from "../components/home/Statement.astro";
-import PillarsCarousel from "../components/home/PillarsCarousel.astro";
-import Synergy from "../components/home/Synergy.astro";
-import ProcessSteps from "../components/home/ProcessSteps.astro";
-import Manifesto from "../components/home/Manifesto.astro";
-import Faq from "../components/home/Faq.astro";
-import FinalCta from "../components/home/FinalCta.astro";
+import { waLink } from "../lib/contact";
+import { projects, segmentLabel, hasText, introFromHtml } from "../lib/projects";
+import { steps } from "../lib/process";
+import { getVisiblePosts } from "../lib/blog";
+import Testimonials from "../components/site/Testimonials.astro";
+import CtaBand from "../components/site/CtaBand.astro";
+import FaqSection from "../components/site/FaqSection.astro";
+import StepsStack from "../components/site/StepsStack.astro";
+import ServiceArt from "../components/site/ServiceArt.astro";
+import { faqs, faqSchema } from "../lib/faq";
+import { authorityIcons } from "../lib/authority-icons";
+
+const posts = (await getVisiblePosts()).slice(0, 3);
+const catOf = (p: { categories: { slug: string; name: string }[] }) =>
+  p.categories.find((c) => !["blog", "uncategorized", "agencia", "novidades"].includes(c.slug))?.name ?? "Artigo";
+const fmtShort = (d: string) =>
+  new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).replace(/\./g, "").replace(/ de /g, " ");
+const fmtDate = (d: string) =>
+  new Date(d).toLocaleDateString("pt-BR", { year: "numeric", month: "long", day: "numeric" });
+
+const heroLinks = [
+  { href: "/sites-de-alta-performance", label: "Sites de Alta Performance", sub: "Core Web Vitals e UI/UX que converte" },
+  { href: "/seo-tecnico", label: "SEO Técnico", sub: "Auditoria, schema e indexação" },
+  { href: "/geo-generative-engine-optimization", label: "Otimização Generativa", sub: "Seja a resposta das IAs" },
+  { href: "/sobre-nos", label: "Sobre Nós", sub: "Quem somos e como trabalhamos" },
+];
+
+const stats = [
+  {
+    big: "11",
+    label: "Anos de experiência",
+    text: "11 anos criando presença digital para empresas, com a bagagem de quem já viu as buscas mudarem várias vezes.",
+  },
+  {
+    big: "+150",
+    label: "Projetos entregues",
+    text: "150 projetos entregues com foco em resultado real para o negócio, não em métrica de vaidade.",
+  },
+  {
+    big: "1M+",
+    label: "Leads gerados",
+    text: "Mais de 1 milhão de leads gerados para as empresas que atendemos ao longo da nossa trajetória.",
+  },
+];
+
+const services = [
+  {
+    title: "Sites de Alta Performance",
+    href: "/sites-de-alta-performance",
+    cta: "Veja como criamos sites que convertem",
+    text: "Sites construídos para converter, com arquitetura pronta para SEO técnico e GEO desde a fundação.",
+    items: ["Core Web Vitals", "UI/UX pensado para converter", "Arquitetura de informação", "Mobile-first de verdade"],
+  },
+  {
+    title: "SEO Técnico e Estrutural",
+    href: "/seo-tecnico",
+    cta: "Entenda o SEO técnico",
+    text: "Resolvemos na raiz o que segura o seu ranking: código, estrutura, indexação e conteúdo.",
+    items: ["Auditoria técnica", "Arquitetura e schema", "Conteúdo otimizado", "Monitoramento contínuo"],
+  },
+  {
+    title: "Otimização Generativa (GEO)",
+    href: "/geo-generative-engine-optimization",
+    cta: "Entenda o GEO na prática",
+    text: "Preparamos sua marca para aparecer como resposta nas buscas feitas por inteligência artificial.",
+    items: ["Dados estruturados", "Conteúdo pensado para ser citado", "Clareza de entidade", "llms.txt e acesso a crawlers de IA"],
+  },
+];
+
+
+
+
+
+
+const pageSchema = faqSchema(faqs);
 ---
 
 <BaseLayout
   title="Nuvion — Arquitetura digital para a nova era das buscas"
-  description="Sites de alta performance, SEO técnico e GEO (Generative Engine Optimization) para dominar as buscas — da nova geração de motores de busca às IAs generativas."
-  preloadImage="/images/hero-poster.webp"
+  description="Sites de alta performance, SEO técnico e GEO (Generative Engine Optimization) para dominar as buscas no Google e nas respostas de IA."
+  jsonLd={pageSchema}
 >
-  <Hero />
-  <Statement />
-  <PillarsCarousel />
-  <Synergy />
-  <ProcessSteps />
-  <Manifesto />
-  <Faq />
-  <FinalCta />
+  <main class="t3">
+    <!-- HERO -->
+    <section class="t3-panel t3-dark t3-hero t3-hero-full" aria-labelledby="t3-h1">
+      <!-- The hero image IS the LCP element: real <img> in the HTML (discoverable immediately),
+           high priority, never lazy, with a 1600px variant for smaller screens. Decorative → empty alt. -->
+      <div class="t3-hero-media" aria-hidden="true">
+        <!-- Same picture as frame 0 of the look-around sequence, so when the canvas starts painting there is no
+             visible change. AVIF first, WebP fallback. -->
+        <picture>
+          <source type="image/avif" media="(max-width: 700px)" srcset="/images/hero-seq/r00-m.avif" />
+          <source type="image/avif" srcset="/images/hero-seq/r00.avif" />
+          <img
+            class="t3-hero-img"
+            src="/images/hero-seq/r00.webp"
+            width="1920"
+            height="1080"
+            alt=""
+            fetchpriority="high"
+            decoding="async"
+          />
+        </picture>
+        <!-- Look-around frames: painted by script on wide screens with a mouse, after the page has loaded.
+             data-right / data-left = number of frames on each side of the centre (r00…r24 from clip A, l01…l24 from clip B). -->
+        <canvas class="t3-hero-canvas" data-right="24" data-left="24" data-w="1920" data-h="1080" data-path="/images/hero-seq/"></canvas>
+        <canvas class="t3-hero-bloom" width="192" height="108" aria-hidden="true"></canvas>
+      </div>
+      <div class="t3-hero-grain" aria-hidden="true"></div>
+      <div class="t3-hero-glow" aria-hidden="true"></div>
+
+      <div class="t3-hero-inner">
+        <div class="t3-hero-top">
+          <span class="t3-status t3-fade"><i></i>Diagnóstico gratuito</span>
+          <span class="t3-scroll-hint t3-fade" aria-hidden="true">Role para explorar <b>↓</b></span>
+        </div>
+
+        <div class="t3-hero-bottom">
+          <div class="t3-hero-copy">
+            <p class="t3-fade t3-mono">Ecossistema de crescimento</p>
+            <h1 id="t3-h1" class="t3-h1">Domine a nova era das <em>buscas.</em></h1>
+            <p class="t3-hero-desc t3-fade">
+              Sites de alta performance, SEO técnico e GEO (Generative Engine Optimization) para marcas que querem ser encontradas no Google{" "}
+              <span>e nas respostas de inteligência artificial.</span>
+            </p>
+          </div>
+
+          <div class="t3-hero-side">
+            <nav class="t3-hero-card" aria-label="Explorar">
+              <span class="t3-hero-card-label">Explorar</span>
+              <ol>
+                {
+                  heroLinks.map((l, i) => (
+                    <li>
+                      <a href={l.href}>
+                        <span class="t3-num">{`0${i + 1}`}</span>
+                        <span class="t3-hero-link-text">
+                          <strong>{l.label}</strong>
+                          <small>{l.sub}</small>
+                        </span>
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                      </a>
+                    </li>
+                  ))
+                }
+              </ol>
+            </nav>
+            <a
+              class="nv-cta t3-btn"
+              href={waLink("Olá! Quero agendar um diagnóstico com a Nuvion.")}
+              target="_blank"
+              rel="noopener">Agendar diagnóstico</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SOBRE (pinned, word-by-word fill) -->
+    <section class="t3-about-track" aria-labelledby="t3-about-h">
+      <div class="t3-panel t3-light t3-about-panel t3-contained">
+        <div class="t3-about-top">
+          <div class="t3-head">
+            <span class="t3-chip"><i></i>Sobre a Nuvion</span>
+            <h2 id="t3-about-h" class="sr-only">Uma agência focada em sites, SEO técnico e GEO (Generative Engine Optimization)</h2>
+          </div>
+          <p class="t3-about-text">
+          Somos uma agência que ajuda marcas a crescer com estratégia, arquitetura e tecnologia. O foco é um só: sites de
+          alta performance estruturados em SEO técnico e GEO (otimização para IAs), para que a sua empresa seja encontrada no Google e citada
+          nas respostas das inteligências artificiais.
+          </p>
+        </div>
+        <div class="t3-stats">
+          {
+            stats.map((s) => (
+              <div class="t3-stat">
+                <span class="t3-stat-big">{s.big}</span>
+                <span class="t3-stat-label">{s.label}</span>
+                <p>{s.text}</p>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVIÇOS -->
+    <section class="t3-panel t3-dark t3-pad" aria-labelledby="t3-svc-h">
+      <div class="t3-head">
+        <h2 id="t3-svc-h" class="t3-title" data-t3-title>Nossos <em>serviços</em></h2>
+        <span class="t3-chip"><i></i>03 frentes</span>
+      </div>
+      <div class="t3-acc" data-acc data-acc-hover>
+        {
+          services.map((s, i) => (
+            <div class:list={["t3-svc", { "is-open": i === 0 }]} data-acc-item>
+              <button
+                type="button"
+                class="t3-svc-btn"
+                data-acc-trigger
+                aria-expanded={i === 0 ? "true" : "false"}
+                aria-controls={`t3-svc-${i}`}
+              >
+                <span class="t3-num">{`(0${i + 1})`}</span>
+                <h3 class="t3-svc-title">{s.title}</h3>
+                <span class="t3-arrow" aria-hidden="true">
+                  <svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9" /></svg>
+                </span>
+              </button>
+              <div id={`t3-svc-${i}`} class="t3-acc-panel" role="region">
+                <div class="t3-acc-inner">
+                  <div class="t3-svc-body">
+                    <div class="t3-svc-copy">
+                      <p>{s.text}</p>
+                      <a href={s.href} class="t3-link">{s.cta} <span aria-hidden="true">→</span></a>
+                    </div>
+                    <ul>
+                      {s.items.map((it) => (
+                        <li>{it}</li>
+                      ))}
+                    </ul>
+                    <ServiceArt kind={i} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- PROCESSO (sticky stacking cards) -->
+    <StepsStack title="Como" em="trabalhamos" steps={steps} />
+
+    <!-- AUTORIDADE + CLIENTES (dark panel) -->
+    <section class="t3-panel t3-dark t3-pad t3-authority" aria-labelledby="t3-auth-h">
+      <div class="t3-head">
+        <h2 id="t3-auth-h" class="t3-title t3-auth-title" data-t3-title>
+          Hoje, ser encontrado não basta. É preciso ser <em>a resposta</em>.
+        </h2>
+        <span class="t3-chip"><i></i>A nova era das buscas</span>
+      </div>
+
+      <div class="t3-icon-row" aria-hidden="true">
+        {
+          authorityIcons.map((icon, i) => (
+            <div class="t3-ico">
+              <div class="t3-ico-push">
+                <div
+                  class:list={["t3-ico-in", { "is-orange": icon.orange }]}
+                  style={`animation-delay: ${(i * 0.2).toFixed(1)}s`}
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" set:html={icon.inner} />
+                </div>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+
+      <div class="t3-auth-cols">
+        <p class="t3-auth-text">
+          Google e inteligências artificiais como ChatGPT e Perplexity escolhem quem citar pela clareza, pela estrutura e
+          pela confiança que o site transmite. Quem não é entendido por elas simplesmente deixa de ser lembrado.
+        </p>
+
+        <svg class="t3-auth-art" viewBox="0 0 300 300" fill="none" aria-hidden="true">
+          <g class="t3-orbit-a">
+            <circle cx="150" cy="150" r="140" stroke="currentColor" stroke-opacity="0.22" stroke-dasharray="2 7" />
+            <circle cx="150" cy="10" r="3.4" fill="#CC4E14" />
+            <circle cx="271" cy="220" r="2.4" fill="currentColor" fill-opacity="0.5" />
+          </g>
+          <circle cx="150" cy="150" r="104" stroke="currentColor" stroke-opacity="0.14" />
+          <g class="t3-orbit-b">
+            <circle cx="150" cy="46" r="4.4" fill="#CC4E14" />
+            <circle cx="60" cy="202" r="3" fill="currentColor" fill-opacity="0.55" />
+          </g>
+          <circle cx="150" cy="150" r="70" stroke="currentColor" stroke-opacity="0.14" />
+          <g class="t3-orbit-c">
+            <circle cx="220" cy="150" r="3.6" fill="currentColor" fill-opacity="0.7" />
+          </g>
+          <path d="M150 6v62M150 232v62M6 150h62M232 150h62" stroke="currentColor" stroke-opacity="0.13" />
+          <path d="M40 40 100 100M200 200 260 260" stroke="#CC4E14" stroke-opacity="0.35" stroke-dasharray="3 5" />
+          <circle cx="150" cy="150" r="42" class="t3-halo" fill="#CC4E14" />
+          <circle cx="150" cy="150" r="42" class="t3-auth-core" stroke="#CC4E14" stroke-opacity="0.5" />
+          <g
+            transform="translate(119 119) scale(2.6)"
+            stroke="#CC4E14"
+            stroke-width="1.3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            set:html={authorityIcons[0].inner}
+          />
+        </svg>
+
+        <p class="t3-auth-text">
+          Onze anos e uma grande quantidade de projetos nos ensinaram o que realmente sustenta um resultado. Hoje aplicamos
+          esse aprendizado em sites rápidos, com dados estruturados e conteúdo pensado para ser referência.
+        </p>
+      </div>
+    </section>
+
+    <!-- PROJETOS: slider (swipe / arrows / drag) of wide cards — photo on the left, "ficha" with details on the right -->
+    <section class="t3-panel t3-light t3-pad t3-projects" aria-labelledby="t3-proj-h">
+      <div class="t3-head">
+        <h2 id="t3-proj-h" class="t3-title" data-t3-title>Alguns <em>projetos</em> realizados</h2>
+        <div class="t3-head-side">
+          <span class="t3-chip"><i></i>Trabalhos</span>
+          <a href="/portfolio" class="t3-btn-out">Ver portfólio <span aria-hidden="true">→</span></a>
+        </div>
+      </div>
+
+      <div class="t3-pslider" data-pslider>
+        <div class="t3-ptrack" role="region" aria-roledescription="carrossel" tabindex="0" aria-label="Projetos realizados (use as setas do teclado para navegar)">
+          {
+            projects.map((pr, i) => (
+              <div class="t3-pslide" role="group" aria-roledescription="slide" aria-label={`${i + 1} de ${projects.length}`}>
+                <article class="t3-pcard">
+                  <figure class="t3-pmedia" data-full={`/images/projects/${pr.slug}-1800.webp`} data-name={pr.name}>
+                    <img
+                      class="t3-proj-img"
+                      src={`/images/projects/${pr.slug}-1000.webp`}
+                      srcset={`/images/projects/${pr.slug}-640.webp 640w, /images/projects/${pr.slug}-1000.webp 1000w, /images/projects/${pr.slug}-1800.webp 1800w`}
+                      sizes="(max-width: 1000px) 88vw, 700px"
+                      width="1800"
+                      height="1012"
+                      alt={pr.alt}
+                      loading="lazy"
+                      decoding="async"
+                      draggable="false"
+                    />
+                  </figure>
+                  <div class="t3-pinfo">
+                    <div class="t3-pmeta">
+                      <span class="t3-pno">{`${String(i + 1).padStart(2, "0")} / ${String(projects.length).padStart(2, "0")}`}</span>
+                    </div>
+                    <h3 class="t3-pname">{pr.name}</h3>
+                    <ul class="t3-pchips" role="list">
+                      <li>{segmentLabel(pr.segment)}</li>
+                    </ul>
+                    {hasText(pr.descriptionHtml) && <p class="t3-pdesc">{introFromHtml(pr.descriptionHtml)}</p>}
+                    <a class="t3-btn-out t3-pvisit" href={`/portfolio/#projeto-${pr.slug}`} draggable="false">
+                      Saiba mais <span aria-hidden="true">→</span>
+                    </a>
+                  </div>
+                </article>
+              </div>
+            ))
+          }
+        </div>
+
+        <div class="t3-pctrl">
+          <span class="t3-pcount" aria-live="polite"><b data-pcur>01</b> / {String(projects.length).padStart(2, "0")}</span>
+          <span class="t3-pprog" aria-hidden="true"><i data-pbar></i></span>
+          <div class="t3-parrows">
+            <button type="button" class="t3-parrow" data-pdir="-1" aria-label="Projeto anterior">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
+            </button>
+            <button type="button" class="t3-parrow" data-pdir="1" aria-label="Próximo projeto">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA band (dark): keeps the light/dark rhythm between Projetos and Depoimentos; a contact point right after the work -->
+    <CtaBand />
+
+    <!-- DEPOIMENTOS -->
+    <Testimonials />
+
+    <!-- BLOG: expanding image panels (the 4th panel is the "all articles" card) -->
+    {
+      posts.length > 0 && (
+        <section class="t3-panel t3-dark t3-pad t3-blog" aria-labelledby="t3-blog-h">
+          <div class="t3-head">
+            <h2 id="t3-blog-h" class="t3-title" data-t3-title><em>Conteúdos</em> Nuvion</h2>
+            <div class="t3-head-side">
+              <span class="t3-chip"><i></i>Blog</span>
+              <a href="/blog" class="t3-btn-out">Ver todos os artigos <span aria-hidden="true">→</span></a>
+            </div>
+          </div>
+
+          <div class="t3-blog-strip" data-strip>
+            {posts.map((post, i) => (
+              <a
+                href={`/blog/${post.slug}`}
+                class:list={["t3-bp", { "is-active": i === 0 }]}
+                aria-label={post.title}
+              >
+                <img class="t3-bp-img" src={post.featuredImage} alt="" loading="lazy" decoding="async" />
+                <span class="t3-bp-shade" aria-hidden="true"></span>
+                <span class="t3-bp-top" aria-hidden="true">
+                  <span class="t3-bp-n">{`0${i + 1}`}</span>
+                  <time datetime={post.date}>{fmtShort(post.date)}</time>
+                </span>
+                <span class="t3-bp-vtitle" aria-hidden="true">{post.title}</span>
+                <span class="t3-bp-body">
+                  <span class="t3-bp-cat">{catOf(post)}</span>
+                  <h3 class="t3-bp-title">{post.title}</h3>
+                  <span class="t3-bp-ex">{post.excerpt}</span>
+                  <span class="t3-bp-go">Ler artigo <i aria-hidden="true">→</i></span>
+                </span>
+              </a>
+            ))}
+
+            <a href="/blog" class="t3-bp t3-bp-all" aria-label="Ver todos os artigos do blog">
+              <img class="t3-bp-frame" src="/images/hero-seq/r12.avif" width="1920" height="1080" alt="" aria-hidden="true" loading="lazy" decoding="async" />
+              <span class="t3-bp-top" aria-hidden="true">
+                <span class="t3-bp-n">{`0${posts.length + 1}`}</span>
+                <span>Blog</span>
+              </span>
+              <span class="t3-bp-vtitle" aria-hidden="true">Ver todos os artigos</span>
+              <span class="t3-bp-body">
+                <span class="t3-bp-cat">Blog da Nuvion</span>
+                <span class="t3-bp-title">Todos os artigos</span>
+                <span class="t3-bp-ex">Notas práticas sobre SEO técnico, GEO e o que realmente muda o resultado de um site.</span>
+                <span class="t3-bp-go">Abrir o blog <i aria-hidden="true">→</i></span>
+              </span>
+            </a>
+          </div>
+        </section>
+      )
+    }
+
+    <FaqSection items={faqs} title="Dúvidas sobre" em="SEO, GEO e sites" chip="Perguntas frequentes" />
+  </main>
 </BaseLayout>
+
+
+

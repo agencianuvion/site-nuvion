@@ -35,6 +35,9 @@ interface WpEmbeddedTerm {
 
 interface WpEmbeddedAuthor {
   name: string;
+  // Keyed by pixel size ("24"/"48"/"96"). WordPress core always fills this in — Gravatar by default, or the real uploaded
+  // photo once wordpress/local-avatar.php's filter is active for that user — so no separate REST field is needed for it.
+  avatar_urls?: Record<string, string>;
 }
 
 interface WpEmbedded {
@@ -47,6 +50,8 @@ interface WpPost {
   id: number;
   slug: string;
   date: string;
+  date_gmt: string;
+  modified_gmt: string;
   title: WpRenderedField;
   excerpt: WpRenderedField;
   content: WpRenderedField;
@@ -96,6 +101,18 @@ function getAuthorName(embedded: WpEmbedded | undefined): string {
   return embedded?.author?.[0]?.name ? decodeHtmlEntities(embedded.author[0].name) : "";
 }
 
+// Only treated as a real photo when it did NOT come from Gravatar — Gravatar's default "mystery man" silhouette is a real
+// image (not a 404), so a URL alone can't otherwise tell "no photo set" apart from "a real Gravatar photo". No author here
+// has a Gravatar account, so this is a safe way to only surface wordpress/local-avatar.php's own uploaded photos and let
+// everything else fall back to the founder's photo or the author's initial, same as before that plugin existed.
+function getAuthorAvatar(embedded: WpEmbedded | undefined): string | undefined {
+  const urls = embedded?.author?.[0]?.avatar_urls;
+  if (!urls) return undefined;
+  const sizes = Object.keys(urls).map(Number).sort((a, b) => b - a);
+  const url = sizes.length ? urls[String(sizes[0])] : undefined;
+  return url && !url.includes("gravatar.com") ? url : undefined;
+}
+
 async function fetchJson<T>(path: string): Promise<T> {
   const response = await fetch(`${API_URL}${path}`);
   if (!response.ok) {
@@ -128,7 +145,11 @@ async function fetchPosts(): Promise<Post[]> {
     content: post.content?.rendered ?? "",
     featuredImage: getFeaturedImage(post._embedded),
     date: post.date,
+    // WP's "_gmt" fields are always UTC but come back without a "Z": schema.org/Google want the timezone explicit
+    dateGmt: post.date_gmt + "Z",
+    modifiedGmt: post.modified_gmt + "Z",
     author: getAuthorName(post._embedded),
+    authorAvatar: getAuthorAvatar(post._embedded),
     categories: getTerms(post._embedded, "category"),
     tags: getTerms(post._embedded, "post_tag"),
   }));

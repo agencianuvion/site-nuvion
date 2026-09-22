@@ -1,11 +1,8 @@
 ---
 // Light/dark pill toggle, same idea as Astro's own dev error overlay
-// switch. Wires up the mechanism now (data-theme on <html>, persisted to
-// localStorage) — the actual dark palette for every section is a
-// separate, later piece of work; today this only flips the base
-// --color-bg/--color-fg tokens (see global.css), so most sections (they
-// use explicit bg-white/bg-nv-offwhite-light utility classes) won't
-// visibly change yet. That's expected, not a bug.
+// switch. Sets data-theme on <html> and persists it to localStorage (the
+// pre-paint read lives in BaseLayout's head script); the palette itself is
+// the [data-theme="dark"] token block in global.css.
 ---
 
 <div class="nv-theme-toggle" role="group" aria-label="Tema">
@@ -52,14 +49,30 @@
     color: var(--color-nv-orange);
     box-shadow: 0 1px 3px rgba(30, 30, 30, 0.12);
   }
+  :global(:root[data-theme="dark"]) .nv-theme-toggle {
+    background: rgba(255, 255, 255, 0.08);
+  }
+  :global(:root[data-theme="dark"]) .nv-theme-toggle button[aria-pressed="true"] {
+    background: #2c2f33;
+    box-shadow: none;
+  }
 </style>
 
 <script>
   const STORAGE_KEY = "nv-theme";
   const root = document.documentElement;
+  let fadeTimer: ReturnType<typeof setTimeout> | null = null;
 
-  function applyTheme(theme: "light" | "dark") {
+  function applyTheme(theme: "light" | "dark", animate = false) {
+    // Only on a real switch (never on the very first, pre-paint apply on load) — that one must stay instant, or every
+    // visitor would see a flash of the wrong theme animating into the right one.
+    if (animate) {
+      root.classList.add("theme-fade");
+      if (fadeTimer) clearTimeout(fadeTimer);
+      fadeTimer = setTimeout(() => root.classList.remove("theme-fade"), 350);
+    }
     root.setAttribute("data-theme", theme);
+    window.dispatchEvent(new CustomEvent("nv-theme-change", { detail: theme }));
     document.querySelectorAll<HTMLButtonElement>("[data-theme-btn]").forEach((btn) => {
       btn.setAttribute("aria-pressed", String(btn.dataset.themeBtn === theme));
     });
@@ -72,7 +85,7 @@
     btn.addEventListener("click", () => {
       const theme = btn.dataset.themeBtn === "dark" ? "dark" : "light";
       localStorage.setItem(STORAGE_KEY, theme);
-      applyTheme(theme);
+      applyTheme(theme, true);
     });
   });
 </script>

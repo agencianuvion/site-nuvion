@@ -1,0 +1,241 @@
+---
+// GEO didn't exist on the old site (it's the new pillar replacing "Gestão de Tráfego"), so this content is
+// written fresh. Practices described here are real, not aspirational copy: this very site ships FAQPage/
+// Organization schema and an llms.txt as a working example, not a claim.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import Bento from "../components/site/Bento.astro";
+import ServiceArt from "../components/site/ServiceArt.astro";
+import ProofStrip from "../components/site/ProofStrip.astro";
+import CodeCard from "../components/site/CodeCard.astro";
+import FeatureGrid from "../components/site/FeatureGrid.astro";
+import FaqSection from "../components/site/FaqSection.astro";
+import { faqSchema } from "../lib/faq";
+import { buildBreadcrumbSchema } from "../lib/breadcrumbs";
+import { serviceSchema, webPageSchema } from "../lib/schema";
+import AuthorCard from "../components/site/AuthorCard.astro";
+
+const siteUrl = (Astro.site ?? Astro.url).href;
+const crumbs = [{ label: "Início", href: "/" }, { label: "Otimização Generativa (GEO)" }];
+
+const practices = [
+  {
+    title: "Dados estruturados",
+    text: "Schema.org em cada página (organização, perguntas frequentes, artigos) para a IA entender exatamente do que se trata cada conteúdo, sem adivinhar.",
+    icon: `<circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>`,
+  },
+  {
+    title: "Conteúdo pensado para ser citado",
+    text: "Respostas diretas, bem tituladas e fáceis de extrair. É isso que faz um modelo de linguagem escolher citar a sua marca em vez da concorrência.",
+    icon: `<polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>`,
+  },
+  {
+    title: "Clareza de entidade",
+    text: "Deixamos claro para a IA quem você é, o que faz e onde atua, com consistência entre o site, o Google Business e as redes sociais.",
+    icon: `<path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>`,
+  },
+  {
+    title: "llms.txt e acesso a crawlers de IA",
+    text: "Garantimos que ChatGPT, Perplexity e outros crawlers de IA consigam acessar e entender o seu conteúdo, em vez de bloquear sem querer.",
+    icon: `<rect x="2.5" y="3.5" width="19" height="13.5" rx="2.2"></rect><path d="M12 17v3.5M8.6 20.5h6.8"></path>`,
+  },
+];
+
+const faqs = [
+  {
+    question: "O que é GEO (Generative Engine Optimization)?",
+    answer:
+      "É o trabalho de preparar o seu site e a sua marca para serem entendidos e citados por mecanismos de busca com IA generativa, como ChatGPT, Perplexity e as respostas em IA do Google. É o passo seguinte ao SEO tradicional.",
+  },
+  {
+    question: "GEO tem a ver com geolocalização ou SEO local?",
+    answer:
+      "Não. Aqui GEO significa Generative Engine Optimization, a otimização para buscas feitas por IA generativa. Geolocalização e SEO local (como o Google Meu Negócio e as buscas \"perto de mim\") são outra disciplina, que trata de aparecer para quem procura algo em uma região. As duas podem se complementar, mas não são a mesma coisa.",
+  },
+  {
+    question: "Qual a diferença entre SEO e GEO?",
+    answer:
+      "O SEO busca posicionar as suas páginas na lista de resultados. O GEO busca fazer com que a sua marca apareça dentro da resposta que a IA monta. Usam a mesma base (estrutura, clareza, autoridade), mas o GEO pede conteúdo ainda mais direto e dados bem estruturados.",
+  },
+  {
+    question: "O que é o llms.txt?",
+    answer:
+      "É um arquivo na raiz do site que resume, para modelos de linguagem, quem você é e quais são as páginas mais importantes. Ainda é uma proposta recente e não um padrão oficial, mas ajuda os crawlers de IA a lerem o site com mais clareza.",
+  },
+  {
+    question: "Dá para garantir que a IA vai citar a minha marca?",
+    answer:
+      "Não, e desconfie de quem promete isso: cada modelo decide por conta própria. O que fazemos é aumentar de forma consistente as chances, com estrutura, clareza e conteúdo que valha a pena ser citado.",
+  },
+  {
+    question: "Preciso fazer GEO se já faço SEO?",
+    answer:
+      "O SEO bem feito já cobre boa parte da base. O GEO soma o que falta: dados estruturados, clareza de entidade e conteúdo no formato que as IAs preferem. Conte o que você faz hoje e mostramos onde o GEO entra para somar.",
+  },
+  {
+    question: "O que é E-E-A-T e por que importa para as IAs?",
+    answer:
+      "E-E-A-T significa experiência, especialização, autoridade e confiabilidade. É um conjunto de critérios de qualidade que o Google descreve para avaliar conteúdo e é um bom guia também para as IAs: páginas com autoria clara, informações verificáveis e uma entidade bem definida tendem a ser mais confiáveis para serem citadas.",
+  },
+  {
+    question: "Como saber se a minha marca aparece nas respostas de IA?",
+    answer:
+      "Uma forma simples é perguntar, em diferentes assistentes, as dúvidas que o seu público faria e observar se a sua marca é citada e como. As respostas variam de uma consulta para outra, por isso vale repetir o teste ao longo do tempo e com perguntas diferentes.",
+  },
+  {
+    question: "Devo liberar ou bloquear os crawlers de IA?",
+    answer:
+      "Depende da estratégia. Liberar permite que o conteúdo seja lido e possa ser citado; bloquear evita o uso, mas também reduz a chance de aparecer nessas respostas. O erro mais comum é bloquear sem querer, por causa de uma configuração antiga do robots.txt.",
+  },
+];
+const practiceItems = [
+  { num: "GEO", title: practices[1].title, text: practices[1].text, size: "hero" as const, art: 4 as const },
+  { title: practices[0].title, text: practices[0].text, icon: practices[0].icon, size: "wide" as const, href: "/seo-tecnico", linkLabel: "Como o SEO técnico usa o schema" },
+  { title: practices[2].title, text: practices[2].text, icon: practices[2].icon },
+  { title: practices[3].title, text: practices[3].text, icon: practices[3].icon },
+];
+const platforms = [
+  { num: "Assistente de IA", title: "ChatGPT", text: "Assistente da OpenAI, usado para tirar dúvidas, pesquisar e pedir recomendações." },
+  { num: "Buscador com IA", title: "Perplexity", text: "Busca que responde em linguagem natural e mostra as fontes usadas na resposta." },
+  { num: "Busca do Google", title: "AI Overviews e AI Mode", text: "Respostas geradas por IA que aparecem direto nos resultados do Google." },
+  { num: "Assistente do Google", title: "Gemini", text: "Assistente de IA do Google, para conversar, pesquisar e criar." },
+  { num: "Assistente da Microsoft", title: "Copilot", text: "Assistente de IA da Microsoft, presente no Bing, no Windows e nos aplicativos do Office." },
+  { num: "Assistente da Anthropic", title: "Claude", text: "Assistente de IA da Anthropic, muito usado para pesquisa, escrita e análise." },
+  {
+    title: "Cada plataforma decide sozinha",
+    text: "Nenhuma delas garante citação, e as regras mudam com frequência. Por isso o GEO não é um truque para uma plataforma só: é o trabalho de base, com estrutura, clareza e conteúdo que vale a pena ser citado, e que serve a todas ao mesmo tempo.",
+    size: "wide" as const,
+    hot: true,
+  },
+];
+const seoVsGeo = [
+  {
+    num: "SEO",
+    title: "Aparecer na lista de resultados",
+    text: "O SEO busca posicionar as páginas do seu site nos resultados de busca, para quem procura um produto ou serviço como o seu clicar e visitar.",
+    tags: ["Ranking", "Cliques", "Tráfego orgânico"],
+    size: "wide" as const,
+  },
+  {
+    num: "GEO",
+    title: "Aparecer dentro da resposta da IA",
+    text: "O GEO busca fazer com que a sua marca seja entendida e citada na resposta que a IA monta, muitas vezes sem que a pessoa chegue a abrir uma lista de links.",
+    tags: ["Citações", "Clareza de entidade", "Dados estruturados"],
+    size: "wide" as const,
+    hot: true,
+  },
+  {
+    href: "/seo-tecnico",
+    linkLabel: "Entenda o SEO técnico",
+    title: "A mesma base, objetivos diferentes",
+    text: "Estrutura, clareza e autoridade servem aos dois. O SEO bem feito já cobre boa parte do caminho; o GEO soma o que falta: dados estruturados, clareza de entidade e conteúdo no formato que as IAs preferem.",
+    size: "full" as const,
+  },
+];
+
+---
+
+<BaseLayout
+  title="GEO: apareça nas respostas do ChatGPT e de IAs — Nuvion"
+  description="GEO (Generative Engine Optimization) prepara a sua marca para ser citada por ChatGPT, Perplexity e IAs do Google. Não tem relação com geolocalização."
+  jsonLd={[buildBreadcrumbSchema(crumbs, Astro.url.href, siteUrl), faqSchema(faqs), webPageSchema({ name: "Otimização Generativa (GEO)", description: "Preparação da marca e do site para serem entendidos e citados por buscadores com IA generativa, como ChatGPT e Perplexity.", url: Astro.url.href, siteUrl }), serviceSchema({ name: "Otimização Generativa (GEO)", serviceType: "Generative Engine Optimization (GEO)", description: "Preparação da marca e do site para serem entendidos e citados por buscadores com IA generativa, como ChatGPT e Perplexity.", url: Astro.url.href, siteUrl })]}
+>
+  <main class="t3">
+    <PageHero
+      eyebrow="Otimização Generativa (GEO)"
+      crumbs={crumbs}
+      description="GEO (Generative Engine Optimization): o Google não é mais o único lugar onde as pessoas buscam. A gente prepara sua marca para aparecer também na resposta que a IA generativa dá."
+      ctaLabel="Quero aparecer nas respostas de IA"
+      waMessage="Olá! Quero saber mais sobre GEO com a Nuvion."
+      secondary={{ label: "Ver o que fazemos", href: "#geo-oque" }}
+    >
+      Sua marca também precisa aparecer <em>na resposta da IA.</em>
+      <div slot="visual"><ServiceArt kind={2} /></div>
+    </PageHero>
+
+    <Bento
+      id="geo-oque"
+      title="O que fazemos"
+      em="na prática"
+      chip="GEO"
+      textHtml='Cada vez mais gente pergunta ao ChatGPT ou ao Perplexity em vez de rolar dez links azuis. GEO (Generative Engine Optimization) é preparar o seu site para ser a fonte que essas IAs escolhem citar, com a mesma seriedade técnica que aplicamos em SEO. Apesar da sigla, nada tem a ver com geografia ou localização. Quer se aprofundar? Leia os <a href="/blog">artigos do nosso blog</a>.'
+      items={practiceItems}
+    />
+
+    <Bento id="geo-seo" tone="dark" title="SEO e GEO:" em="o que muda" chip="Comparativo" cols={4} items={seoVsGeo} />
+
+    <Bento
+      id="geo-onde"
+      title="Onde a sua marca"
+      em="pode aparecer"
+      chip="Plataformas"
+      align="top"
+      text="As pessoas já fazem perguntas a vários assistentes de IA. O GEO prepara o seu site para ser entendido por todos eles, e não só por um."
+      items={platforms}
+    />
+
+    <ProofStrip
+      title="Este site é o"
+      em="exemplo"
+      chip="Na prática"
+      showProjects={false}
+      mark
+      showExits={false}
+      ctaLabel="Quero isso no meu site"
+      text="Este próprio site é construído com essas práticas: dados estruturados, conteúdo direto e um arquivo llms.txt orientando os crawlers de IA. Não é promessa, é o que está no ar agora, e dá para conferir."
+      waMessage="Olá! Vi a página de GEO e quero entender como isso pode ajudar a minha marca."
+    >
+      <CodeCard
+        slot="aside"
+        file="agencianuvion.com.br/llms.txt"
+        lines={[
+          "# Agência Nuvion: Sites de Alta Performance, SEO Técnico e GEO",
+          "",
+          "> Agência de Palhoça (SC) que constrói sites de alta performance",
+          "> estruturados em SEO técnico e GEO.",
+          "",
+          "## Empresa",
+          "- Nome: Agência Nuvion",
+          "- Sede: Palhoça, Grande Florianópolis (SC)",
+          "",
+          "## Páginas",
+          "- [SEO Técnico](https://agencianuvion.com.br/seo-tecnico/)",
+          "- [GEO](https://agencianuvion.com.br/geo-generative-engine-optimization/)",
+          "- [Blog](https://agencianuvion.com.br/blog/)",
+        ]}
+        caption="Um arquivo de texto simples, na raiz do site, que resume para a IA quem você é e onde estão as páginas importantes. Este é um trecho do que está no ar neste site."
+      />
+          <div slot="below" class="chk-card" data-reveal>
+        <div class="chk-head">
+          <span class="chk-k">No ar neste site</span>
+          <h3>O que você pode conferir agora</h3>
+        </div>
+        <ul class="chk-grid" role="list">
+          {
+            [
+              ["Dados estruturados em todas as páginas", "Empresa, autor, serviços, artigos, perguntas frequentes e trilha de navegação, no formato schema.org."],
+              ["Autoria e empresa identificadas", "Fundador com cargo e perfil profissional, dados da empresa e uma política editorial pública."],
+              ["llms.txt na raiz do site", "O arquivo de exemplo acima, que resume para a IA quem somos e onde estão as páginas importantes."],
+              ["Crawlers de IA liberados", "O robots.txt permite explicitamente GPTBot, ClaudeBot, PerplexityBot e outros."],
+              ["Perguntas e respostas diretas", "FAQ nas páginas de serviço, escrito para responder logo no início, do jeito que as IAs preferem citar."],
+              ["Sitemap gerado automaticamente", "Todas as páginas listadas em um sitemap XML, atualizado a cada publicação."],
+            ].map(([t, d]) => (
+              <li>
+                <i aria-hidden="true"></i>
+                <span>
+                  <b>{t}</b>
+                  {d}
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <div slot="after">
+        <AuthorCard title="Um campo novo pede método e transparência" text="Ninguém pode prometer que uma IA vai citar a sua marca. O que se pode oferecer é método: o Juan une SEO, arquitetura de conteúdo e integração com inteligência artificial, e por isso este próprio site aplica o que esta página descreve." />
+      </div>
+    </ProofStrip>
+
+    <FaqSection items={faqs} />
+  </main>
+</BaseLayout>

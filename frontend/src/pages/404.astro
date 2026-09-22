@@ -1,0 +1,19 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+---
+
+<BaseLayout title="Página não encontrada — Nuvion" description="A página que você procura não existe ou mudou de endereço." noindex>
+  <main class="t3">
+    <PageHero
+      compact
+      eyebrow="Erro 404"
+      frame="r06"
+      description="O endereço pode ter mudado ou nunca ter existido. Volte para o início ou fale com a gente."
+      ctaLabel="Falar com a Nuvion"
+      secondary={{ label: "Voltar ao início", href: "/" }}
+    >
+      Essa página <em>não existe.</em>
+    </PageHero>
+  </main>
+</BaseLayout>

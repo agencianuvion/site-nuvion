@@ -1,0 +1,156 @@
+---
+// REFERENCE — the "Setores" section that used to sit between Projetos and Depoimentos on /teste-3.
+// It was taken off the home page (sectors will get their own page / hub) but the layout is kept here so it
+// can be dropped back in or reused on /setores:   <SectorsSection />
+//
+// Depends on (all still defined globally by /teste-3): .t3-panel .t3-dark .t3-pad .t3-head .t3-title .t3-chip
+// .t3-btn .nv-cta .t3-num and the --t3-dark token. The slow watermark parallax lives in scripts/test3.ts
+// (it looks for .t3-watermark inside .t3-sectors and does nothing when they are absent).
+import { waLink } from "../../lib/contact";
+
+// Sectors are inferred from the names of the client logos we were given; edit freely.
+const sectors = [
+  { title: "Saúde e estética", text: "Clínicas odontológicas, cirurgia plástica, estética e farmácias de manipulação." },
+  { title: "Construção e imobiliário", text: "Construtoras, incorporadoras, imobiliárias e escritórios de arquitetura." },
+  { title: "Indústria e serviços técnicos", text: "Refrigeração comercial, proteção térmica, placas e comunicação visual." },
+  { title: "Moda e varejo", text: "Moda íntima, camisetas personalizadas e assistência de celulares." },
+  { title: "Gastronomia e turismo", text: "Restaurantes, mercado público e camping." },
+  { title: "Educação e associações", text: "Educação infantil, sindicato e assessoria em licitações." },
+];
+---
+
+<!-- SETORES: deliberately static (no reveal, no scrub, no hover motion) — a resting point between the portfolio and the testimonials -->
+<section class="t3-panel t3-dark t3-pad t3-sectors" aria-labelledby="t3-sec-h">
+  <div class="t3-head">
+    <h2 id="t3-sec-h" class="t3-title">Setores em que temos <em>expertise</em></h2>
+    <span class="t3-chip"><i></i>Setores</span>
+  </div>
+  <div class="t3-sectors-grid">
+    <div class="t3-sectors-intro">
+      <p class="t3-sectors-lead">
+        Estes são alguns dos setores em que a Nuvion mais tem experiência. Mas o método não depende do segmento:
+        trabalhamos com qualquer modelo de negócio. O que muda é o público e a busca; o que não muda é a base, um site
+        rápido, bem estruturado e pensado para ser encontrado.
+      </p>
+      <a
+        class="nv-cta t3-btn t3-sectors-cta"
+        href={waLink("Olá! Quero conversar sobre um site para o meu negócio.")}
+        target="_blank"
+        rel="noopener">Falar sobre o meu negócio</a
+      >
+    </div>
+    <ol class="t3-sector-list">
+      {
+        sectors.map((sec, i) => (
+          <li class="t3-sector">
+            <span class="t3-num">{`0${i + 1}`}</span>
+            <div>
+              <h3>{sec.title}</h3>
+              <p>{sec.text}</p>
+            </div>
+          </li>
+        ))
+      }
+      <li class="t3-sector is-more">
+        <span class="t3-num" aria-hidden="true">+</span>
+        <div>
+          <h3>Qualquer outro modelo de negócio</h3>
+          <p>Não encontrou o seu setor? O método é o mesmo, e a gente adapta ao seu público e à sua busca.</p>
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- Nuvion mark as a faint background overlay (vector, so it stays sharp at any size) -->
+  <svg class="t3-watermark" viewBox="0 0 250 278" fill="none" aria-hidden="true">
+    <path d="M21 192V125a104 104 0 0 1 208 0V237" stroke="currentColor" stroke-width="42" stroke-linecap="round" />
+    <circle class="t3-watermark-dot" cx="23" cy="255" r="23" />
+  </svg>
+</section>
+
+<style is:global>
+  /* Sectors: plain, motionless */
+  .t3-sectors > .t3-head,
+  .t3-sectors > .t3-sectors-grid {
+    position: relative;
+    z-index: 1;
+  }
+  /* faint mark bleeding off the bottom-right corner; the panel clips it */
+  .t3-watermark {
+    position: absolute;
+    z-index: 0;
+    right: -4%;
+    bottom: 4%;
+    width: clamp(300px, 38vw, 660px);
+    height: auto;
+    color: rgba(255, 255, 255, 0.05);
+    pointer-events: none;
+  }
+  .t3-watermark-dot {
+    fill: var(--color-nv-orange);
+    fill-opacity: 0.2;
+  }
+  .t3-sector.is-more .t3-num {
+    color: var(--color-nv-orange);
+    opacity: 1;
+    font-size: 22px;
+    line-height: 1;
+  }
+  .t3-sector.is-more h3 {
+    color: var(--color-nv-orange);
+  }
+  .t3-sectors-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 88px);
+    align-items: start;
+  }
+  .t3-sectors-lead {
+    margin: 0;
+    max-width: 44ch;
+    font-size: clamp(16px, 1.3vw, 18px);
+    font-weight: 400;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.66);
+  }
+  .t3-sector-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .t3-sector {
+    display: grid;
+    grid-template-columns: 56px minmax(0, 1fr);
+    gap: 16px;
+    padding: 17px 0;
+    border-top: 1px solid color-mix(in srgb, #fff 13%, var(--t3-dark));
+  }
+  .t3-sector:last-child {
+    border-bottom: 1px solid color-mix(in srgb, #fff 13%, var(--t3-dark));
+  }
+  .t3-sector h3 {
+    margin: 0 0 5px;
+    font-size: clamp(19px, 1.8vw, 26px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+  }
+  .t3-sector p {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.62);
+  }
+  .t3-sectors-cta {
+    margin-top: clamp(22px, 2.4vw, 32px);
+  }
+  @media (max-width: 760px) {
+    .t3-sectors-grid {
+      grid-template-columns: 1fr;
+    }
+    .t3-watermark {
+      width: 66vw;
+      right: -12%;
+      bottom: 3%;
+    }
+  }
+</style>

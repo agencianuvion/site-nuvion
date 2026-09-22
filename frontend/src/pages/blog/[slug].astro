@@ -1,77 +1,205 @@
 ---
-// Reference implementation — shows the full pattern (breadcrumbs, author,
-// Article schema, share buttons) wired together on a real post.
+// Single article: hero with the cover, category, date, reading time and author; a sticky table of contents (from the h2s of the
+// article, a collapsible list on small screens) and a reading-progress bar; the WordPress content in a reading column (tables get
+// the site's style); a call to action, share buttons and the author card; then other articles (same category first).
+// SEO: page title cut to about 60 characters and description to 155 (or the ones written in WordPress), Article schema with
+// reading time, section and word count; the author comes from WordPress (the founder when it is him, or when there is none).
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import Breadcrumbs from "../../components/shared/Breadcrumbs.astro";
+import PageHero from "../../components/shared/PageHero.astro";
+import PostCard from "../../components/blog/PostCard.astro";
 import ShareButtons from "../../components/shared/ShareButtons.astro";
-import { getPosts } from "../../lib/wp";
+import AuthorCard from "../../components/site/AuthorCard.astro";
+import { getVisiblePosts, postCategory, readingMinutes, wordCount, seoTitle, seoDescription, relatedPosts, prepareArticle, extractFaqBlock, cutText, isFounderAuthor } from "../../lib/blog";
+import { faqSchema } from "../../lib/faq";
 import { buildBreadcrumbSchema, type BreadcrumbItem } from "../../lib/breadcrumbs";
+import { founderId, orgId } from "../../lib/schema";
+import { FOUNDER, waLink } from "../../lib/contact";
 import type { Post } from "../../types/content";
 
 export async function getStaticPaths() {
-  const posts = await getPosts();
+  const posts = await getVisiblePosts();
   return posts.map((post) => ({
     params: { slug: post.slug },
-    props: { post },
+    props: { post, others: relatedPosts(post, posts, 3) },
   }));
 }
 
 interface Props {
   post: Post;
+  others: Post[];
 }
 
-const { post } = Astro.props;
+const { post, others } = Astro.props;
 const siteUrl = (Astro.site ?? Astro.url).href;
 
-const formattedDate = new Date(post.date).toLocaleDateString("pt-BR", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
+const formattedDate = new Date(post.date).toLocaleDateString("pt-BR", { year: "numeric", month: "long", day: "numeric" });
+const category = postCategory(post);
+const minutes = readingMinutes(post);
+// The byline text is always exactly what WordPress has for the author (falling back to the founder only when the field is
+// empty). "byFounder" only decides whether the founder's own photo/bio/schema link are shown next to that name — it is not
+// used to rewrite the name itself.
+const byFounder = !post.author || isFounderAuthor(post.author, FOUNDER.name);
+const authorName = post.author || FOUNDER.name;
+// ids/table-wraps are added to the whole original content first, in one pass (consistent ids, one merged table of contents);
+// a FAQ block (if the author marked one, see extractFaqBlock) is then located and cut out of that already-prepared html, so
+// the pieces rendered below still have their ids and wraps, with nothing re-processed out of sync.
+const { html: preparedHtml, toc } = prepareArticle(post.content);
+const showToc = toc.length >= 3;
+const faqBlock = extractFaqBlock(preparedHtml);
+const bodyBeforeFaq = faqBlock ? faqBlock.before + faqBlock.heading : preparedHtml;
+const bodyAfterFaq = faqBlock ? faqBlock.after : "";
 
 const articleSchema = {
   "@context": "https://schema.org",
   "@type": "Article",
-  headline: post.title,
-  description: post.excerpt,
+  headline: cutText(post.title, 110),
+  description: seoDescription(post),
   image: post.featuredImage,
-  datePublished: post.date,
-  ...(post.author && { author: { "@type": "Person", name: post.author } }),
+  // full ISO 8601 with an explicit UTC offset, as Google's own guidance for Article recommends (WordPress's plain "date"
+  // field, used elsewhere on the page for the human-readable date, has no timezone marker)
+  datePublished: post.dateGmt,
+  dateModified: post.modifiedGmt,
+  // the byline name always matches WordPress; when it is the founder, the Person node also carries his @id and profile url
+  // (it is the same real person, so linking his profile is correct even if WP spells his name a little differently)
+  author: byFounder ? { "@type": "Person", "@id": founderId(siteUrl), name: authorName, url: new URL("/sobre-nos/", siteUrl).href } : { "@type": "Person", name: authorName },
+  publisher: { "@id": orgId(siteUrl) },
+  inLanguage: "pt-BR",
+  articleSection: category.name,
+  wordCount: wordCount(post),
+  timeRequired: "PT" + minutes + "M",
+  publishingPrinciples: new URL("/politica-editorial/", siteUrl).href,
   mainEntityOfPage: Astro.url.href,
 };
+// the FAQ accordion detected in the text (if any) feeds its own FAQPage schema, built from the same questions/answers shown
+const faqPageSchema = faqBlock ? faqSchema(faqBlock.faqs.map((f) => ({ question: f.question, answer: f.answerText }))) : null;
 
-const breadcrumbItems: BreadcrumbItem[] = [
-  { label: "Início", href: "/" },
-  { label: "Blog", href: "/blog" },
-  { label: post.title },
-];
-const breadcrumbSchema = buildBreadcrumbSchema(breadcrumbItems, Astro.url.href, siteUrl);
+const crumbs: BreadcrumbItem[] = [{ label: "Início", href: "/" }, { label: "Blog", href: "/blog" }, { label: post.title }];
 ---
 
-<BaseLayout
-  title={`${post.title} — Nuvion`}
-  description={post.excerpt}
-  image={post.featuredImage}
-  preloadImage={post.featuredImage}
-  jsonLd={[articleSchema, breadcrumbSchema]}
->
-  <article class="mx-auto max-w-3xl px-6 py-20 sm:py-24">
-    <Breadcrumbs items={breadcrumbItems} />
+<BaseLayout title={seoTitle(post)} description={seoDescription(post)} image={post.featuredImage} jsonLd={[articleSchema, buildBreadcrumbSchema(crumbs, Astro.url.href, siteUrl), ...(faqPageSchema ? [faqPageSchema] : [])]}>
+  <div class="rd-progress" aria-hidden="true"><i data-rd-bar></i></div>
+  <main class="t3">
+    <PageHero compact eyebrow={category.name} crumbs={[{ label: "Início", href: "/" }, { label: "Blog", href: "/blog" }, { label: "Artigo" }]}>
+      {post.title}
+      <div slot="meta" class="ph-meta-in">
+        <span class="pf-seg">{category.name}</span>
+        <time datetime={post.date}>{formattedDate}</time>
+        <span>{minutes} min de leitura</span>
+        <span class="ph-by">
+          {post.authorAvatar ? <img src={post.authorAvatar} alt="" width="30" height="30" decoding="async" /> : byFounder ? <img src={FOUNDER.photo} alt="" width="30" height="30" decoding="async" /> : <i aria-hidden="true">{authorName.charAt(0)}</i>}
+          {authorName}
+        </span>
+      </div>
+      <Fragment slot="visual">
+        <img class="ph-cover" src={post.featuredImage} alt="" width="1200" height="675" fetchpriority="high" decoding="async" />
+      </Fragment>
+    </PageHero>
 
-    <time datetime={post.date} class="block text-xs font-semibold uppercase tracking-[0.14em] text-nv-orange">{formattedDate}</time>
-    <h1 class="nv-h1 mt-3 text-[32px] text-nv-graphite-900 sm:text-[44px]">{post.title}</h1>
-    {post.author && <p class="mt-3 text-sm text-nv-graphite-500">Por {post.author}</p>}
+    <section class="t3-panel t3-light t3-pad" aria-label="Artigo">
+      <div class="rd" data-rd-article>
+        {
+          showToc && (
+            <nav class="toc toc-side" aria-label="Neste artigo">
+              <p class="toc-k">Neste artigo</p>
+              <ol>{toc.map((t) => <li><a href={`#${t.id}`}>{t.text}</a></li>)}</ol>
+            </nav>
+          )
+        }
+        <article class="t3-article">
+          {
+            showToc && (
+              <details class="toc toc-m">
+                <summary>Neste artigo <span aria-hidden="true">+</span></summary>
+                <ol>{toc.map((t) => <li><a href={`#${t.id}`}>{t.text}</a></li>)}</ol>
+              </details>
+            )
+          }
 
-    <img src={post.featuredImage} alt={post.title} class="mt-10 aspect-video w-full rounded-3xl object-cover" />
+          {/* content.rendered is trusted HTML from the WordPress editor (h2s get an id and tables a scroll wrapper). A FAQ
+              block found in the text (see extractFaqBlock) splits the prose in two, with the shared accordion in between. */}
+          <div class="prose prose-nv max-w-none" set:html={bodyBeforeFaq} />
+          {
+            faqBlock && (
+              <div class="t3-faq-list article-faq" data-acc>
+                {faqBlock.faqs.map((f, i) => (
+                  <div class="t3-faq-row" data-acc-item>
+                    <button type="button" class="t3-faq-btn" data-acc-trigger aria-expanded="false" aria-controls={"article-faq-" + i}>
+                      <span class="t3-num">{String(i + 1).padStart(2, "0") + "."}</span>
+                      <h3>{f.question}</h3>
+                      <span class="t3-plus" aria-hidden="true" />
+                    </button>
+                    <div id={"article-faq-" + i} class="t3-acc-panel" role="region">
+                      <div class="t3-acc-inner">
+                        <div class="t3-faq-answer prose-nv" set:html={f.answerHtml} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )
+          }
+          {faqBlock && <div class="prose prose-nv max-w-none" set:html={bodyAfterFaq} />}
+        </article>
+      </div>
 
-    {/* content.rendered is trusted HTML from WP's own editor. */}
-    <div
-      class="prose prose-nv mt-10 max-w-none"
-      set:html={post.content}
-    />
+      {/* Outside the two-column grid on purpose: the sticky table of contents is only supposed to follow the reader
+          alongside the article's own text, not alongside the CTA/share/author block that comes after it. */}
+      <div class="t3-article-after">
+        <aside class="t3-article-cta">
+          <div>
+            <h2>Gostou do conteúdo?</h2>
+            <p>Conte o cenário do seu site e a gente mostra como colocar isso em prática.</p>
+          </div>
+          <a class="rs-cta-link" href={waLink("Olá! Li o artigo “" + post.title + "” no blog da Nuvion e quero conversar sobre o meu site.")} target="_blank" rel="noopener">Falar no WhatsApp <span aria-hidden="true">→</span></a>
+        </aside>
 
-    <div class="mt-12 border-t border-nv-hairline pt-8">
-      <ShareButtons title={post.title} />
-    </div>
-  </article>
+        <div class="t3-article-foot">
+          <ShareButtons title={post.title} />
+        </div>
+
+        {
+          byFounder ? (
+            <AuthorCard
+              kicker="Escrito por"
+              title={authorName}
+              text={FOUNDER.bio}
+              chips={[]}
+              name={authorName}
+              photo={post.authorAvatar || FOUNDER.photo}
+              links={[
+                { label: "LinkedIn", href: FOUNDER.linkedin, external: true },
+                { label: "Sobre a Nuvion", href: "/sobre-nos" },
+              ]}
+            />
+          ) : (
+            <aside class="t3-author" aria-label="Sobre o autor">
+              <div>
+                <span class="t3-author-k">Escrito por</span>
+                <b>{authorName}</b>
+                <div class="t3-author-links">
+                  <a class="t3-link" href="/sobre-nos">Sobre a Nuvion <span aria-hidden="true">→</span></a>
+                </div>
+              </div>
+            </aside>
+          )
+        }
+      </div>
+
+      {
+        others.length > 0 && (
+          <div class="t3-related">
+            <div class="t3-related-head">
+              <h2>Continue <em style="font-style:normal;color:var(--color-nv-orange)">lendo</em></h2>
+              <a class="t3-link" href="/blog/#artigos">Ver todos os artigos <span aria-hidden="true">→</span></a>
+            </div>
+            <div class="t3-post-grid">
+              {others.map((p) => (
+                <PostCard post={p} as="h3" />
+              ))}
+            </div>
+          </div>
+        )
+      }
+    </section>
+  </main>
 </BaseLayout>

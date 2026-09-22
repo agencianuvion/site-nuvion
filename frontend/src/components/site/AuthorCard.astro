@@ -1,0 +1,71 @@
+---
+// "Who is behind this page" card (E-E-A-T): the founder's photo, role and a short argument tied to what the page says.
+// Facts come from lib/contact.ts (FOUNDER); the argument text is written per page and only uses what is in his bio.
+// On the About page the same card carries his own words (quote) with its own kicker, chips and links.
+import { FOUNDER } from "../../lib/contact";
+
+interface Link {
+  label: string;
+  href: string;
+  external?: boolean;
+}
+interface Props {
+  title: string;
+  text: string;
+  kicker?: string;
+  quote?: boolean;
+  chips?: string[];
+  links?: Link[];
+  /** Override the photo/name/role in the footer — only when this card is about someone other than the founder (e.g. a
+   * WordPress author byline on an article). Every other page keeps using the founder's own, unchanged. */
+  name?: string;
+  role?: string;
+  photo?: string;
+}
+const {
+  title,
+  text,
+  kicker = "Quem está por trás desta página",
+  quote = false,
+  chips = ["SEO e GEO", "Desenvolvimento full-stack", "UI/UX design", "Inteligência artificial"],
+  links = [
+    { label: "LinkedIn", href: FOUNDER.linkedin, external: true },
+    { label: "Sobre a Nuvion", href: "/sobre-nos" },
+    { label: "Como revisamos o conteúdo", href: "/politica-editorial" },
+  ],
+  name = FOUNDER.name,
+  role = FOUNDER.role,
+  photo = FOUNDER.photo,
+} = Astro.props;
+---
+
+<aside class="ac" data-reveal aria-label={kicker}>
+  <img class="ac-photo" src={photo} alt={name} width="240" height="240" loading="lazy" decoding="async" />
+  <div class="ac-body">
+    <span class="ac-k">{kicker}</span>
+    <h3>{title}</h3>
+    {quote ? <blockquote class="ac-quote">{text}</blockquote> : <p>{text}</p>}
+    {
+      chips && chips.length > 0 && (
+        <ul class="ac-chips" role="list">
+          {chips.map((c) => <li>{c}</li>)}
+        </ul>
+      )
+    }
+    <div class="ac-foot">
+      <div class="ac-who">
+        <b>{name}</b>
+        <small>{role}</small>
+      </div>
+      <div class="ac-links">
+        {
+          links.map((l) => (
+            <a class="t3-link" href={l.href} target={l.external ? "_blank" : undefined} rel={l.external ? "me noopener" : undefined}>
+              {l.label} <span aria-hidden="true">→</span>
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</aside>

@@ -1,0 +1,56 @@
+---
+// Editorial policy: how the content of the site (and the blog) is produced. Written only from what the owner confirmed:
+// the author reviews everything in detail; AI is used for adjustments and research and, at times, for drafting; sources
+// vary with the subject; corrections go to the author's e-mail. Nothing else is claimed.
+import LegalPage from "../components/site/LegalPage.astro";
+import { COMPANY, FOUNDER } from "../lib/contact";
+---
+
+<LegalPage
+  title="Política Editorial"
+  heading="Política Editorial"
+  eyebrow="Transparência"
+  note={false}
+  description="Como o conteúdo da Agência Nuvion é produzido: quem escreve, como a inteligência artificial é usada, como as fontes são escolhidas e como pedir uma correção."
+  updated="20/09/2026"
+>
+  <p>
+    Esta página explica, de forma transparente, como os conteúdos do site e do blog da {COMPANY.brand} são produzidos.
+    Acreditamos que quem lê merece saber quem escreve, com que ajuda e com que critério.
+  </p>
+
+  <h2>1. Quem escreve</h2>
+  <p>
+    Os artigos do blog são escritos por <a href="/sobre-nos">{FOUNDER.name}</a>, {FOUNDER.role}. Os textos das páginas do
+    site são produzidos pela própria equipe da agência.
+  </p>
+
+  <h2>2. Revisão</h2>
+  <p>Todo conteúdo é revisado em detalhe pelo autor antes de ser publicado.</p>
+
+  <h2>3. Uso de inteligência artificial</h2>
+  <p>
+    Usamos ferramentas de inteligência artificial em algumas etapas: como apoio à pesquisa, em ajustes de texto e, em
+    determinados momentos, na criação de conteúdo. A IA é uma ferramenta de apoio e não substitui a responsabilidade do
+    autor: o que é publicado passa pela revisão descrita acima.
+  </p>
+
+  <h2>4. Fontes</h2>
+  <p>As fontes variam de acordo com o tema de cada conteúdo.</p>
+
+  <h2>5. Natureza do conteúdo</h2>
+  <p>
+    Os conteúdos têm caráter informativo e educativo e não constituem promessa de resultado. Mais detalhes nos{" "}
+    <a href="/termos-de-uso">Termos de Uso</a>.
+  </p>
+
+  <h2>6. Correções e contato</h2>
+  <p>
+    Se você encontrar um erro ou uma informação desatualizada, escreva para{" "}
+    <a href="mailto:juan@agencianuvion.com.br">juan@agencianuvion.com.br</a>. Analisamos cada solicitação e corrigimos o
+    conteúdo quando necessário.
+  </p>
+
+  <h2>7. Atualização desta política</h2>
+  <p>Esta política pode ser atualizada conforme a forma de trabalho mudar. A data da última revisão está no topo da página.</p>
+</LegalPage>

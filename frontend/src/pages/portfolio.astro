@@ -1,0 +1,127 @@
+---
+// Portfolio: hero with an animated mosaic, an interactive showcase (project list on the left, big picture + text on the right;
+// segment filter; the featured project opens first), the aggregate results and the client logos.
+// Data comes from lib/projects.ts (shaped like the WordPress CPT): name, site and segment are required, the rich-text
+// description is the star (it renders only when it has text).
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import Results from "../components/site/Results.astro";
+import ClientsMarquee from "../components/site/ClientsMarquee.astro";
+import { projects, segments, segmentLabel, siteHost, featuredProject, hasText } from "../lib/projects";
+import { buildBreadcrumbSchema } from "../lib/breadcrumbs";
+import { portfolioSchema } from "../lib/schema";
+
+const siteUrl = (Astro.site ?? Astro.url).href;
+const crumbs = [{ label: "Início", href: "/" }, { label: "Portfólio" }];
+const title = "Portfólio de sites de alta performance — Nuvion";
+const description = "Projetos da Nuvion: sites de alta performance construídos com SEO técnico e GEO (otimização para IAs) na base, em vários segmentos.";
+
+const feat = featuredProject();
+const byDate = [...projects].sort((a, b) => b.date.localeCompare(a.date));
+// the list of the showcase: the featured one first, then the newest
+const ordered = [...(feat ? [feat] : []), ...byDate.filter((p) => p !== feat)];
+const usedSegments = segments.filter((s) => projects.some((p) => p.segment === s.slug));
+const count = (slug: string) => projects.filter((p) => p.segment === slug).length;
+// hero mosaic: the featured one first (it is the big tile), then the newest
+const mosaic = [feat, ...byDate.filter((p) => p !== feat)].filter(Boolean).slice(0, 3);
+const img = (p: { slug: string }, w: number) => `/images/projects/${p.slug}-${w}.webp`;
+const srcset = (p: { slug: string }) => `${img(p, 640)} 640w, ${img(p, 1000)} 1000w, ${img(p, 1800)} 1800w`;
+
+---
+
+<BaseLayout
+  title={title}
+  description={description}
+  jsonLd={[
+    portfolioSchema({
+      name: "Portfólio da Nuvion",
+      description,
+      url: Astro.url.href,
+      siteUrl,
+      items: byDate.map((p) => ({ name: p.name, url: p.url, image: img(p, 1000), about: segmentLabel(p.segment) })),
+    }),
+    buildBreadcrumbSchema(crumbs, Astro.url.href, siteUrl),
+  ]}
+>
+  <main class="t3">
+    <PageHero
+      eyebrow="Portfólio"
+      crumbs={crumbs}
+      description="Sites construídos para converter, com SEO técnico e GEO (otimização para IAs) na base. Estes são alguns dos projetos que já entregamos."
+      ctaLabel="Quero um projeto assim"
+      waMessage="Olá! Vi o portfólio da Nuvion e quero conversar sobre o meu projeto."
+    >
+      Alguns projetos <em>que já entregamos.</em>
+      <Fragment slot="visual">
+        <div class="ph-mosaic">
+          {mosaic.map((p) => <img src={img(p, 640)} srcset={`${img(p, 640)} 640w, ${img(p, 1000)} 1000w`} sizes="(max-width: 900px) 30vw, 220px" alt="" width="1000" height="562" loading="eager" decoding="async" />)}
+        </div>
+      </Fragment>
+    </PageHero>
+
+    <section class="t3-panel t3-light t3-pad pf" aria-labelledby="port-h" data-vt>
+      <div class="t3-head">
+        <h2 id="port-h" class="t3-title" data-t3-title>Nossos <em>trabalhos</em></h2>
+        <span class="t3-chip"><i></i>Trabalhos</span>
+      </div>
+
+      <div class="pf-filter" role="group" aria-label="Filtrar projetos por segmento">
+        <button type="button" class="pf-chip" data-vt-seg="all" aria-pressed="true">Todos <small>{projects.length}</small></button>
+        {usedSegments.map((s) => <button type="button" class="pf-chip" data-vt-seg={s.slug} aria-pressed="false">{s.label} <small>{count(s.slug)}</small></button>)}
+      </div>
+      <p class="sr-only" aria-live="polite" data-vt-status></p>
+
+      <div class="vt" data-reveal>
+        <div class="vt-list-wrap">
+          <div class="vt-list" role="tablist" aria-label="Projetos" aria-orientation="vertical">
+            {
+              ordered.map((p, i) => (
+                <button type="button" role="tab" class:list={["vt-tab", { "is-active": i === 0 }]} id={`vt-tab-${p.slug}`} aria-controls={`vt-panel-${p.slug}`} aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1} data-seg={p.segment}>
+                  <span class="vt-no">{String(i + 1).padStart(2, "0")}</span>
+                  <span class="vt-txt">
+                    <span class="vt-name">{p.name}</span>
+                    <span class="vt-seg">{segmentLabel(p.segment)}</span>
+                  </span>
+                  <span class="vt-arrow" aria-hidden="true">→</span>
+                  <span class="vt-bar" aria-hidden="true"><i></i></span>
+                </button>
+              ))
+            }
+          </div>
+        </div>
+
+        <div class="vt-stage">
+          {
+            ordered.map((p, i) => (
+              <article class:list={["vt-panel", { "is-active": i === 0 }]} id={`vt-panel-${p.slug}`} role="tabpanel" aria-labelledby={`vt-tab-${p.slug}`}>
+                <figure class="t3-pmedia vt-media" data-full={img(p, 1800)} data-name={p.name}>
+                  <img src={img(p, 1000)} srcset={srcset(p)} sizes="(max-width: 1000px) 92vw, 780px" width="1800" height="1012" alt={p.alt} loading={i === 0 ? "eager" : "lazy"} decoding="async" draggable="false" />
+                </figure>
+                <div class="vt-info">
+                  <div class="vt-id">
+                    {p === feat && <span class="pf-k"><i></i>Em destaque</span>}
+                    <span class="pf-seg">{segmentLabel(p.segment)}</span>
+                    <h3>{p.name}</h3>
+                    {
+                      p.url && (
+                        <div class="vt-actions">
+                          <span class="pf-host">{siteHost(p.url)}</span>
+                          <a class="nv-cta t3-btn" href={p.url} target="_blank" rel="noopener">Ver site <span aria-hidden="true">↗</span></a>
+                        </div>
+                      )
+                    }
+                  </div>
+                  {hasText(p.descriptionHtml) && <div class="t3-tqwrap vt-text"><div class="pf-rich" set:html={p.descriptionHtml} /></div>}
+                </div>
+              </article>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <Results />
+
+    <ClientsMarquee />
+  </main>
+</BaseLayout>

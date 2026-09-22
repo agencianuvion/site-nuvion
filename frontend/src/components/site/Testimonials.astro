@@ -1,0 +1,128 @@
+---
+// Testimonials: cards that slide in from the left over each other while the panel is pinned (scripts/site.ts, ".t3-testi").
+// layout "stack" (home): cards slide over each other; layout "bento" (About): a slider (same script and controls as the projects
+// slider on the home: swipe, drag, arrows, keyboard), so the page does not repeat the pinned stacking effect of the process
+// section above it. Cards have a fixed width and equal height, so it works with any number of testimonials and any text length:
+// a long quote scrolls inside its card (8 lines visible; same scroll wrapper and script as the stacked cards on the home).
+// tone "light" is the home version (dark cards on a light panel, with the vertical client-logo column); tone "dark" puts the
+// cards on a dark panel, and logos={false} drops the logo column (the About page shows the logos in their own section).
+// The texts in lib/testimonials.ts are PLACEHOLDERS until the real ones arrive.
+import { clientLogos } from "../../lib/clients";
+import { testimonials } from "../../lib/testimonials";
+
+interface Props {
+  layout?: "stack" | "bento";
+  tone?: "light" | "dark";
+  logos?: boolean;
+  title?: string;
+  em?: string;
+}
+const { layout = "stack", tone = "light", logos = true, title = "O que dizem nossos", em = "clientes" } = Astro.props;
+const vlogoH = (l: { w: number; h: number }) => Math.round(Math.max(18, Math.min(44, 140 / (l.w / l.h))));
+---
+
+{
+  layout === "bento" ? (
+    <section class="t3-panel t3-dark t3-pad tb" aria-labelledby="t3-testi-h">
+      <div class="t3-head">
+        <h2 id="t3-testi-h" class="t3-title" data-t3-title>{title} <em>{em}</em></h2>
+        <span class="t3-chip"><i></i>Depoimentos</span>
+      </div>
+      <div class:list={["t3-pslider tsl", { "is-solo": testimonials.length === 1 }]} data-pslider>
+        <div class="t3-ptrack" role="region" aria-roledescription="carrossel" tabindex="0" aria-label="Depoimentos de clientes (use as setas do teclado para navegar)">
+          {testimonials.map((t, i) => (
+            <div class="t3-pslide" role="group" aria-roledescription="slide" aria-label={`${i + 1} de ${testimonials.length}`}>
+          <article class:list={["tb-card", { "is-video": t.video }]}>
+            {t.video && (
+              <div class="t3-tvideo" aria-hidden="true">
+                <span class="t3-tplay"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" /></svg></span>
+              </div>
+            )}
+            <div class="tb-body">
+              <svg class="t3-tquote" viewBox="0 0 32 24" aria-hidden="true"><path d="M0 24V13.6C0 6 4.2 1.2 12 0l1.2 3.6C8.8 4.8 6.8 7.2 6.4 10.8H12V24zm18 0V13.6C18 6 22.2 1.2 30 0l1.2 3.6C26.8 4.8 24.8 7.2 24.4 10.8H30V24z" /></svg>
+              <div class="t3-tqwrap"><blockquote class="tb-q">{t.quote}</blockquote></div>
+              <footer class="t3-tby">
+                <span class="t3-tavatar" aria-hidden="true"></span>
+                <span><strong>{t.name}</strong><em>{t.role}</em></span>
+              </footer>
+            </div>
+          </article>
+            </div>
+          ))}
+        </div>
+        {testimonials.length > 1 && (
+          <div class="t3-pctrl">
+            <span class="t3-pcount" aria-live="polite"><b data-pcur>01</b> / {String(testimonials.length).padStart(2, "0")}</span>
+            <span class="t3-pprog" aria-hidden="true"><i data-pbar></i></span>
+            <div class="t3-parrows">
+              <button type="button" class="t3-parrow" data-pdir="-1" aria-label="Depoimento anterior">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
+              </button>
+              <button type="button" class="t3-parrow" data-pdir="1" aria-label="Próximo depoimento">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </section>
+  ) : (
+<section class:list={["t3-panel t3-pad t3-testi", tone === "dark" ? "t3-dark" : "t3-light"]} aria-labelledby="t3-testi-h">
+  <div class="t3-head">
+    <h2 id="t3-testi-h" class="t3-title" data-t3-title>{title} <em>{em}</em></h2>
+    <span class="t3-chip"><i></i>Depoimentos</span>
+  </div>
+
+  <div class:list={["t3-tgrid", { "is-solo": !logos }]}>
+    <div class="t3-tcards">
+      {
+        testimonials.map((t, i) => (
+          <article class:list={["t3-tcard", { "is-video": t.video }]} style={`--i:${i}`}>
+            <div class="t3-tcard-in">
+              {t.video && (
+                <div class="t3-tvideo" aria-hidden="true">
+                  <span class="t3-tplay"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" /></svg></span>
+                </div>
+              )}
+              <div class="t3-tbody">
+                <svg class="t3-tquote" viewBox="0 0 32 24" aria-hidden="true"><path d="M0 24V13.6C0 6 4.2 1.2 12 0l1.2 3.6C8.8 4.8 6.8 7.2 6.4 10.8H12V24zm18 0V13.6C18 6 22.2 1.2 30 0l1.2 3.6C26.8 4.8 24.8 7.2 24.4 10.8H30V24z" /></svg>
+                <div class="t3-tqwrap"><blockquote class="t3-tq">{t.quote}</blockquote></div>
+                <footer class="t3-tby">
+                  <span class="t3-tavatar" aria-hidden="true"></span>
+                  <span><strong>{t.name}</strong><em>{t.role}</em></span>
+                </footer>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    {
+      logos && (
+        <div class="t3-tvcol" aria-label="Logos das empresas atendidas">
+          <div class="t3-vm-track" role="list">
+            {[0, 1].map((copy) =>
+              clientLogos.map((l) => (
+                <div class="t3-vm-item" role={copy === 0 ? "listitem" : undefined} aria-hidden={copy === 1 ? "true" : undefined}>
+                  <img
+                    src={`/images/clients/${l.slug}.webp`}
+                    alt={copy === 0 ? l.name : ""}
+                    width={l.w}
+                    height={l.h}
+                    loading="lazy"
+                    decoding="async"
+                    class="t3-vlogo"
+                    style={`--lh:${vlogoH(l)}px`}
+                  />
+                </div>
+              )),
+            )}
+          </div>
+        </div>
+      )
+    }
+  </div>
+</section>
+  )
+}

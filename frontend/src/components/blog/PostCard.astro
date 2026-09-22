@@ -1,37 +1,45 @@
 ---
 import type { Post } from "../../types/content";
+import { FOUNDER } from "../../lib/contact";
+import { postCategory, readingMinutes, isFounderAuthor } from "../../lib/blog";
 
 interface Props {
   post: Post;
+  /** Heading level of the title: "h2" on the blog index, "h3" when the card sits under another section. */
+  as?: "h2" | "h3";
+  /** Beyond the first page of the list: hidden by CSS (only when JS runs) until the pagination script decides what to show. */
+  late?: boolean;
 }
 
-const { post } = Astro.props;
+const { post, as: Heading = "h2", late = false } = Astro.props;
 const href = `/blog/${post.slug}`;
-
-const formattedDate = new Date(post.date).toLocaleDateString("pt-BR", {
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-});
+const category = postCategory(post);
+const minutes = readingMinutes(post);
+const date = new Date(post.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" }).replace(/\./g, "").replace(/ de /g, " ");
+// the founder's photo when he is the author; otherwise the author's initial
+const isFounder = isFounderAuthor(post.author, FOUNDER.name);
 ---
 
-<article class="group flex flex-col gap-4 overflow-hidden rounded-3xl border border-nv-hairline bg-white p-5 shadow-[0_2px_8px_rgba(30,30,30,.06)] transition-shadow hover:shadow-[0_12px_32px_rgba(30,30,30,.1)]">
-  <a href={href} class="block overflow-hidden rounded-2xl">
-    <img
-      src={post.featuredImage}
-      alt={post.title}
-      loading="lazy"
-      class="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-105"
-    />
+<article class="t3-post" data-reveal data-cat={category.slug} data-late={late ? "" : undefined}>
+  <a href={href} class="t3-post-media" tabindex="-1" aria-hidden="true">
+    <img src={post.featuredImage} alt="" width="768" height="432" loading="lazy" decoding="async" />
+    <span class="t3-post-cat">{category.name}</span>
   </a>
-  <div class="flex flex-1 flex-col gap-2 px-1">
-    <time datetime={post.date} class="text-xs font-medium uppercase tracking-[0.14em] text-nv-orange">{formattedDate}</time>
-    <h2 class="text-lg font-semibold tracking-[-0.02em] text-nv-graphite-900">
-      <a href={href} class="transition-colors hover:text-nv-orange">{post.title}</a>
-    </h2>
-    <p class="line-clamp-2 text-sm leading-[1.6] text-nv-graphite-600">{post.excerpt}</p>
-    <a href={href} class="nv-more mt-2 inline-flex w-fit items-center gap-[7px] text-sm font-medium no-underline">
-      Ler artigo <span aria-hidden="true">›</span>
-    </a>
+  <div class="t3-post-body">
+    <div class="t3-post-meta">
+      <time datetime={post.date}>{date}</time>
+      <span>{minutes} min de leitura</span>
+    </div>
+    <Heading><a href={href}>{post.title}</a></Heading>
+    <p>{post.excerpt}</p>
+    <div class="t3-post-foot">
+      {post.author && (
+        <span class="t3-post-by">
+          {post.authorAvatar ? <img src={post.authorAvatar} alt="" width="28" height="28" loading="lazy" decoding="async" /> : isFounder ? <img src={FOUNDER.photo} alt="" width="28" height="28" loading="lazy" decoding="async" /> : <i aria-hidden="true">{post.author.charAt(0)}</i>}
+          {post.author}
+        </span>
+      )}
+      <a href={href} class="t3-link" aria-label={`Ler o artigo: ${post.title}`}>Ler <span aria-hidden="true">→</span></a>
+    </div>
   </div>
 </article>

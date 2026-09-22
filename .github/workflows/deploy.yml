@@ -40,6 +40,11 @@ jobs:
       - name: Write production .env
         run: |
           echo "PUBLIC_WP_API_URL=${{ secrets.PUBLIC_WP_API_URL }}" >> .env
+          # This workflow's DEPLOY_PATH today is the isolated preview.agencianuvion.com.br staging subfolder (see the big
+          # comment on the rsync step below), not real production — PUBLIC_NOINDEX blocks every crawler (robots.txt) and
+          # adds <meta name="robots" content="noindex"> to every page (BaseLayout), so this staging copy can never get
+          # indexed. Remove this one line (only this line) the same day DEPLOY_PATH is switched to the real production path.
+          echo "PUBLIC_NOINDEX=true" >> .env
           # TODO: add any other PUBLIC_ env vars this project needs, e.g.:
           # echo "PUBLIC_STRIPE_MEMBERSHIP_LINK=${{ secrets.PUBLIC_STRIPE_MEMBERSHIP_LINK }}" >> .env
 

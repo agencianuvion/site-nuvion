@@ -4,8 +4,11 @@
 // async font loading, LCP image preload) without any of its content or
 // branding. Fill in ORG_NAME/ORG_LOGO_PATH below once they're known.
 import "../styles/global.css";
+import "../styles/site.css";
 import Header from "../components/layout/Header.astro";
 import Footer from "../components/layout/Footer.astro";
+import WhatsappFloat from "../components/ui/WhatsappFloat.astro";
+import { organizationSchema as buildOrganizationSchema } from "../lib/schema";
 
 const ORG_NAME = "Nuvion";
 const ORG_LOGO_PATH = "/images/logo-horizontal-dark.png";
@@ -19,32 +22,37 @@ interface Props {
   preloadImage?: string;
   /** Extra schema.org object(s) for this specific page (Article, BreadcrumbList, etc.) on top of the Organization/WebSite schema every page already gets. */
   jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** Adds <meta name="robots" content="noindex, nofollow"> — for private experiments. Defaults to on for every page when
+   * this whole build is a preview/staging deploy (PUBLIC_NOINDEX=true, set only in that deploy's own env — see
+   * .github/workflows/deploy.yml and src/pages/robots.txt.ts), so a page never needs to opt into this itself; a real
+   * production build simply never sets that variable, so this stays false there without anyone touching this file. */
+  noindex?: boolean;
+  /** Skips the shared footer (for pages that ship their own closing panel). */
+  noFooter?: boolean;
 }
 
 const {
   title,
-  description = `${ORG_NAME} — Arquitetura digital, SEO técnico e GEO para a nova era das buscas.`,
+  description = `${ORG_NAME} — Arquitetura digital, SEO técnico e GEO (Generative Engine Optimization) para a nova era das buscas.`,
   image = ORG_LOGO_PATH,
   preloadImage,
   jsonLd,
+  noindex = import.meta.env.PUBLIC_NOINDEX === "true",
+  noFooter = false,
 } = Astro.props;
 
 const canonicalUrl = Astro.url.href;
 const siteUrl = (Astro.site ?? Astro.url).href;
 const absoluteImageUrl = image.startsWith("http") ? image : new URL(image, Astro.site ?? Astro.url).href;
 
-const organizationSchema = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: ORG_NAME,
-  url: siteUrl,
-  logo: new URL(ORG_LOGO_PATH, siteUrl).href,
-};
+const organizationSchema = buildOrganizationSchema(siteUrl);
 const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": siteUrl.endsWith("/") ? siteUrl + "#website" : siteUrl + "/#website",
   name: ORG_NAME,
   url: siteUrl,
+  publisher: { "@id": siteUrl.endsWith("/") ? siteUrl + "#organization" : siteUrl + "/#organization" },
 };
 const pageSchemas = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 ---
@@ -53,10 +61,24 @@ const pageSchemas = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    {/* Applies the saved theme before first paint (no light→dark flash). `?theme=dark|light` also sets and saves it, handy for previewing. */}
+    <script is:inline>
+      (function () {
+        document.documentElement.classList.add("js");
+        try {
+          var q = new URLSearchParams(location.search).get("theme");
+          if (q === "dark" || q === "light") localStorage.setItem("nv-theme", q);
+          var t = localStorage.getItem("nv-theme");
+          document.documentElement.setAttribute("data-theme", t === "dark" ? "dark" : "light");
+        } catch (e) {}
+      })();
+    </script>
     <title>{title}</title>
     <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
     <link rel="canonical" href={canonicalUrl} />
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
     {/* Link previews (WhatsApp, Facebook, Telegram, etc.) — see ShareButtons.astro if this project uses it. */}
     <meta property="og:type" content="website" />
@@ -72,28 +94,13 @@ const pageSchemas = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
 
     {preloadImage && <link rel="preload" as="image" href={preloadImage} fetchpriority="high" />}
 
-    {/* Inter Tight, async (media="print" until onload swaps it to "all") so
-       the font CSS never blocks first render — see BaseLayout's own note
-       on why this beats a plain blocking <link rel="stylesheet">. */}
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="preload"
-      as="style"
-      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap"
-      rel="stylesheet"
-      media="print"
-      onload="this.media='all'"
-    />
-    <noscript>
-      <link
-        href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&display=swap"
-        rel="stylesheet"
-      />
-    </noscript>
+    {/* Fonts are SELF-HOSTED (public/fonts, @font-face in global.css): no connection to another server before the first paint
+       (that connection was what kept moving the Lighthouse score between two "modes") and no visitor IP sent to Google.
+       Variable woff2, Latin subset (covers Portuguese). Both are preloaded because both show in the first screen. */}
+    <link rel="preload" href="/fonts/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href="/fonts/jetbrains-mono-latin.woff2" as="font" type="font/woff2" crossorigin />
+
+    <slot name="head" />
 
     <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} is:inline />
     <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} is:inline />
@@ -106,6 +113,10 @@ const pageSchemas = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     <div class="flex-1">
       <slot />
     </div>
-    <Footer />
+    {!noFooter && <Footer />}
+    <WhatsappFloat />
+    <script>
+      import "../scripts/site.ts";
+    </script>
   </body>
 </html>

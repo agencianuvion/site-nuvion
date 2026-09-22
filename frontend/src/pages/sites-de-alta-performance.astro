@@ -1,88 +1,183 @@
 ---
-// Copy adapted from agencianuvion.com.br's "Desenvolvimento de Sites"
-// section, expanded into a full page. Reuses PerformanceCard.astro
-// directly (it's literally the site talking about its own Core Web
-// Vitals) instead of re-describing the same idea in prose.
+// Copy adapted from agencianuvion.com.br's "Desenvolvimento de Sites" section, expanded into a full page. The
+// Core Web Vitals figures are Google's own public thresholds for a "good" score (nothing invented about Nuvion).
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
-import PerformanceCard from "../components/home/PerformanceCard.astro";
-import FinalCta from "../components/home/FinalCta.astro";
+import Bento from "../components/site/Bento.astro";
+import ServiceArt from "../components/site/ServiceArt.astro";
+import ProofStrip from "../components/site/ProofStrip.astro";
+import StepsStack from "../components/site/StepsStack.astro";
+import { steps as processSteps } from "../lib/process";
+import FeatureGrid from "../components/site/FeatureGrid.astro";
+import FaqSection from "../components/site/FaqSection.astro";
+import { faqSchema } from "../lib/faq";
+import { buildBreadcrumbSchema } from "../lib/breadcrumbs";
+import { serviceSchema, webPageSchema } from "../lib/schema";
+import AuthorCard from "../components/site/AuthorCard.astro";
+
+const siteUrl = (Astro.site ?? Astro.url).href;
+const crumbs = [{ label: "Início", href: "/" }, { label: "Sites de Alta Performance" }];
 
 const features = [
   {
     title: "Core Web Vitals",
-    description: "Carregamento rápido, resposta instantânea e nada de layout pulando na tela. O Google mede isso, e o seu visitante sente na pele.",
+    text: "Carregamento rápido, resposta instantânea e nada de layout pulando na tela. O Google mede isso, e o seu visitante sente na pele.",
     icon: `<polyline points="3 16 9.5 9.5 13.5 13.5 21 6"></polyline><polyline points="14.5 6 21 6 21 12.5"></polyline>`,
   },
   {
-    title: "UI/UX pensado pra converter",
-    description: "Cada tela é desenhada com um objetivo claro: guiar quem chega até a ação que importa pro seu negócio.",
+    title: "UI/UX pensado para converter",
+    text: "Cada tela é desenhada com um objetivo claro: guiar quem chega até a ação que importa para o seu negócio.",
     icon: `<rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 9h18M9 9v11"></path><path d="M12.5 13h6M12.5 16.5h6"></path>`,
   },
   {
     title: "Arquitetura de informação",
-    description: "Estrutura clara desde o primeiro dia, pensada tanto pra quem navega quanto pra quem indexa (Google e, cada vez mais, IA generativa).",
+    text: "Estrutura clara desde o primeiro dia, pensada tanto para quem navega quanto para quem indexa (Google e, cada vez mais, IA generativa).",
     icon: `<path d="M12 3 21 7.5 12 12 3 7.5z"></path><path d="M3 12l9 4.5 9-4.5"></path><path d="M3 16.5 12 21l9-4.5"></path>`,
   },
   {
     title: "Mobile-first de verdade",
-    description: "Desenhado primeiro pra tela pequena, não adaptado depois. É de lá que vem a maior parte do seu tráfego.",
+    text: "Desenhado primeiro para a tela pequena, não adaptado depois. É de lá que vem a maior parte do seu tráfego.",
     icon: `<rect x="7" y="2" width="10" height="20" rx="2"></rect><line x1="11" y1="18" x2="13" y2="18"></line>`,
   },
 ];
+
+const vitals = [
+  {
+    big: "≤ 2,5 s",
+    title: "LCP: carregamento",
+    text: "Tempo até o maior elemento da tela (imagem ou bloco de texto) aparecer. Quanto menor, mais rápido o visitante sente que a página abriu.",
+  },
+  {
+    big: "≤ 200 ms",
+    title: "INP: resposta ao toque",
+    text: "Quanto tempo a página leva para reagir a um clique, toque ou tecla. É o que separa um site ágil de um site que parece travado.",
+  },
+  {
+    big: "≤ 0,1",
+    title: "CLS: estabilidade visual",
+    text: "Mede o quanto o layout pula enquanto carrega. Nada de botão que muda de lugar na hora do clique.",
+  },
+];
+
+const faqs = [
+  {
+    question: "O que é um site de alta performance?",
+    answer:
+      "É um site construído para carregar rápido, funcionar bem no celular, ser fácil de entender e já nascer estruturado para SEO técnico e GEO (otimização para IAs generativas). O objetivo não é só existir online, é atrair o público certo e converter visitante em cliente de forma contínua.",
+  },
+  {
+    question: "O que são Core Web Vitals e por que importam?",
+    answer:
+      "São métricas do Google que medem carregamento (LCP), interatividade (INP) e estabilidade visual (CLS) a partir da experiência real de quem visita o site. Uma boa experiência ajuda a reter visitantes e é um dos sinais de qualidade que o Google considera.",
+  },
+  {
+    question: "O site já vem otimizado para SEO e GEO?",
+    answer:
+      "Sim. Arquitetura, dados estruturados e conteúdo são pensados para SEO técnico e GEO desde a fundação do projeto, em vez de tentar encaixar isso depois que o site já está no ar.",
+  },
+  {
+    question: "Meu site atual pode ser aproveitado ou preciso refazer?",
+    answer:
+      "Depende do diagnóstico. Quando a base técnica é sólida, otimizamos o que já existe. Quando o problema está na estrutura, reconstruir costuma ser mais eficiente do que remendar. Avaliamos isso antes de propor qualquer coisa.",
+  },
+  {
+    question: "Quanto custa criar um site profissional?",
+    answer:
+      "Depende do escopo: número de páginas, complexidade do design, integrações, produção de conteúdo e o trabalho de SEO técnico e GEO. Um orçamento sério começa entendendo o objetivo do negócio e o público. Desconfie de valores muito baixos sem escopo definido, e de sites prontos que não consideram SEO desde a estrutura.",
+  },
+  {
+    question: "Quanto tempo leva para desenvolver um site?",
+    answer:
+      "Varia com o tamanho e a complexidade do projeto e também com a rapidez na entrega de textos, imagens e aprovações. Um site institucional enxuto e uma plataforma com várias integrações têm prazos bem diferentes, e o prazo é combinado na proposta, depois do diagnóstico.",
+  },
+  {
+    question: "Site em WordPress ou desenvolvido sob medida: qual é melhor?",
+    answer:
+      "Depende do que você precisa. O WordPress facilita a edição de conteúdo por quem não é técnico e tem muitos recursos prontos, mas cada plugin adicionado exige cuidado com três pontos: velocidade, manutenção e, principalmente, segurança. Relatórios do setor apontam os plugins e temas de terceiros como a principal origem das falhas em sites WordPress, e novas vulnerabilidades são divulgadas com frequência, por isso plugins desatualizados ou abandonados são uma porta de entrada comum para invasões. Já o site sob medida leva apenas o código de que precisa, o que dá mais controle sobre desempenho e segurança. Em troca, exige mais trabalho de desenvolvimento. Na prática, a plataforma importa menos do que o resultado: o site precisa atingir os Core Web Vitals, ter estrutura para SEO e GEO e ficar sempre atualizado e protegido.",
+  },
+  {
+    question: "Um site mais rápido realmente traz mais clientes?",
+    answer:
+      "A velocidade não garante vendas sozinha, mas reduz a desistência: quem espera demais fecha a página antes de ver a sua oferta. Ela também é um dos sinais de qualidade que o Google considera. Velocidade é a base; a conversão depende também da clareza da oferta e do design da página.",
+  },
+  {
+    question: "Preciso ter textos e imagens prontos para começar?",
+    answer:
+      "Não necessariamente. Ter o material ajuda a acelerar, mas parte do trabalho é justamente definir a estrutura e a mensagem de cada página. O importante é ter clareza sobre o que você vende e para quem.",
+  },
+  {
+    question: "Como funciona o processo de criação?",
+    answer:
+      "Começamos com um diagnóstico, desenhamos a arquitetura e a estratégia, executamos com precisão e seguimos otimizando com base em dados reais de uso. Cada etapa alimenta a próxima.",
+  },
+];
+const featureItems = [
+  {
+    num: "O que entregamos",
+    title: "Um site pensado como ativo de aquisição",
+    text: "Muita empresa investe num site e o abandona como uma página estática. A gente pensa diferente: o seu site é construído para atrair o público certo, construir autoridade para a marca e converter visitante em cliente de forma contínua.",
+    size: "hero" as const,
+    art: 3 as const,
+    href: "/seo-tecnico",
+    linkLabel: "Veja como o SEO técnico começa na estrutura",
+  },
+  { ...features[1], size: "wide" as const },
+  { ...features[2], href: "/geo-generative-engine-optimization", linkLabel: "Entenda o GEO" },
+  { ...features[3] },
+];
+const vitalItems = [
+  ...vitals.map((v) => ({ big: v.big, title: v.title, text: v.text })),
+  {
+    title: "Medido em dados reais de uso",
+    text: "O Google avalia essas métricas a partir da experiência real de quem visita o site, e não só de testes de laboratório. Por isso acompanhamos as três depois da publicação, e não só na entrega.",
+    tags: ["LCP", "INP", "CLS"],
+    href: "/portfolio",
+    linkLabel: "Veja sites que já entregamos",
+    size: "full" as const,
+  },
+];
+
 ---
 
 <BaseLayout
   title="Sites de Alta Performance — Nuvion"
-  description="Sites construídos para converter: Core Web Vitals, UI/UX orientado a resultado e arquitetura pronta para SEO técnico e GEO desde o primeiro dia."
+  description="Sites construídos para converter: Core Web Vitals, UI/UX orientado a resultado e arquitetura pronta para SEO técnico e GEO (Generative Engine Optimization) desde o primeiro dia."
+  jsonLd={[buildBreadcrumbSchema(crumbs, Astro.url.href, siteUrl), faqSchema(faqs), webPageSchema({ name: "Sites de Alta Performance", description: "Sites construídos para converter, com Core Web Vitals, UI/UX orientado a resultado e arquitetura pronta para SEO técnico e GEO desde o primeiro dia.", url: Astro.url.href, siteUrl }), serviceSchema({ name: "Sites de Alta Performance", serviceType: "Criação de sites profissionais de alta performance", description: "Sites construídos para converter, com Core Web Vitals, UI/UX orientado a resultado e arquitetura pronta para SEO técnico e GEO desde o primeiro dia.", url: Astro.url.href, siteUrl })]}
 >
-  <PageHero
-    eyebrow="Sites de Alta Performance"
-    description="Um site bonito que não converte é só um cartão de visitas caro. A gente constrói pra ser uma máquina de aquisição desde a fundação."
-    ctaLabel="Quero um Site que Converte"
-    waMessage="Olá! Quero saber mais sobre desenvolvimento de sites com a Nuvion."
-  >
-    O seu site não devia ser um <strong>panfleto digital.</strong>
-  </PageHero>
+  <main class="t3">
+    <PageHero
+      eyebrow="Sites de Alta Performance"
+      crumbs={crumbs}
+      description="Criação de sites profissionais de alta performance: um site bonito que não converte é só um cartão de visitas caro. A gente constrói para ser uma máquina de aquisição desde a fundação."
+      ctaLabel="Quero um site que converte"
+      waMessage="Olá! Quero saber mais sobre desenvolvimento de sites com a Nuvion."
+      secondary={{ label: "Ver o que entregamos", href: "#sites-oque" }}
+    >
+      O seu site não devia ser um <em>panfleto digital.</em>
+      <div slot="visual"><ServiceArt kind={0} /></div>
+    </PageHero>
 
-  <section class="bg-nv-offwhite-light py-20 sm:py-24">
-    <div class="mx-auto max-w-3xl px-6 text-center sm:px-10">
-      <p class="text-pretty text-lg leading-[1.62] text-nv-graphite-700">
-        Muita empresa investe num site e o abandona como uma página estática, que não gera valor nenhum depois de
-        pronta. A gente pensa diferente: seu site é construído com um propósito claro, atrair o público certo,
-        construir autoridade pra sua marca e converter visitante em cliente de forma contínua.
-      </p>
-    </div>
+    <Bento id="sites-oque" title="O que faz um site" em="performar" chip="Entregas" items={featureItems} />
 
-    <div class="mx-auto mt-14 grid max-w-5xl grid-cols-1 gap-6 px-6 sm:grid-cols-2 sm:px-10">
-      {features.map((feature) => (
-        <div class="flex gap-5 rounded-3xl border border-nv-hairline bg-white p-7 shadow-[0_2px_8px_rgba(30,30,30,.06)]">
-          <div class="flex h-11 w-11 flex-none items-center justify-center rounded-full border border-nv-orange/30 text-nv-orange">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5" set:html={feature.icon} />
-          </div>
-          <div>
-            <h3 class="text-base font-semibold tracking-[-0.02em] text-nv-graphite-900">{feature.title}</h3>
-            <p class="mt-2 text-pretty text-sm leading-[1.62] text-nv-graphite-600">{feature.description}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  </section>
+    <Bento
+      id="sites-vitals"
+      tone="dark"
+      cols={3}
+      title="As metas que"
+      em="perseguimos"
+      chip="Core Web Vitals"
+      text="O Google mede a experiência de quem visita o site em três métricas. Estas são as faixas que ele considera boas, e o que projetamos para cada página atingir."
+      items={vitalItems}
+    />
 
-  <section class="bg-white py-20 sm:py-24">
-    <div class="mx-auto max-w-3xl px-6 text-center sm:px-10">
-      <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm">Prova real, não promessa</span>
-      <h2 class="nv-h1 mt-4 text-[28px] text-nv-graphite-900 sm:text-[38px]">É assim que medimos o próprio trabalho.</h2>
-    </div>
-    <div class="mt-12">
-      <PerformanceCard />
-    </div>
-  </section>
+    <StepsStack id="sites-processo" title="Como o projeto" em="acontece" chip="Processo" steps={processSteps} />
 
-  <FinalCta
-    eyebrow="Vamos construir"
-    description="Conte pra gente como está o seu site hoje e a gente te mostra, sem compromisso, o que dá pra melhorar."
-    buttonLabel="Quero um Diagnóstico do Meu Site"
-    waMessage="Olá! Quero um diagnóstico do meu site atual com a Nuvion."
-  />
+    <ProofStrip waMessage="Olá! Vi a página de Sites de Alta Performance e quero conversar sobre o meu projeto.">
+      <div slot="after">
+        <AuthorCard title="Interface, código e SEO pensados juntos" text="Um site de alta performance depende de três coisas ao mesmo tempo: uma interface que converte, um código rápido e uma estrutura preparada para as buscas. O Juan atua nas três frentes, como desenvolvedor full-stack com forte atuação em UI/UX, e revisa o que é publicado nesta página." />
+      </div>
+    </ProofStrip>
+
+    <FaqSection items={faqs} />
+  </main>
 </BaseLayout>

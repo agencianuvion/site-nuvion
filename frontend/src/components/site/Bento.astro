@@ -1,0 +1,87 @@
+---
+// Panel with a heading and a bento grid: cards of different sizes fitted into one grid (styles: .bx in site.css).
+// Sizes: "wide" (2 columns), "tall" (2 rows), "hero" (2x2), "full" (whole row). `hot` = orange card. A card can carry an
+// icon (inner SVG of a 24x24 stroke icon), a mono label (num), a big figure, tags, or one of the animated illustrations
+// (art: 0 site, 1 SEO chart, 2 AI answer).
+import ServiceArt from "./ServiceArt.astro";
+
+interface Item {
+  title: string;
+  text?: string;
+  num?: string;
+  big?: string;
+  icon?: string;
+  art?: 0 | 1 | 2 | 3 | 4;
+  size?: "wide" | "tall" | "hero" | "full";
+  hot?: boolean;
+  tags?: string[];
+  href?: string;
+  linkLabel?: string;
+}
+interface Props {
+  id: string;
+  title: string;
+  em?: string;
+  chip?: string;
+  text?: string;
+  /** Same as text, but trusted HTML (use for an inline link). */
+  textHtml?: string;
+  tone?: "light" | "dark";
+  cols?: 3 | 4;
+  /** "top": cards (except the orange one) start their content at the top instead of centring it vertically. */
+  align?: "top";
+  items: Item[];
+}
+const { id, title, em, chip, text, textHtml, tone = "light", cols = 4, align, items } = Astro.props;
+---
+
+<section class={`t3-panel t3-${tone} t3-pad`} aria-labelledby={id}>
+  <div class="t3-head">
+    <h2 id={id} class="t3-title" data-t3-title>{title}{em && <>{" "}<em>{em}</em></>}</h2>
+    {chip && <span class="t3-chip"><i></i>{chip}</span>}
+  </div>
+  {textHtml ? <p class="t3-sub" set:html={textHtml} /> : text && <p class="t3-sub">{text}</p>}
+  <div class:list={["bx", { "bx-c3": cols === 3, "bx-top": align === "top" }]}>
+    {
+      items.map((it) => (
+        <article
+          class:list={[
+            "bx-card",
+            { "is-wide": it.size === "wide", "is-tall": it.size === "tall", "is-hero": it.size === "hero", "is-full": it.size === "full", "is-hot": it.hot },
+          ]}
+          data-reveal
+        >
+          <div>
+            {it.icon && (
+              <span class="bx-ico">
+                <svg viewBox="0 0 24 24" aria-hidden="true" set:html={it.icon} />
+              </span>
+            )}
+            {it.num && <span class="bx-num">{it.num}</span>}
+            {it.big && <span class="bx-big">{it.big}</span>}
+            <h3>{it.title}</h3>
+            {it.text && <p>{it.text}</p>}
+            {
+              it.tags && (
+                <ul class="bx-tags" role="list">
+                  {it.tags.map((t) => (
+                    <li>{t}</li>
+                  ))}
+                </ul>
+              )
+            }
+            {
+              it.href && (
+                <a href={it.href} class="t3-link" target={it.href.startsWith("http") ? "_blank" : undefined} rel={it.href.startsWith("http") ? "noopener" : undefined}>
+                  {it.linkLabel ?? "Saiba mais"} <span aria-hidden="true">→</span>
+                </a>
+              )
+            }
+          </div>
+          {it.art !== undefined && <ServiceArt kind={it.art} />}
+        </article>
+      ))
+    }
+  </div>
+  <slot />
+</section>

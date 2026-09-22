@@ -1,0 +1,69 @@
+---
+// Light panel whose numbered cards rise over each other while the panel is held in place (desktop) or stack
+// with plain sticky (mobile). Mechanics: `.t3-stack` in scripts/site.ts; data-mess leaves the covered cards
+// slightly askew. Each step needs an icon (inner SVG of a 24x24 stroke icon) for the ring artwork.
+interface Step {
+  n: string;
+  title: string;
+  text: string;
+  chips: string[];
+  icon: string;
+}
+interface Props {
+  id?: string;
+  title: string;
+  em?: string;
+  chip?: string;
+  steps: Step[];
+}
+const { id = "t3-proc-h", title, em, chip = "Processo", steps } = Astro.props;
+---
+
+<section class="t3-panel t3-light t3-pad t3-stack t3-process" data-mess aria-labelledby={id}>
+  <div class="t3-head">
+    <h2 id={id} class="t3-title" data-t3-title>{title}{em && <>{" "}<em>{em}</em></>}</h2>
+    <span class="t3-chip"><i></i>{chip}</span>
+  </div>
+  <div class="t3-steps" style={`--n:${steps.length}`}>
+    {
+      steps.map((s, i) => (
+        <article class="t3-step" style={`--i:${i}`}>
+          <div class="t3-step-in">
+            <span class="t3-step-n">{s.n}</span>
+            <div class="t3-step-text">
+              <h3>{s.title}</h3>
+              <p>{s.text}</p>
+              <ul class="t3-chips">
+                {s.chips.map((c) => (
+                  <li>{c}</li>
+                ))}
+              </ul>
+            </div>
+            <svg class="t3-step-art" viewBox="0 0 240 240" fill="none" aria-hidden="true">
+              <g class="t3-ring-spin">
+                <circle cx="120" cy="120" r="112" stroke="currentColor" stroke-opacity="0.22" stroke-dasharray="2 7" />
+                <circle cx="120" cy="18" r="3.2" fill="#CC4E14" />
+                <circle cx="208" cy="170" r="2.4" fill="currentColor" fill-opacity="0.45" />
+              </g>
+              <circle cx="120" cy="120" r="82" stroke="currentColor" stroke-opacity="0.13" />
+              <circle cx="120" cy="120" r="52" stroke="currentColor" stroke-opacity="0.13" />
+              <path d="M120 8v44M120 188v44M8 120h44M188 120h44" stroke="currentColor" stroke-opacity="0.14" />
+              <path d="M34 34 86 86M154 154 206 206" stroke="#CC4E14" stroke-opacity="0.35" stroke-dasharray="3 5" />
+              <circle cx="86" cy="86" r="3" fill="#CC4E14" />
+              <circle cx="154" cy="154" r="3" fill="currentColor" fill-opacity="0.5" />
+              <circle cx="120" cy="120" r="34" class="t3-art-core" stroke="#CC4E14" stroke-opacity="0.4" />
+              <g
+                transform="translate(94 94) scale(2.17)"
+                stroke="#CC4E14"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                set:html={s.icon}
+              />
+            </svg>
+          </div>
+        </article>
+      ))
+    }
+  </div>
+</section>

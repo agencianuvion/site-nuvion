@@ -1,31 +1,155 @@
 ---
+// Blog index: hero with the newest covers, the featured article (the most recent one), "explore by topic" (categories in use,
+// with counts) and the list of ALL articles with a category filter (the featured one is in the list too, so counts match),
+// paginated with numbers on the same page (?tema=...&pagina=N, handled in scripts/site.ts, initBlogList). Categories, author and text come from WordPress; the reading time is
+// counted from the article text.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/shared/PageHero.astro";
 import PostCard from "../../components/blog/PostCard.astro";
-import { getPosts } from "../../lib/wp";
+import Bento from "../../components/site/Bento.astro";
+import { getVisiblePosts, postCategory, readingMinutes, categoriesWithCounts, isFounderAuthor } from "../../lib/blog";
+import { buildBreadcrumbSchema } from "../../lib/breadcrumbs";
+import { blogSchema } from "../../lib/schema";
+import { FOUNDER, waLink } from "../../lib/contact";
 
-const posts = await getPosts();
+const posts = [...(await getVisiblePosts())].sort((a, b) => b.date.localeCompare(a.date));
+const siteUrl = (Astro.site ?? Astro.url).href;
+const crumbs = [{ label: "Início", href: "/" }, { label: "Blog" }];
+const title = "Blog de SEO técnico e GEO — Nuvion";
+const description = "Artigos sobre SEO técnico, GEO (Generative Engine Optimization) e arquitetura de sites de alta performance, direto da equipe da Nuvion.";
+
+const PER_PAGE = 9; // articles per page of the list (3 rows of 3)
+const totalPages = Math.max(1, Math.ceil(posts.length / PER_PAGE));
+const feat = posts[0];
+const cats = categoriesWithCounts(posts);
+const dateFmt = (d: string) => new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "long", year: "numeric" });
+const mosaic = posts.filter((p) => p.featuredImage).slice(0, 3);
+
+// "Explore by topic": one card per category in use, then the orange call to action. The grid adapts to how many there are.
+const n = cats.length;
+const topicCols = n === 3 || n > 4 ? (3 as const) : (4 as const);
+const topicSize = n === 1 ? ("full" as const) : n === 2 ? ("wide" as const) : undefined;
+const topicItems = [
+  ...cats.map((c) => ({
+    num: `${c.count} ${c.count === 1 ? "artigo" : "artigos"}`,
+    title: c.name,
+    text: `Mais recente: ${c.latest.title}`,
+    href: `#tema-${c.slug}`,
+    linkLabel: "Ver os artigos",
+    size: topicSize,
+  })),
+  {
+    title: "Gostou do conteúdo?",
+    text: "Conte o cenário do seu site e a gente mostra como colocar isso em prática.",
+    size: "full" as const,
+    hot: true,
+    href: waLink("Olá! Li o blog da Nuvion e quero conversar sobre o meu site."),
+    linkLabel: "Falar no WhatsApp",
+  },
+];
 ---
 
 <BaseLayout
-  title="Blog — Nuvion"
-  description="Artigos sobre SEO técnico, GEO e arquitetura de sites de alta performance, direto da equipe da Nuvion."
+  title={title}
+  description={description}
+  jsonLd={[
+    blogSchema({ name: "Blog da Nuvion", description, url: Astro.url.href, siteUrl, posts: posts.map((p) => ({ title: p.title, url: new URL(`/blog/${p.slug}/`, siteUrl).href, date: p.dateGmt, modified: p.modifiedGmt, author: p.author })) }),
+    buildBreadcrumbSchema(crumbs, Astro.url.href, siteUrl),
+  ]}
 >
-  <PageHero eyebrow="Blog da Nuvion" description="Notas práticas sobre SEO técnico, GEO e o que realmente muda o resultado de um site.">
-    Ideias sobre <strong>sites que performam de verdade.</strong>
-  </PageHero>
+  <main class="t3">
+    <PageHero
+      eyebrow="Blog da Nuvion"
+      crumbs={crumbs}
+      description="Notas práticas sobre SEO técnico, GEO (otimização para IAs) e o que realmente muda o resultado de um site."
+      secondary={posts.length > 1 ? { label: "Ver todos os artigos", href: "#artigos" } : undefined}
+    >
+      Ideias sobre <em>sites que performam de verdade.</em>
+      {
+        mosaic.length > 0 && (
+          <Fragment slot="visual">
+            <div class="ph-mosaic">
+              {mosaic.map((p) => <img src={p.featuredImage} alt="" width="768" height="432" loading="eager" decoding="async" />)}
+            </div>
+            <div class="pf-vis-stats">
+              <span><b data-count={posts.length}>{posts.length}</b> {posts.length === 1 ? "artigo" : "artigos"}</span>
+              <span><b data-count={cats.length}>{cats.length}</b> {cats.length === 1 ? "tema" : "temas"}</span>
+            </div>
+          </Fragment>
+        )
+      }
+    </PageHero>
 
-  <main class="bg-nv-offwhite-light pb-24 pt-4 sm:pb-28">
-    <div class="mx-auto max-w-6xl px-6 sm:px-10">
-      {posts.length > 0 ? (
-        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {posts.map((post) => (
-            <PostCard post={post} />
-          ))}
-        </div>
+    {
+      feat ? (
+        <section class="t3-panel t3-light t3-pad" aria-labelledby="blog-h">
+          <div class="t3-head">
+            <h2 id="blog-h" class="t3-title" data-t3-title>Para ler <em>primeiro</em></h2>
+            <span class="t3-chip"><i></i>{posts.length} {posts.length === 1 ? "artigo" : "artigos"}</span>
+          </div>
+          <article class="pf-feat bf-feat" data-reveal>
+            <a class="bf-feat-media" href={`/blog/${feat.slug}`} tabindex="-1" aria-hidden="true">
+              <img src={feat.featuredImage} alt="" width="768" height="432" loading="eager" decoding="async" />
+            </a>
+            <div class="pf-feat-body">
+              <span class="pf-k"><i></i>Mais recente</span>
+              <div class="bf-meta">
+                <span class="pf-seg">{postCategory(feat).name}</span>
+                <time datetime={feat.date}>{dateFmt(feat.date)}</time>
+                <span>{readingMinutes(feat)} min de leitura</span>
+              </div>
+              <h3><a href={`/blog/${feat.slug}`}>{feat.title}</a></h3>
+              <p class="bf-excerpt">{feat.excerpt}</p>
+              <div class="pf-feat-actions">
+                <a class="nv-cta t3-btn" href={`/blog/${feat.slug}`}>Ler o artigo <span aria-hidden="true">→</span></a>
+                {
+                  feat.author && (
+                    <span class="bf-by">
+                      {feat.authorAvatar ? <img src={feat.authorAvatar} alt="" width="32" height="32" loading="lazy" decoding="async" /> : isFounderAuthor(feat.author, FOUNDER.name) ? <img src={FOUNDER.photo} alt="" width="32" height="32" loading="lazy" decoding="async" /> : <i aria-hidden="true">{feat.author.charAt(0)}</i>}
+                      {feat.author}
+                    </span>
+                  )
+                }
+              </div>
+            </div>
+          </article>
+        </section>
       ) : (
-        <p class="text-center text-nv-graphite-500">Nenhum artigo publicado ainda.</p>
-      )}
-    </div>
+        <section class="t3-panel t3-light t3-pad" aria-labelledby="blog-h">
+          <div class="t3-head">
+            <h2 id="blog-h" class="t3-title" data-t3-title>Artigos</h2>
+          </div>
+          <p class="t3-sub">Nenhum artigo publicado ainda.</p>
+        </section>
+      )
+    }
+
+    {posts.length > 1 && <Bento id="blog-temas" tone="dark" cols={topicCols} title="Explore por" em="tema" chip="Temas" items={topicItems} />}
+
+    {
+      posts.length > 1 && (
+        <section class="t3-panel t3-light t3-pad" aria-labelledby="blog-all-h" id="artigos" data-bf>
+          <div class="t3-head">
+            <h2 id="blog-all-h" class="t3-title" data-t3-title>Todos os <em>artigos</em></h2>
+            <span class="t3-chip"><i></i>{posts.length} {posts.length === 1 ? "artigo" : "artigos"}</span>
+          </div>
+          {
+            cats.length > 1 && (
+              <div class="pf-filter" role="group" aria-label="Filtrar artigos por tema">
+                <button type="button" class="pf-chip" data-bf-cat="all" aria-pressed="true">Todos <small>{posts.length}</small></button>
+                {cats.map((c) => <button type="button" class="pf-chip" data-bf-cat={c.slug} aria-pressed="false">{c.name} <small>{c.count}</small></button>)}
+              </div>
+            )
+          }
+          <p class="sr-only" aria-live="polite" data-bf-status></p>
+          <div class="t3-post-grid" data-bf-grid>
+            {posts.map((post, i) => <PostCard post={post} as="h3" late={i >= PER_PAGE} />)}
+          </div>
+          <nav class="bf-pager" aria-label="Paginação dos artigos" data-bf-pager data-per-page={PER_PAGE} hidden={totalPages <= 1}>
+            {Array.from({ length: totalPages }, (_, i) => <a class="bf-pg" href={i === 0 ? "/blog/" : `/blog/?pagina=${i + 1}`} data-p={i + 1} aria-current={i === 0 ? "page" : undefined} aria-label={`Página ${i + 1}`}>{i + 1}</a>)}
+          </nav>
+        </section>
+      )
+    }
   </main>
 </BaseLayout>

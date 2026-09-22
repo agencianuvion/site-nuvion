@@ -1,0 +1,70 @@
+---
+// "Proof" strip: three real projects (photos from lib/projects.ts) with a call to action. Names and photos are real; the
+// per-project texts on the portfolio page are still test copy, so none is shown here.
+import { projects } from "../../lib/projects";
+import { waLink } from "../../lib/contact";
+
+interface Props {
+  title?: string;
+  em?: string;
+  chip?: string;
+  text?: string;
+  waMessage?: string;
+  tone?: "light" | "dark";
+  /** Show the three project photos (default). With false, use slot="below" for other content. */
+  showProjects?: boolean;
+  /** Show the "Ver portfólio" button and the extra link (default true). */
+  showExits?: boolean;
+  /** Faint Nuvion wordmark behind the content, drifting with the scroll (parallax). */
+  mark?: boolean;
+  ctaLabel?: string;
+  /** Extra text link next to the buttons. */
+  extraLink?: { href: string; label: string };
+}
+const {
+  title = "Sites que a Nuvion",
+  em = "já entregou",
+  chip = "Projetos",
+  text = "Estes são alguns dos projetos que construímos. Veja o portfólio completo e os setores em que mais atuamos.",
+  waMessage = "Olá! Vi os projetos da Nuvion e quero conversar sobre o meu.",
+  tone = "dark",
+  showProjects = true,
+  showExits = true,
+  mark = false,
+  ctaLabel = "Quero um projeto assim",
+  extraLink,
+} = Astro.props;
+const list = projects.slice(0, 3);
+const hasAside = Astro.slots.has("aside");
+---
+
+<section class:list={["t3-panel", `t3-${tone}`, "t3-pad", { "t3-proof": mark }]} aria-labelledby="proof-h">
+  {mark && <img class="t3-proof-mark" src="/images/nuvion-wordmark.webp" alt="" width="2400" height="354" loading="lazy" decoding="async" aria-hidden="true" />}
+  <div class="t3-head">
+    <h2 id="proof-h" class="t3-title" data-t3-title>{title} <em>{em}</em></h2>
+    <span class="t3-chip"><i></i>{chip}</span>
+  </div>
+  <div class:list={["proof-top", { "has-aside": hasAside }]}>
+    <p class="t3-sub">{text}</p>
+    {hasAside && <div class="proof-aside"><slot name="aside" /></div>}
+  </div>
+  {showProjects && (
+  <div class="proof-grid">
+    {
+      list.map((p) => (
+        <figure class="proof-card t3-pmedia" data-reveal data-full={`/images/projects/${p.slug}-1800.webp`} data-name={p.name}>
+          <img src={`/images/projects/${p.slug}-640.webp`} srcset={`/images/projects/${p.slug}-640.webp 640w, /images/projects/${p.slug}-1000.webp 1000w`} sizes="(max-width: 800px) 92vw, 33vw" alt={p.alt} width="1000" height="562" loading="lazy" decoding="async" draggable="false" />
+          <span class="proof-name">{p.name}</span>
+        </figure>
+      ))
+    }
+  </div>
+  )}
+  <slot name="below" />
+  <div class="proof-actions">
+    <a class="nv-cta t3-btn" href={waLink(waMessage)} target="_blank" rel="noopener">{ctaLabel}</a>
+    {showExits && <a class="t3-btn-ghost" href="/portfolio">Ver portfólio</a>}
+    {showExits && (extraLink ? <a class="t3-link" href={extraLink.href}>{extraLink.label} <span aria-hidden="true">→</span></a> : <a class="t3-link" href="/setores">Setores que atendemos <span aria-hidden="true">→</span></a>)}
+  </div>
+  <slot name="after" />
+</section>

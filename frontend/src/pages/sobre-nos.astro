@@ -1,108 +1,139 @@
 ---
-// Sobre Nós — mission/vision/values adapted from agencianuvion.com.br's
-// own About page, reworded to drop the retired "Método D.R.O.P.S." name
-// (see project memory on the Nuvion repositioning). The founder quote is
-// a FIRST DRAFT only, written to be edited/replaced by Juan himself before
-// publishing — E-E-A-T content needs to be genuinely his voice, not
-// something invented on his behalf (see PerformanceCard.astro's own note
-// on this brand's candor value: same principle applies to authorship).
+// Sobre Nós — mission/vision/values adapted from agencianuvion.com.br's own About page, reworded to drop the
+// retired "Método D.R.O.P.S." name. The founder quote is a FIRST DRAFT only, to be edited/replaced by Juan himself
+// before publishing (E-E-A-T content has to be genuinely his voice). The three numbers were given by the client.
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
-import FinalCta from "../components/home/FinalCta.astro";
+import Bento from "../components/site/Bento.astro";
+import StepsStack from "../components/site/StepsStack.astro";
+import ClientsMarquee from "../components/site/ClientsMarquee.astro";
+import Testimonials from "../components/site/Testimonials.astro";
+import { steps } from "../lib/process";
+import { buildBreadcrumbSchema } from "../lib/breadcrumbs";
+import AuthorCard from "../components/site/AuthorCard.astro";
+import { founderSchema, aboutPageSchema } from "../lib/schema";
+import { FOUNDER } from "../lib/contact";
+
+const siteUrl = (Astro.site ?? Astro.url).href;
+const crumbs = [{ label: "Início", href: "/" }, { label: "Sobre Nós" }];
+
+// hero numbers: given by the client; "count" is what the script counts up to, prefix/suffix are kept around it
+const bars = Array.from({ length: 11 }, (_, i) => i);
+const dots = Array.from({ length: 24 }, (_, i) => i);
+
+const founderQuote =
+  "Fundei a Nuvion depois de ver o mesmo erro se repetir em dezenas de negócios: sites bonitos, feitos com carinho, que não traziam um cliente sequer. E a internet mudou. Hoje não basta aparecer no Google, é preciso aparecer também na resposta que a inteligência artificial dá quando alguém pergunta por um produto ou serviço como o seu. Por isso decidi focar a Nuvion inteiramente nisso: arquitetura de site, SEO técnico e GEO trabalhando juntos, sem prometer o que a gente não vai entregar.";
 
 const values = [
-  { title: "Foco no resultado", description: "O seu retorno é a métrica que importa. Não trabalhamos por vaidade, trabalhamos por ROI." },
-  { title: "Transparência estratégica", description: "Dados claros, sem enrolação, para você tomar decisão com segurança." },
-  { title: "Expertise humana e tecnologia", description: "Tecnologia sozinha não resolve. É a combinação com julgamento humano que faz a diferença." },
+  { title: "Foco no resultado", text: "O seu retorno é a métrica que importa. Não trabalhamos por vaidade, trabalhamos por ROI." },
+  { title: "Transparência estratégica", text: "Dados claros, sem enrolação, para você tomar decisão com segurança." },
+  { title: "Expertise humana e tecnologia", text: "Tecnologia sozinha não resolve. É a combinação com julgamento humano que faz a diferença." },
 ];
 
-const personSchema = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: "Juan C. Fabra Gomez",
-  jobTitle: "Fundador",
-  worksFor: { "@type": "Organization", name: "Nuvion" },
-};
+const mvv = [
+  {
+    num: "Missão",
+    title: "Simplificar o crescimento digital",
+    text: "Simplificar o crescimento digital das empresas que atendemos, construindo sites que funcionam como ativos de aquisição, não só cartões de visita.",
+    size: "hero" as const,
+  },
+  {
+    num: "Visão",
+    title: "A referência em SEO técnico e GEO",
+    text: "Ser a principal referência em arquitetura digital para SEO técnico e GEO, reconhecida por transformar a presença online dos nossos clientes em um ativo previsível.",
+    size: "wide" as const,
+  },
+  { num: "Valor", title: values[0].title, text: values[0].text },
+  { num: "Valor", title: values[1].title, text: values[1].text },
+  { num: "Valor", title: values[2].title, text: values[2].text, size: "full" as const, hot: true },
+];
+
 ---
 
 <BaseLayout
   title="Sobre a Nuvion — Arquitetura digital para SEO técnico e GEO"
-  description="Conheça a Nuvion: missão, visão e os valores por trás dos sites de alta performance que construímos para SEO técnico e GEO."
-  jsonLd={personSchema}
+  description="Conheça a Nuvion: missão, visão e os valores por trás dos sites de alta performance que construímos para SEO técnico e GEO (Generative Engine Optimization)."
+  jsonLd={[
+    founderSchema(siteUrl),
+    aboutPageSchema({
+      name: "Sobre a Nuvion",
+      description: "Conheça a Nuvion: missão, visão e os valores por trás dos sites de alta performance que construímos para SEO técnico e GEO (Generative Engine Optimization).",
+      url: Astro.url.href,
+      siteUrl,
+    }),
+    buildBreadcrumbSchema(crumbs, Astro.url.href, siteUrl),
+  ]}
 >
-  <PageHero eyebrow="Sobre a Nuvion" description="Somos uma agência focada em uma coisa só: transformar sites em ativos que trazem cliente de verdade, através de SEO técnico e GEO.">
-    Construímos sites que funcionam como <strong>máquinas de aquisição.</strong>
-  </PageHero>
-
-  <section class="bg-nv-offwhite-light py-20 sm:py-24">
-    <div class="mx-auto max-w-4xl px-6 sm:px-10">
-      <div class="grid grid-cols-1 gap-8 rounded-[32px] border border-nv-hairline bg-white p-8 shadow-[0_20px_56px_rgba(20,20,20,.06)] sm:grid-cols-[auto_1fr] sm:gap-10 sm:p-12">
-        <div class="flex flex-col items-center gap-3 sm:items-start">
-          <div class="flex h-20 w-20 items-center justify-center rounded-full bg-nv-graphite-900 text-xl font-semibold text-white">
-            JF
+  <main class="t3">
+    <PageHero
+      eyebrow="Sobre a Nuvion"
+      crumbs={crumbs}
+      description="Somos uma agência focada em uma coisa só: transformar sites em ativos que trazem cliente de verdade, através de SEO técnico e GEO (Generative Engine Optimization)."
+      ctaLabel="Agendar minha conversa"
+      waMessage="Olá! Vi a página Sobre a Nuvion e quero conversar sobre o meu projeto."
+      visualDecorative={false}
+    >
+      Construímos sites que funcionam como <em>máquinas de aquisição.</em>
+      <div slot="visual" class="ph-stats">
+        <div class="ph-stat ph-stat-wide">
+          <div class="ph-stat-txt">
+            <b data-count="11">11</b>
+            <span>Anos de experiência</span>
           </div>
-          <div class="text-center sm:text-left">
-            <p class="text-sm font-semibold text-nv-graphite-900">Juan C. Fabra Gomez</p>
-            <p class="text-xs text-nv-graphite-500">Fundador da Nuvion</p>
+          <div class="ph-bars" aria-hidden="true">
+            {bars.map((i) => <i style={`--i:${i}`} />)}
           </div>
         </div>
-        <div>
-          <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange">Direto do fundador</span>
-          <p class="nv-lead mt-4 text-pretty text-lg text-nv-graphite-800">
-            "Fundei a Nuvion depois de ver o mesmo problema se repetir em dezenas de negócios: um site bonito, feito
-            com carinho, que não trazia um cliente sequer. A internet mudou. Hoje não basta aparecer no Google, é
-            preciso aparecer também na resposta que a inteligência artificial dá quando alguém pergunta por um
-            produto ou serviço como o seu. Por isso decidi focar a Nuvion inteiramente nisso: arquitetura de site,
-            SEO técnico e GEO trabalhando juntos, sem prometer o que a gente não vai entregar."
-          </p>
-          <p class="mt-4 text-xs italic text-nv-graphite-400">
-            Rascunho para o Juan revisar e deixar com a própria voz antes de publicar.
-          </p>
+        <div class="ph-stat">
+          <b data-count="150" data-prefix="+">+150</b>
+          <span>Projetos entregues</span>
+          <div class="ph-dots" aria-hidden="true">
+            {dots.map((i) => <i style={`--i:${i}`} />)}
+          </div>
+        </div>
+        <div class="ph-stat">
+          <b data-count="1000" data-format="k-to-m">1M+</b>
+          <span>Leads gerados</span>
+          <svg class="ph-spark" viewBox="0 0 120 44" preserveAspectRatio="none" aria-hidden="true">
+            <path class="ph-spark-area" d="M2 40 C 20 38, 30 34, 46 30 S 74 22, 88 14 S 108 6, 118 4 L118 44 L2 44 Z" />
+            <path class="ph-spark-line" pathLength="1" d="M2 40 C 20 38, 30 34, 46 30 S 74 22, 88 14 S 108 6, 118 4" />
+            <path class="ph-spark-dot" d="M118 4h0.01" />
+          </svg>
+        </div>
+        <div class="ph-stat ph-stat-wide ph-stat-hot">
+          <span class="ph-pin" aria-hidden="true"><i></i></span>
+          <div class="ph-stat-txt">
+            <b class="ph-place">Atendemos todo o Brasil</b>
+            <span>Empresas de qualquer estado</span>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </PageHero>
 
-  <section class="bg-white py-20 sm:py-24">
-    <div class="mx-auto grid max-w-5xl grid-cols-1 gap-8 px-6 sm:grid-cols-2 sm:gap-10 sm:px-10">
-      <div class="rounded-3xl border border-nv-hairline bg-white p-8 shadow-[0_2px_8px_rgba(30,30,30,.06)]">
-        <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange">Missão</span>
-        <p class="mt-4 text-pretty text-lg leading-[1.5] text-nv-graphite-800">
-          Simplificar o crescimento digital das empresas que atendemos, construindo sites que funcionam como ativos
-          de aquisição, não só cartões de visita.
-        </p>
+    <section class="t3-panel t3-light t3-pad" aria-labelledby="sobre-fundador">
+      <div class="t3-head">
+        <h2 id="sobre-fundador" class="t3-title" data-t3-title>Direto do <em>fundador</em></h2>
+        <span class="t3-chip"><i></i>Fundador</span>
       </div>
-      <div class="rounded-3xl border border-nv-hairline bg-white p-8 shadow-[0_2px_8px_rgba(30,30,30,.06)]">
-        <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange">Visão</span>
-        <p class="mt-4 text-pretty text-lg leading-[1.5] text-nv-graphite-800">
-          Ser a principal referência em arquitetura digital para SEO técnico e GEO, reconhecida por transformar a
-          presença online dos nossos clientes em um ativo previsível.
-        </p>
-      </div>
-    </div>
-  </section>
+      <AuthorCard
+        kicker="Quem está por trás da Nuvion"
+        title="Bonito não basta: o site precisa trazer cliente"
+        text={"\u201C" + founderQuote + "\u201D"}
+        quote
+        chips={["SEO e GEO", "Desenvolvimento full-stack", "UI/UX design", "Inteligência artificial", "Administração e Marketing Digital"]}
+        links={[
+          { label: "LinkedIn", href: FOUNDER.linkedin, external: true },
+          { label: "Ler o blog", href: "/blog" },
+        ]}
+      />
+    </section>
 
-  <section class="bg-nv-offwhite-light py-20 sm:py-24">
-    <div class="mx-auto max-w-5xl px-6 sm:px-10">
-      <div class="mx-auto max-w-2xl text-center">
-        <span class="text-xs font-semibold uppercase tracking-[0.32em] text-nv-orange sm:text-sm">Valores</span>
-        <h2 class="nv-h1 mt-4 text-[28px] text-nv-graphite-900 sm:text-[38px]">O que é inegociável pra gente.</h2>
-      </div>
-      <div class="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3">
-        {values.map((value) => (
-          <div class="rounded-3xl border border-nv-hairline bg-white p-7 shadow-[0_2px_8px_rgba(30,30,30,.06)]">
-            <h3 class="text-lg font-semibold tracking-[-0.02em] text-nv-graphite-900">{value.title}</h3>
-            <p class="mt-3 text-pretty text-sm leading-[1.62] text-nv-graphite-600">{value.description}</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  </section>
+    <Bento id="sobre-mvv" tone="dark" title="Missão, visão e" em="valores" chip="O que nos guia" items={mvv} />
 
-  <FinalCta
-    eyebrow="Vamos conversar"
-    description="Se você chegou até aqui, já sabe o que a Nuvion valoriza. Agora é só marcar uma conversa e ver se faz sentido pro seu momento."
-    buttonLabel="Agendar Minha Conversa"
-    waMessage="Olá! Vi a página Sobre a Nuvion e quero conversar sobre o meu projeto."
-  />
+    <StepsStack id="sobre-processo" title="Como" em="trabalhamos" steps={steps} />
+
+    <Testimonials layout="bento" />
+
+    <ClientsMarquee />
+  </main>
 </BaseLayout>

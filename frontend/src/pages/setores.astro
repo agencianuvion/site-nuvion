@@ -1,0 +1,89 @@
+---
+// Sectors hub. The list itself lives in the SectorsSection component (layout the client liked on the old home);
+// its copy was inferred from the names of the client logos we were given, so review it before publishing.
+// When individual sector pages exist (only for sectors with real cases), link each item to its page.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/shared/PageHero.astro";
+import Bento from "../components/site/Bento.astro";
+import FeatureGrid from "../components/site/FeatureGrid.astro";
+import FaqSection from "../components/site/FaqSection.astro";
+import SectorsSection from "../components/test3/SectorsSection.astro";
+import { faqSchema } from "../lib/faq";
+import { buildBreadcrumbSchema } from "../lib/breadcrumbs";
+
+const siteUrl = (Astro.site ?? Astro.url).href;
+const crumbs = [{ label: "Início", href: "/" }, { label: "Setores" }];
+
+const changes = [
+  {
+    num: "01",
+    title: "O público",
+    text: "Quem compra de uma clínica não pesquisa como quem contrata uma construtora. Entendemos como o seu cliente decide antes de desenhar o site.",
+  },
+  {
+    num: "02",
+    title: "A busca",
+    text: "Cada segmento tem as suas palavras, perguntas e intenções. É isso que define a estrutura e o conteúdo, não um modelo pronto.",
+  },
+  {
+    num: "03",
+    title: "A concorrência",
+    text: "Olhamos quem já aparece no Google e nas respostas das IAs no seu mercado, para achar o espaço que ainda está aberto.",
+  },
+];
+
+const faqs = [
+  {
+    question: "A Nuvion atende o meu segmento?",
+    answer:
+      "Trabalhamos com qualquer modelo de negócio. Os setores desta página são onde temos mais experiência, mas o método é o mesmo para todos e se adapta ao seu público e à sua busca.",
+  },
+  {
+    question: "Preciso ter um site para começar?",
+    answer:
+      "Não. Se você ainda não tem site, planejamos e criamos um já pronto para ser encontrado. Se já tem, analisamos o que existe e decidimos junto o que aproveitar.",
+  },
+  {
+    question: "O trabalho muda de um setor para outro?",
+    answer:
+      "A base técnica não muda: um site rápido, bem estruturado e pensado para ser encontrado. O que muda é o público, as palavras que ele usa para buscar e a concorrência de cada mercado.",
+  },
+];
+const sectorNames = ["Saúde e estética", "Construção e imobiliário", "Indústria e serviços técnicos", "Moda e varejo", "Gastronomia e turismo", "Educação e associações"];
+
+---
+
+<BaseLayout
+  title="Setores atendidos — Nuvion"
+  description="Saúde, construção, indústria, varejo, gastronomia, educação e mais: veja os setores em que a Nuvion mais tem experiência com sites, SEO técnico e GEO (Generative Engine Optimization)."
+  jsonLd={[buildBreadcrumbSchema(crumbs, Astro.url.href, siteUrl), faqSchema(faqs)]}
+>
+  <main class="t3">
+    <PageHero
+      eyebrow="Setores"
+      crumbs={crumbs}
+      description="O método é o mesmo; o público e a busca mudam. Veja em quais mercados a Nuvion mais tem experiência."
+      ctaLabel="Falar sobre o meu setor"
+      waMessage="Olá! Quero conversar sobre um site para o meu negócio."
+    >
+      Sites e buscas para <em>o seu setor.</em>
+      <ul slot="visual" class="ph-chips">
+        {sectorNames.map((n) => <li>{n}</li>)}
+        <li>+ qualquer outro modelo de negócio</li>
+      </ul>
+    </PageHero>
+
+    <Bento
+      id="setores-muda"
+      cols={3}
+      title="O que muda de um setor para"
+      em="outro"
+      chip="Adaptação"
+      items={changes.map((c, i) => ({ num: c.num, title: c.title, text: c.text, ...(i === 1 ? { hot: true } : {}) }))}
+    />
+
+    <SectorsSection />
+
+    <FaqSection items={faqs} />
+  </main>
+</BaseLayout>

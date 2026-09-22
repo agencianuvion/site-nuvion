@@ -1,0 +1,37 @@
+---
+// Shell of the legal pages (privacy policy, terms of use): compact hero + a reading column with the text in the
+// slot (use h2/h3/p/ul; the .prose styles do the rest).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../shared/PageHero.astro";
+import { buildBreadcrumbSchema } from "../../lib/breadcrumbs";
+
+interface Props {
+  title: string;
+  heading: string;
+  description: string;
+  updated: string;
+  /** Optional small badge above the text (none by default). */
+  note?: string | false;
+  eyebrow?: string;
+}
+const { title, heading, description, updated, note = false, eyebrow = "Legal" } = Astro.props;
+const siteUrl = (Astro.site ?? Astro.url).href;
+const crumbs = [{ label: "Início", href: "/" }, { label: heading }];
+---
+
+<BaseLayout title={`${title} — Nuvion`} description={description} jsonLd={buildBreadcrumbSchema(crumbs, Astro.url.href, siteUrl)}>
+  <main class="t3">
+    <PageHero compact eyebrow={eyebrow} frame="r02" crumbs={crumbs} description={`Última atualização: ${updated}`}>
+      {heading}
+    </PageHero>
+
+    <section class="t3-panel t3-light t3-pad" aria-label={heading}>
+      <div class="t3-article">
+        {note && <span class="t3-legal-note">{note}</span>}
+        <div class="prose prose-nv max-w-none">
+          <slot />
+        </div>
+      </div>
+    </section>
+  </main>
+</BaseLayout>

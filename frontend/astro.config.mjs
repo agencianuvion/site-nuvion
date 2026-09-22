@@ -11,7 +11,9 @@ export default defineConfig({
   // localhost in production.
   site: 'https://agencianuvion.com.br',
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    // stylesheets under 8 KB are inlined in the page (the illustrations' 4.6 KB sheet was a second render-blocking request)
+    build: { assetsInlineLimit: 8192 }
   },
-  integrations: [sitemap()]
+  integrations: [sitemap({ filter: (page) => !page.includes('/teste-') })]
 });

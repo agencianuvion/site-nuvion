@@ -1,6 +1,24 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Self-hosted variable fonts (Latin subset). Inter Tight 300-800 for text, JetBrains Mono 400-600 for the small technical labels. */
+@font-face {
+  font-family: "Inter Tight";
+  font-style: normal;
+  font-weight: 300 800;
+  font-display: swap;
+  src: url("/fonts/inter-tight-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "JetBrains Mono";
+  font-style: normal;
+  font-weight: 400 600;
+  font-display: swap;
+  src: url("/fonts/jetbrains-mono-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* Nuvion brand tokens — extracted from design-reference/Hero Nuvion.dc.html
    and PROJECT_PREFERENCES.md. Tailwind v4's CSS-first config: tokens live
    here, not in a JS config file. */
@@ -9,7 +27,7 @@
   --color-fg: #2a2a2a;
 
   /* Primary orange + its hover/soft variants. */
-  --color-nv-orange: #cc4e14;
+  --color-nv-orange: #ca4d13; /* was #cc4e14: 4.49:1 on white, just under WCAG AA (4.5) for normal-size text */
   --color-nv-orange-hover: #b54212;
   --color-nv-orange-soft: #e8825a;
 
@@ -32,6 +50,14 @@
      Performance Card's "Aprovado" badge and CWV rings. */
   --color-nv-success: #22c55e;
 
+  /* Semantic surfaces — these (not raw white/graphite) are what components
+     use for cards, chips and fixed dark boxes, so the dark theme can remap
+     them in one place. */
+  --color-nv-surface: #ffffff;
+  --color-nv-ink: #2a2a2a;
+  --color-nv-chip: #f0f0f0;
+  --color-nv-line: rgba(42, 42, 42, 0.1);
+
   --font-sans: "Inter Tight", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --shadow-nv-accent: 0 10px 28px rgba(204, 78, 20, 0.28);
@@ -42,16 +68,95 @@
   --pad-x: clamp(1.25rem, 4vw, 3rem);
 }
 
-/* Dark mode: the toggle (ThemeToggle.astro) is wired up and persists a
-   choice, but the palette below is only the base bg/fg flip — most
-   sections use explicit bg-white/bg-nv-offwhite-light classes, so they
-   won't visually change until each is given a real dark treatment (later
-   work). Deliberately gated on the explicit [data-theme="dark"] attribute
-   only, not prefers-color-scheme — the site shouldn't silently switch an
-   unfinished dark mode on for visitors whose OS is set to dark. */
+/* Light/dark switch: a brief crossfade instead of the instant flip. The transition is only turned on for the ~300ms the
+   switch takes (via this class, added/removed by ThemeToggle's script), not left running all the time — that would slow
+   down every OTHER color change on the site too (hovers, reveals), for no benefit once the theme itself isn't changing.
+   Skipped entirely for prefers-reduced-motion. Only paint properties (color/background/border/fill/stroke), so it doesn't
+   touch layout — no effect on CLS/SEO. */
+@media (prefers-reduced-motion: no-preference) {
+  .theme-fade,
+  .theme-fade *,
+  .theme-fade *::before,
+  .theme-fade *::after {
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease,
+      border-color 0.3s ease,
+      fill 0.3s ease,
+      stroke 0.3s ease !important;
+  }
+}
+
+/* Dark mode — palette borrowed from the /teste-slider and /teste-lp
+   experiments (#0e1013 base, #16191d cards, warm off-white ink, same
+   orange). Components use semantic tokens (bg-bg, bg-nv-surface, text
+   graphite scale, border-nv-hairline), so remapping them here re-themes
+   the whole site. The graphite text scale is inverted (900 = strongest ink
+   in both themes); fixed dark boxes use --color-nv-ink instead, which
+   stays dark. Gated on the explicit [data-theme="dark"] attribute only,
+   not prefers-color-scheme, so it never turns on by itself. */
 :root[data-theme="dark"] {
-  --color-bg: #111111;
-  --color-fg: #f2f2f2;
+  color-scheme: dark;
+  --color-bg: #060708;
+  --color-fg: #f4f3f2;
+
+  --color-nv-surface: #272c34;
+  --color-nv-offwhite-light: #12151a;
+  --color-nv-offwhite: #14171b;
+  --color-nv-hairline: #3a404a;
+  --color-nv-chip: #2f353e;
+  --color-nv-line: rgba(255, 255, 255, 0.14);
+  --color-nv-ink: #1c1f24;
+
+  --color-nv-graphite-900: #f4f3f2;
+  --color-nv-graphite-800: #e8e6e4;
+  --color-nv-graphite-700: #cfcdca;
+  --color-nv-graphite-600: #c4c2bd;
+  --color-nv-graphite-500: #adaba7;
+  --color-nv-graphite-400: #8f8d89;
+
+  --shadow-nv-accent: 0 10px 28px rgba(204, 78, 20, 0.35);
+}
+
+:root[data-theme="dark"] .nv-glass {
+  background: rgba(14, 16, 19, 0.6);
+  border-bottom-color: rgba(255, 255, 255, 0.07);
+}
+:root[data-theme="dark"] .nv-grid-bg {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+:root[data-theme="dark"] .nv-soft {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #e8e6e4;
+}
+:root[data-theme="dark"] .nv-soft:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.32);
+  color: #fff;
+}
+:root[data-theme="dark"] .nv-lead {
+  color: #b7b5b2;
+}
+:root[data-theme="dark"] .nv-nav:hover {
+  background: var(--color-nv-orange);
+  border-color: var(--color-nv-orange);
+}
+:root[data-theme="dark"] .nv-perf:hover {
+  box-shadow: 0 26px 64px rgba(0, 0, 0, 0.55);
+}
+
+/* Logo swap: the dark-ink wordmark is invisible on the dark theme. */
+.nv-logo-on-dark {
+  display: none;
+}
+:root[data-theme="dark"] .nv-logo-on-light {
+  display: none;
+}
+:root[data-theme="dark"] .nv-logo-on-dark {
+  display: block;
 }
 
 html {
@@ -85,6 +190,64 @@ summary {
   border-bottom: 1px solid rgba(42, 42, 42, 0.06);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+}
+
+/* Header over a DARK panel (light theme only — the dark theme is already dark). The header script sets
+   data-over="dark" while the header sits on top of a .t3-dark panel, so the glass turns dark and the text,
+   logo and toggle turn light instead of fading into the black. */
+.nv-glass {
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
+}
+:root:not([data-theme="dark"]) header.nv-glass[data-over="dark"] {
+  background: rgba(11, 11, 12, 0.62);
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+/* The mobile menu sits inside the header, which already has a backdrop-filter, and a nested backdrop-filter
+   blurs nothing in Chrome, so a translucent menu would show the page through it. Keep it (almost) opaque. */
+#mobile-menu.nv-glass {
+  background: #ffffff;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  border-radius: 0 0 20px 20px;
+  box-shadow: 0 22px 44px rgba(0, 0, 0, 0.16);
+}
+:root[data-theme="dark"] #mobile-menu.nv-glass {
+  background: #12151a;
+}
+:root:not([data-theme="dark"]) header.nv-glass[data-over="dark"] #mobile-menu {
+  background: #0b0b0c;
+}
+:root:not([data-theme="dark"]) header[data-over="dark"] nav a:not(.nv-cta):not(.nv-drop-link) {
+  color: rgba(255, 255, 255, 0.8);
+}
+:root:not([data-theme="dark"]) header[data-over="dark"] nav a:not(.nv-cta):not(.nv-drop-link):hover,
+:root:not([data-theme="dark"]) header[data-over="dark"] nav a[aria-current="page"]:not(.nv-drop-link) {
+  color: #fff;
+}
+:root:not([data-theme="dark"]) header[data-over="dark"] #mobile-menu a:not(.nv-cta):hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+:root:not([data-theme="dark"]) header[data-over="dark"] #mobile-menu-toggle svg {
+  color: #fff;
+}
+:root:not([data-theme="dark"]) header[data-over="dark"] .nv-logo-on-light {
+  display: none;
+}
+:root:not([data-theme="dark"]) header[data-over="dark"] .nv-logo-on-dark {
+  display: block;
+}
+:root:not([data-theme="dark"]) header[data-over="dark"] .nv-theme-toggle {
+  background: rgba(255, 255, 255, 0.1);
+}
+:root:not([data-theme="dark"]) header[data-over="dark"] .nv-theme-toggle button {
+  color: rgba(255, 255, 255, 0.6);
+}
+:root:not([data-theme="dark"]) header[data-over="dark"] .nv-theme-toggle button[aria-pressed="true"] {
+  background: #2c2f33;
+  color: var(--color-nv-orange);
+  box-shadow: none;
 }
 
 /* Subtle line-grid section background — an alternative to a blurred
@@ -293,4 +456,20 @@ summary {
     animation: none !important;
     transition: none !important;
   }
+}
+
+/* Dropdown button follows the same light-on-dark switch as the other header links */
+:root:not([data-theme="dark"]) header[data-over="dark"] .nv-drop-btn {
+  color: rgba(255, 255, 255, 0.8);
+}
+:root:not([data-theme="dark"]) header[data-over="dark"] .nv-drop-btn:hover,
+:root:not([data-theme="dark"]) header[data-over="dark"] .nv-drop-btn.is-current {
+  color: #fff;
+}
+/* the mobile group label lives inside #mobile-menu, which turns dark together with the header */
+:root:not([data-theme="dark"]) header[data-over="dark"] #mobile-menu .nv-mobile-group {
+  color: #fff;
+}
+:root:not([data-theme="dark"]) header[data-over="dark"] #mobile-menu a:not(.nv-cta) {
+  color: rgba(255, 255, 255, 0.85);
 }

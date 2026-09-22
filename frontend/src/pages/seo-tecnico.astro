@@ -1,73 +1,255 @@
 ---
-// Copy adapted from agencianuvion.com.br's "SEO Expert" section.
+// Copy adapted from agencianuvion.com.br's "SEO Expert" section, expanded into a full page.
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
-import FinalCta from "../components/home/FinalCta.astro";
+import Bento from "../components/site/Bento.astro";
+import ServiceArt from "../components/site/ServiceArt.astro";
+import { waLink } from "../lib/contact";
+import StepsStack from "../components/site/StepsStack.astro";
+import FeatureGrid from "../components/site/FeatureGrid.astro";
+import FaqSection from "../components/site/FaqSection.astro";
+import { faqSchema } from "../lib/faq";
+import { buildBreadcrumbSchema } from "../lib/breadcrumbs";
+import { serviceSchema, webPageSchema } from "../lib/schema";
+import AuthorCard from "../components/site/AuthorCard.astro";
+
+const siteUrl = (Astro.site ?? Astro.url).href;
+const crumbs = [{ label: "Início", href: "/" }, { label: "SEO Técnico" }];
 
 const steps = [
   {
-    number: "01",
+    n: "01",
     title: "Auditoria técnica",
-    description: "Analisamos o código, a estrutura e a indexação do seu site pra achar exatamente o que está segurando o seu ranking hoje.",
+    text: "Analisamos o código, a estrutura e a indexação do seu site para achar exatamente o que está segurando o seu ranking hoje.",
+    chips: ["Código", "Estrutura", "Indexação"],
+    icon: `<circle cx="10.5" cy="10.5" r="6.5"></circle><line x1="15.2" y1="15.2" x2="21" y2="21"></line>`,
   },
   {
-    number: "02",
+    n: "02",
     title: "Arquitetura e schema",
-    description: "Organizamos a estrutura de páginas e implementamos dados estruturados pra facilitar a leitura do Google e das IAs.",
+    text: "Organizamos a estrutura de páginas e implementamos dados estruturados para facilitar a leitura do Google e das IAs.",
+    chips: ["Estrutura de páginas", "Dados estruturados", "Links internos"],
+    icon: `<path d="M12 3 21 7.5 12 12 3 7.5z"></path><path d="M3 12l9 4.5 9-4.5"></path><path d="M3 16.5 12 21l9-4.5"></path>`,
   },
   {
-    number: "03",
+    n: "03",
     title: "Conteúdo otimizado",
-    description: "Trabalhamos o conteúdo existente e orientamos o novo pra responder de verdade o que o seu público está buscando.",
+    text: "Trabalhamos o conteúdo existente e orientamos o novo para responder de verdade o que o seu público está buscando.",
+    chips: ["Intenção de busca", "Títulos e respostas", "Conteúdo novo"],
+    icon: `<polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline>`,
   },
   {
-    number: "04",
+    n: "04",
     title: "Monitoramento contínuo",
-    description: "Acompanhamos rankings, tráfego orgânico e Core Web Vitals mês a mês, e ajustamos a rota conforme os dados mostram.",
+    text: "Acompanhamos rankings, tráfego orgânico e Core Web Vitals mês a mês, e ajustamos a rota conforme os dados mostram.",
+    chips: ["Rankings", "Tráfego orgânico", "Core Web Vitals"],
+    icon: `<polyline points="3 16 9.5 9.5 13.5 13.5 21 6"></polyline><polyline points="14.5 6 21 6 21 12.5"></polyline>`,
   },
 ];
+
+const audit = [
+  {
+    num: "01",
+    title: "Rastreamento e indexação",
+    text: "Garantimos que o Google encontre, rastreie e indexe as páginas certas, com robots, sitemap e URLs canônicas bem resolvidos.",
+  },
+  {
+    num: "02",
+    title: "Dados estruturados",
+    text: "Schema.org para o Google e as IAs entenderem cada página: organização, artigos, perguntas frequentes e trilhas de navegação.",
+  },
+  {
+    num: "03",
+    title: "Core Web Vitals",
+    text: "Velocidade e estabilidade medidas em dados reais de uso, não só em teste de laboratório.",
+  },
+  {
+    num: "04",
+    title: "URLs e links internos",
+    text: "Hierarquia clara, endereços limpos e links internos que levam autoridade para as páginas que mais importam.",
+  },
+  {
+    num: "05",
+    title: "Conteúdo e intenção de busca",
+    text: "Cada página responde à pergunta que o público realmente faz, com títulos, subtítulos e respostas diretas.",
+  },
+  {
+    num: "06",
+    title: "Acompanhamento",
+    text: "Posições, tráfego orgânico e saúde técnica monitorados mês a mês, com ajustes baseados nos dados.",
+  },
+];
+
+const faqs = [
+  {
+    question: "O que é SEO técnico?",
+    answer:
+      "É a parte do SEO que trata da base do site: como ele é rastreado e indexado, a velocidade, a estrutura de páginas e URLs, os dados estruturados e a experiência no celular. Sem essa base, nem o melhor conteúdo consegue render o que poderia.",
+  },
+  {
+    question: "Qual a diferença entre SEO técnico e SEO de conteúdo?",
+    answer:
+      "O SEO técnico garante que o Google consiga acessar e entender o site. O SEO de conteúdo garante que as páginas respondam ao que o público procura. Um depende do outro, e na Nuvion os dois andam juntos.",
+  },
+  {
+    question: "Vocês fazem auditoria do meu site atual?",
+    answer:
+      "Sim. Antes de prometer qualquer coisa, auditamos o seu site de verdade: código, estrutura e indexação, para apontar o que está segurando o seu ranking hoje.",
+  },
+  {
+    question: "Em quanto tempo o SEO dá resultado?",
+    answer:
+      "Os ajustes técnicos e os ganhos em Core Web Vitals aparecem rápido, mas autoridade e posição orgânica se constroem em meses, não em dias. Por isso o acompanhamento é contínuo, não só na entrega.",
+  },
+  {
+    question: "SEO substitui anúncio pago?",
+    answer:
+      "Não é uma troca, são lógicas diferentes. O anúncio para quando o orçamento acaba; o tráfego orgânico é um ativo que se acumula. O foco da Nuvion é construir esse ativo, com um crescimento que não depende só de anúncio.",
+  },
+  {
+    question: "O que é o Google Search Console e por que preciso dele?",
+    answer:
+      "É uma ferramenta gratuita do Google que mostra como o seu site aparece nas buscas: quais páginas estão indexadas, por quais termos você aparece, erros de rastreamento e a experiência de página (Core Web Vitals). É a fonte de verdade para diagnosticar problemas de SEO técnico e acompanhar o resultado do trabalho.",
+  },
+  {
+    question: "Como saber se o meu site tem problemas técnicos de SEO?",
+    answer:
+      "Sinais comuns: páginas importantes que não aparecem no Google, site lento no celular, erros no Search Console, títulos e descrições repetidos e queda de tráfego sem motivo claro. Uma auditoria técnica reúne esses pontos e mostra o que corrigir primeiro.",
+  },
+  {
+    question: "Preciso ter um blog para fazer SEO?",
+    answer:
+      "Não é obrigatório, mas conteúdo ajuda: cada artigo é uma chance de responder a uma pergunta real do seu público e de ser encontrado por ela. O que importa é a qualidade e a relevância, não a quantidade de posts.",
+  },
+  {
+    question: "Qual a diferença entre SEO on-page e off-page?",
+    answer:
+      "On-page é o que você controla dentro do site: conteúdo, títulos, estrutura, velocidade e dados estruturados. Off-page é o que acontece fora dele: links de outros sites, menções à marca e presença em outros canais. O SEO técnico cuida da base do on-page.",
+  },
+];
+const symptoms = [
+  {
+    icon: '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5M8 8l6 6"/>',
+    title: "Seu site não aparece no Google",
+    text: "Páginas importantes ficam de fora dos resultados, às vezes até quando a busca é pelo nome da sua empresa.",
+    size: "wide" as const,
+  },
+  {
+    icon: '<path d="M4 16a8 8 0 1 1 16 0"/><path d="m12 16 4-5"/>',
+    title: "Lento no celular",
+    text: "As páginas demoram para abrir e o visitante desiste antes de ver a sua oferta.",
+  },
+  {
+    icon: '<path d="m3 7 6 6 4-4 8 8"/><path d="M15 17h6v-6"/>',
+    title: "Queda de tráfego sem motivo claro",
+    text: "As visitas do Google diminuem e ninguém sabe explicar por quê.",
+  },
+  {
+    icon: '<path d="M12 4 3 20h18z"/><path d="M12 10v4M12 17h.01"/>',
+    title: "Erros no Search Console",
+    text: "Avisos de indexação, de rastreamento ou de experiência de página que ficam sem resposta.",
+  },
+  {
+    icon: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',
+    title: "Títulos e descrições repetidos",
+    text: "Várias páginas dizem a mesma coisa, e o Google não sabe qual mostrar.",
+  },
+  {
+    icon: '<path d="M20 12a8 8 0 1 1-2.3-5.6"/><path d="M20 4v5h-5"/>',
+    title: "Refez o site e perdeu posição",
+    text: "Depois da mudança, o que já funcionava sumiu das buscas. É um sinal clássico de estrutura mal migrada.",
+    size: "wide" as const,
+    hot: true,
+  },
+];
+const deliverables = [
+  {
+    icon: '<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>',
+    title: "Diagnóstico do site",
+    text: "Os problemas técnicos que afetam o seu desempenho no Google: indexação, velocidade e estrutura.",
+    size: "wide" as const,
+  },
+  {
+    icon: '<path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 6h.01M4 12h.01M4 18h.01"/>',
+    title: "Prioridades",
+    text: "O que corrigir primeiro, do que pesa mais para o que pesa menos.",
+  },
+  {
+    icon: '<path d="M5 9h14M5 15h14M10 4 8 20M16 4l-2 16"/>',
+    title: "Palavras-chave",
+    text: "Os termos que o seu público busca e onde estão as oportunidades.",
+  },
+  {
+    icon: '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.4"/><path d="M3.5 19c.5-3 2.7-4.5 5.5-4.5s5 1.5 5.5 4.5M15 14.6c2.3-.3 4.5.8 5 3.4"/>',
+    title: "Concorrência",
+    text: "Como quem disputa a mesma busca aparece nos resultados.",
+    size: "wide" as const,
+  },
+  {
+    title: "Vamos começar pela sua auditoria?",
+    text: "Conte o cenário do seu site e a gente mostra por onde começar.",
+    href: waLink("Olá! Vi a página de SEO Técnico e quero uma auditoria do meu site."),
+    linkLabel: "Falar no WhatsApp",
+    size: "wide" as const,
+    hot: true,
+  },
+];
+const auditItems = audit.map((a, i) => ({
+  num: a.num,
+  title: a.title,
+  text: a.text,
+  ...(i === 0 || i === 5 ? { size: "wide" as const } : {}),
+  ...(i === 2 ? { big: "≤ 2,5 s" } : {}),
+  ...(i === 1 ? { href: "/geo-generative-engine-optimization", linkLabel: "Schema e as respostas de IA" } : {}),
+  ...(i === 2 ? { href: "/sites-de-alta-performance", linkLabel: "Sites que já nascem rápidos" } : {}),
+  ...(i === 5 ? { hot: true } : {}),
+}));
+
 ---
 
 <BaseLayout
-  title="SEO Técnico — Nuvion"
-  description="SEO técnico de verdade: auditoria, arquitetura, schema e monitoramento contínuo para colocar e manter sua marca no topo das buscas."
+  title="SEO Técnico: auditoria, schema e Core Web Vitals — Nuvion"
+  description="SEO técnico: auditoria, indexação, dados estruturados e Core Web Vitals, com monitoramento contínuo para sua marca aparecer no Google e nas respostas de IA."
+  jsonLd={[buildBreadcrumbSchema(crumbs, Astro.url.href, siteUrl), faqSchema(faqs), webPageSchema({ name: "SEO Técnico e Estrutural", description: "Auditoria, arquitetura, dados estruturados e monitoramento contínuo para colocar e manter a marca no topo das buscas.", url: Astro.url.href, siteUrl }), serviceSchema({ name: "SEO Técnico e Estrutural", serviceType: "SEO técnico", description: "Auditoria, arquitetura, dados estruturados e monitoramento contínuo para colocar e manter a marca no topo das buscas.", url: Astro.url.href, siteUrl })]}
 >
-  <PageHero
-    eyebrow="SEO Técnico e Estrutural"
-    description="De que adianta ter um site incrível se ninguém encontra ele? A gente resolve isso na raiz, não só na superfície."
-    ctaLabel="Quero Aparecer no Google"
-    waMessage="Olá! Quero saber mais sobre SEO técnico com a Nuvion."
-  >
-    Seu site no topo não é sorte. <strong>É engenharia.</strong>
-  </PageHero>
+  <main class="t3">
+    <PageHero
+      eyebrow="SEO Técnico e Estrutural"
+      crumbs={crumbs}
+      description="SEO técnico e estrutural: de que adianta ter um site incrível se ninguém encontra ele? A gente resolve isso na raiz, não só na superfície."
+      ctaLabel="Quero uma auditoria de SEO"
+      waMessage="Olá! Quero uma auditoria de SEO técnico do meu site com a Nuvion."
+      secondary={{ label: "Ver como funciona", href: "#t3-seo-h" }}
+    >
+      Seu site no topo não é sorte. <em>É engenharia.</em>
+      <div slot="visual"><ServiceArt kind={1} /></div>
+    </PageHero>
 
-  <section class="bg-nv-offwhite-light py-20 sm:py-24">
-    <div class="mx-auto max-w-3xl px-6 text-center sm:px-10">
-      <p class="text-pretty text-lg leading-[1.62] text-nv-graphite-700">
-        SEO técnico vai muito além de otimização básica. É um trabalho contínuo de análise, estratégia e execução,
-        focado em colocar o seu negócio no topo dos resultados de busca com tráfego qualificado e um crescimento que
-        não depende só de anúncio pago.
-      </p>
-    </div>
+    <Bento
+      id="seo-sinais"
+      title="Sinais de que o seu site precisa de"
+      em="SEO técnico"
+      chip="Sinais"
+      text="Alguns sintomas aparecem cedo. Se você se reconhece em algum deles, provavelmente há um problema na base do site."
+      items={symptoms}
+    />
 
-    <div class="mx-auto mt-14 grid max-w-5xl grid-cols-1 gap-6 px-6 sm:grid-cols-2 sm:px-10 lg:grid-cols-4">
-      {steps.map((step) => (
-        <div class="relative overflow-hidden rounded-3xl border border-nv-hairline bg-white p-7 shadow-[0_2px_8px_rgba(30,30,30,.06)]">
-          <span class="pointer-events-none absolute -right-2 -top-6 select-none font-mono text-[80px] font-bold leading-none text-nv-orange/[0.06]" aria-hidden="true">
-            {step.number}
-          </span>
-          <span class="relative font-mono text-xs font-semibold tracking-[0.1em] text-nv-orange">{step.number}</span>
-          <h3 class="relative mt-3 text-base font-semibold tracking-[-0.02em] text-nv-graphite-900">{step.title}</h3>
-          <p class="relative mt-2 text-pretty text-sm leading-[1.62] text-nv-graphite-600">{step.description}</p>
-        </div>
-      ))}
-    </div>
-  </section>
+    <Bento
+      id="seo-audit"
+      tone="dark"
+      title="O que a gente"
+      em="olha no seu site"
+      chip="Auditoria"
+      textHtml='SEO técnico vai muito além de otimização básica. É um trabalho contínuo de análise, estratégia e execução, focado em colocar o seu negócio no topo dos resultados de busca com tráfego qualificado. Quer se aprofundar? Leia os <a href="/blog">artigos do nosso blog</a>.'
+      items={auditItems}
+    />
 
-  <FinalCta
-    eyebrow="Vamos analisar"
-    description="Antes de prometer qualquer coisa, a gente audita o seu site de verdade. Sem custo, sem letra miúda."
-    buttonLabel="Quero uma Auditoria de SEO"
-    waMessage="Olá! Quero uma auditoria de SEO técnico do meu site com a Nuvion."
-  />
+    <StepsStack id="t3-seo-h" title="Como o SEO" em="acontece" chip="Método" steps={steps} />
+
+    <Bento id="seo-recebe" tone="dark" title="O que você recebe" em="na auditoria" chip="Entregáveis" items={deliverables}>
+      <AuthorCard title="SEO técnico vive entre o código e o negócio" text="Com formação em Administração e Marketing Digital e experiência como desenvolvedor full-stack, o Juan olha o seu site pelos dois lados: como ele funciona por dentro e o que ele precisa entregar para a empresa. É esse cruzamento que orienta o que esta página descreve." />
+    </Bento>
+
+    <FaqSection items={faqs} />
+  </main>
 </BaseLayout>

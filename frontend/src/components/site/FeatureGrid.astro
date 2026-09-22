@@ -1,0 +1,52 @@
+---
+// Panel with a heading, an optional lead + text and a grid of cards. Light or dark tone (the pages alternate
+// them, like the home). Cards can carry an icon (24x24 stroke paths), a mono number, or a big figure.
+interface Item {
+  title: string;
+  text: string;
+  /** Inner SVG of a 24x24 stroke icon. */
+  icon?: string;
+  /** Mono label such as "01". */
+  num?: string;
+  /** Big figure at the top of the card (e.g. "≤ 2,5 s"). */
+  big?: string;
+}
+interface Props {
+  id: string;
+  title: string;
+  em?: string;
+  chip?: string;
+  lead?: string;
+  text?: string;
+  items: Item[];
+  tone?: "light" | "dark";
+  cols?: 2 | 3 | 4;
+}
+const { id, title, em, chip, lead, text, items, tone = "light", cols = 2 } = Astro.props;
+---
+
+<section class={`t3-panel t3-${tone} t3-pad`} aria-labelledby={id}>
+  <div class="t3-head">
+    <h2 id={id} class="t3-title" data-t3-title>{title}{em && <>{" "}<em>{em}</em></>}</h2>
+    {chip && <span class="t3-chip"><i></i>{chip}</span>}
+  </div>
+  {lead && <p class="t3-lead">{lead}</p>}
+  {text && <p class="t3-sub">{text}</p>}
+  <div class="t3-fgrid" style={`--cols:${cols}`}>
+    {
+      items.map((it) => (
+        <article class="t3-fcard" data-reveal>
+          {it.icon && (
+            <div class="t3-fico">
+              <svg viewBox="0 0 24 24" aria-hidden="true" set:html={it.icon} />
+            </div>
+          )}
+          {it.num && <span class="t3-fnum">{it.num}</span>}
+          {it.big && <span class="t3-fbig">{it.big}</span>}
+          <h3>{it.title}</h3>
+          <p>{it.text}</p>
+        </article>
+      ))
+    }
+  </div>
+</section>

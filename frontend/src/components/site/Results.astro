@@ -1,0 +1,69 @@
+---
+// Dark panel with the aggregate results as big counters, each with a small animated drawing (line, bars, dots, rings), plus an
+// orange call-to-action tile. The numbers count up and the drawings play when the panel scrolls into view (scripts/site.ts,
+// "[data-rs]"). Data: lib/results.ts (TEST values for now). The source line under the numbers is part of the data on purpose.
+import { results, resultsSource } from "../../lib/results";
+import { waLink } from "../../lib/contact";
+
+interface Props {
+  title?: string;
+  em?: string;
+  chip?: string;
+  waMessage?: string;
+}
+const { title = "Resultados que a gente", em = "soma", chip = "Em números", waMessage = "Olá! Vi os resultados da Nuvion e quero resultados assim no meu projeto." } = Astro.props;
+const bars = Array.from({ length: 12 }, (_, i) => i);
+const dots = Array.from({ length: 36 }, (_, i) => i);
+---
+
+<section class="t3-panel t3-dark t3-pad rs" aria-labelledby="rs-h" data-rs>
+  <div class="t3-head">
+    <h2 id="rs-h" class="t3-title" data-t3-title>{title} <em>{em}</em></h2>
+    <span class="t3-chip"><i></i>{chip}</span>
+  </div>
+  <div class="rs-grid">
+    {
+      results.map((r) => (
+        <article class={`rs-card rs-${r.viz}`} data-reveal>
+          <div class="rs-num">
+            <b data-count={r.count} data-decimals={r.decimals ?? 0} data-prefix={r.prefix ?? ""} data-suffix={r.suffix ?? ""}>{(r.prefix ?? "") + r.count.toFixed(r.decimals ?? 0).replace(".", ",") + (r.suffix ?? "")}</b>
+            <span>{r.label}</span>
+          </div>
+          {r.viz === "line" && (
+            <svg class="ph-spark rs-viz" viewBox="0 0 240 70" preserveAspectRatio="none" aria-hidden="true">
+              <path class="ph-spark-area" d="M2 64 C 40 62, 60 54, 92 46 S 140 34, 170 22 S 220 8, 238 4 L238 70 L2 70 Z" />
+              <path class="ph-spark-line" pathLength="1" d="M2 64 C 40 62, 60 54, 92 46 S 140 34, 170 22 S 220 8, 238 4" />
+              <path class="ph-spark-dot" d="M238 4h0.01" />
+            </svg>
+          )}
+          {r.viz === "bars" && (
+            <div class="ph-bars rs-viz" aria-hidden="true">
+              {bars.map((i) => <i style={`--i:${i}`} />)}
+            </div>
+          )}
+          {r.viz === "dots" && (
+            <div class="ph-dots rs-viz" aria-hidden="true">
+              {dots.map((i) => <i style={`--i:${i}`} />)}
+            </div>
+          )}
+          {r.viz === "rings" && (
+            <svg class="rs-rings rs-viz" viewBox="0 0 100 100" aria-hidden="true">
+              <circle cx="50" cy="50" r="12" />
+              <circle cx="50" cy="50" r="12" />
+              <circle cx="50" cy="50" r="12" />
+              <path class="rs-cursor" d="M46 42v22l6-5 4 9 5-2-4-9h8z" />
+            </svg>
+          )}
+        </article>
+      ))
+    }
+    <article class="rs-card rs-cta is-hot" data-reveal>
+      <div class="rs-num">
+        <b>Quer resultados assim?</b>
+        <span>Conte o seu cenário e a gente mostra por onde começar.</span>
+      </div>
+      <a class="rs-cta-link" href={waLink(waMessage)} target="_blank" rel="noopener">Falar no WhatsApp <span aria-hidden="true">→</span></a>
+    </article>
+  </div>
+  <p class="rs-source">{resultsSource}</p>
+</section>

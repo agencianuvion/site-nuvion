@@ -1,29 +1,56 @@
 ---
-const year = new Date().getFullYear();
-
-const navLinks = [
-  { href: "/sites-de-alta-performance", label: "Sites de Alta Performance" },
-  { href: "/seo-tecnico", label: "SEO Técnico" },
-  { href: "/geo", label: "Otimização Generativa" },
-  { href: "/sobre-nos", label: "Sobre Nós" },
-  { href: "/blog", label: "Blog" },
-];
+// Closing panel of every page: call to action, links, socials and legal links, with the Nuvion wordmark
+// sliding in behind (animated in scripts/site.ts). Same skeleton as the Flowrix footer the client liked.
+import { waLink } from "../../lib/contact";
+import { footerLinks, socials, legalLinks } from "../../lib/site";
 ---
 
-<footer class="border-t border-nv-hairline bg-nv-offwhite-light px-6 py-10 sm:px-10">
-  <div class="mx-auto flex max-w-6xl flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-    <a href="/" class="block shrink-0" aria-label="Nuvion, página inicial">
-      <img src="/images/logo-horizontal-dark.png" alt="Nuvion" class="h-5 w-auto" />
-    </a>
+<div class="t3 t3-foot">
+  <section class="t3-panel t3-dark t3-cta" aria-labelledby="t3-cta-h">
+    <img
+      class="t3-cta-mark"
+      src="/images/nuvion-wordmark.webp"
+      alt=""
+      width="2400"
+      height="354"
+      loading="lazy"
+      decoding="async"
+      aria-hidden="true"
+    />
+    <div class="t3-cta-top">
+      <h2 id="t3-cta-h" class="t3-cta-title">Vamos colocar a sua marca no topo das buscas, e nas respostas de IA?</h2>
+      <div class="t3-cta-side">
+        <span class="t3-chip"><i></i>Diagnóstico gratuito</span>
+        <p>Agende um diagnóstico gratuito e descubra onde a sua arquitetura digital está perdendo oportunidades.</p>
+        <a
+          class="nv-cta t3-btn"
+          href={waLink("Olá! Quero agendar meu diagnóstico gratuito com a Nuvion.")}
+          target="_blank"
+          rel="noopener">Falar no WhatsApp</a
+        >
+      </div>
+    </div>
 
-    <nav class="flex flex-wrap gap-x-5 gap-y-1 text-sm text-nv-graphite-600" aria-label="Footer">
-      {navLinks.map((link) => (
-        <a href={link.href} class="whitespace-nowrap transition-colors hover:text-nv-graphite-900">
-          {link.label}
-        </a>
-      ))}
-    </nav>
+    <div class="t3-cta-mid">
+      <nav aria-label="Rodapé">
+        {footerLinks.map((l) => <a href={l.href}>{l.label}</a>)}
+      </nav>
+      <div class="t3-socials">
+        {
+          socials.map((so) => (
+            <a href={so.href} target="_blank" rel="noopener" aria-label={so.label}>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" set:html={so.icon} />
+            </a>
+          ))
+        }
+      </div>
+    </div>
 
-    <p class="text-xs text-nv-graphite-400">&copy; {year} Nuvion. Todos os direitos reservados.</p>
-  </div>
-</footer>
+    <div class="t3-cta-bot">
+      <p>&copy; {new Date().getFullYear()} Nuvion. Todos os direitos reservados.</p>
+      <nav aria-label="Legal">
+        {legalLinks.map((l) => <a href={l.href}>{l.label}</a>)}
+      </nav>
+    </div>
+  </section>
+</div>
