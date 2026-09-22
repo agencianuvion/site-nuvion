@@ -11,9 +11,14 @@ import { SplitText } from "gsap/SplitText";
 gsap.registerPlugin(ScrollTrigger, SplitText);
 
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-const canHover = window.matchMedia(
-  "(hover: hover) and (pointer: fine)",
-).matches;
+// Not just "(hover: hover) and (pointer: fine)": a phone whose digitizer also supports a stylus (S-Pen and similar) can
+// report a fine, hover-capable pointer as AVAILABLE on the device even while the visitor is just using a finger — this
+// wrongly turns on every "desktop mouse" behavior gated by canHover below, the most disruptive being Lenis (built for a
+// wheel's discrete, inertia-less deltas) hijacking what should be plain native touch scrolling. A device with ANY touch
+// support is treated as a touch device first, no matter what it also claims to support.
+const canHover =
+  window.matchMedia("(hover: hover) and (pointer: fine)").matches &&
+  navigator.maxTouchPoints === 0;
 
 /* Land smoothly on ANY anchor link, on any page — not just the ones that already have their own handling below (the Blog's
    #tema-<slug> and the Portfolio's #projeto-<slug>, neither of which is a real element id, so the browser never auto-jumps
