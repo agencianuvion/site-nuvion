@@ -2784,9 +2784,13 @@
     width: 48px;
     height: 48px;
   }
-  /* keep the slider arrows clear of the floating WhatsApp button */
+  /* Keep the slider arrows clear of the floating WhatsApp button (52px wide, sitting 14px from the viewport edge — a
+     66px reach). This padding is on top of the panel's OWN right padding already inset from the viewport edge (28-56px,
+     --rail-inset), so it only needs to cover the REMAINDER — the previous 68px double-counted that and pushed the
+     arrows much further from the edge than the button actually requires. 40px covers the worst case (the panel's
+     smallest padding, 28px) with a little room to spare. */
   .t3-pctrl {
-    padding-right: 68px;
+    padding-right: 40px;
   }
 
   /* footer: links in two columns with comfortable rows, legal links stacked instead of cut off */

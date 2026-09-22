@@ -1081,10 +1081,30 @@ function smoothScroll() {
   });
 }
 
+// Resolves once every already-loading image (eager/default — NOT loading="lazy", those haven't started fetching yet
+// and may never need to for this visit) has settled. Used below so init()'s very FIRST ScrollTrigger measurement
+// already reflects the page's true final height, instead of a shorter one that a still-loading hero image quietly
+// corrects a moment later. That correction is exactly the bug reported only on a page's first load — a sticky
+// section's start/end points were measured too early, then jumped once the real height was known, right as someone
+// scrolled into it — and it happened much more on a real deployed network than locally, where images load near-
+// instantly from disk and are usually already done before this code even runs.
+function imagesReady(): Promise<void> {
+  const pending = [...document.querySelectorAll<HTMLImageElement>('img:not([loading="lazy"])')].filter((img) => !img.complete);
+  if (!pending.length) return Promise.resolve();
+  return new Promise((resolve) => {
+    let left = pending.length;
+    const done = () => { if (--left <= 0) resolve(); };
+    pending.forEach((img) => {
+      img.addEventListener("load", done, { once: true });
+      img.addEventListener("error", done, { once: true });
+    });
+  });
+}
+
 if (!reduced) {
   smoothScroll();
   // Splitting measures text, so wait for the webfont or lines would break wrong.
-  document.fonts.ready.then(init);
+  Promise.all([document.fonts.ready, imagesReady()]).then(init);
 } else {
   document
     .querySelectorAll<HTMLElement>(".t3-fade")
