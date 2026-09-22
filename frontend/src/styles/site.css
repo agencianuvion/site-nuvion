@@ -2784,13 +2784,12 @@
     width: 48px;
     height: 48px;
   }
-  /* Keep the slider arrows clear of the floating WhatsApp button (52px wide, sitting 14px from the viewport edge — a
-     66px reach). This padding is on top of the panel's OWN right padding already inset from the viewport edge (28-56px,
-     --rail-inset), so it only needs to cover the REMAINDER — the previous 68px double-counted that and pushed the
-     arrows much further from the edge than the button actually requires. 40px covers the worst case (the panel's
-     smallest padding, 28px) with a little room to spare. */
-  .t3-pctrl {
-    padding-right: 40px;
+  /* The arrow pair sits close to the card's own edge on purpose (the Juan asked for this twice — the previous, more
+     cautious clearance for the floating WhatsApp button still read as "not aligned right"). The button can graze the
+     "next" arrow's circle for the brief moment they're at the same scroll position on a narrow-padded panel — a small,
+     accepted trade-off for looking right the rest of the time, not a leftover oversight. */
+  .t3-parrows {
+    margin-right: 10px;
   }
 
   /* footer: links in two columns with comfortable rows, legal links stacked instead of cut off */

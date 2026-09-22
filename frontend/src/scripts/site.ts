@@ -1840,10 +1840,22 @@ function init() {
   // The document keeps changing height while images/panels settle, which shifts the fraction again.
   new ResizeObserver(snapCrisp).observe(document.body);
 
-  window.addEventListener("load", () => ScrollTrigger.refresh(), {
-    once: true,
-  });
   requestAnimationFrame(() => ScrollTrigger.refresh());
+
+  // Refreshing WHILE the visitor is actively scrolled into a pinned section (position:sticky, its wrapper's height
+  // driving how far it stays locked) can itself cause a visible snap the moment the wrapper's height changes under
+  // it — on top of whatever originally needed correcting. So a correction is never forced through mid-pin: it waits,
+  // checking every frame, until nothing is currently active, THEN refreshes — always landing in a moment the visitor
+  // can't see, instead of in the middle of watching a section it's currently locked into.
+  function refreshWhenIdle() {
+    if (ScrollTrigger.getAll().some((st) => st.isActive)) {
+      requestAnimationFrame(refreshWhenIdle);
+      return;
+    }
+    ScrollTrigger.refresh();
+  }
+
+  window.addEventListener("load", refreshWhenIdle, { once: true });
 
   // Every pinned/scrubbed section above (the stacking cards, the testimonials, the author-card reveal, the h2 line
   // masks) has its scroll start/end baked in pixels at the moment it was measured. If the PAGE'S total height changes
@@ -1858,6 +1870,6 @@ function init() {
   let bodyResizeTimer: ReturnType<typeof setTimeout> | null = null;
   new ResizeObserver(() => {
     if (bodyResizeTimer) clearTimeout(bodyResizeTimer);
-    bodyResizeTimer = setTimeout(() => ScrollTrigger.refresh(), 200);
+    bodyResizeTimer = setTimeout(refreshWhenIdle, 200);
   }).observe(document.body);
 }
