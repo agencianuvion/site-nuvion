@@ -129,6 +129,7 @@ const moreActive = moreLinks.some((l) => isActive(l.href));
     Agendar Meu Diagnóstico <span aria-hidden="true">→</span>
   </a>
 </nav>
+<div id="mobile-menu-backdrop" class="nv-mm-backdrop" aria-hidden="true"></div>
 
 <style is:global>
   /* Mobile menu: a floating glass card under the header. Closed = invisible and slightly raised; opening fades and drops it and the
@@ -200,6 +201,37 @@ const moreActive = moreLinks.some((l) => isActive(l.href));
   }
   @media (min-width: 1280px) {
     .nv-mm {
+      display: none;
+    }
+  }
+  /* Dims and covers the whole page behind the open menu, both to focus attention on it and to make clear the page
+     itself isn't going anywhere (scroll is locked while it's open, see the script) — plain fixed overlay, a sibling
+     of the menu so it can sit at a lower z-index without being inside its own fade/scale transform. Closing also
+     goes through the existing "click outside the menu" handler, since this sits outside #mobile-menu too. */
+  .nv-mm-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 48;
+    background: rgba(6, 7, 9, 0.72);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity 0.3s ease,
+      visibility 0s linear 0.3s;
+  }
+  .nv-mm-backdrop.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition:
+      opacity 0.3s ease,
+      visibility 0s linear 0s;
+  }
+  @media (min-width: 1280px) {
+    .nv-mm-backdrop {
       display: none;
     }
   }
@@ -499,10 +531,16 @@ const moreActive = moreLinks.some((l) => isActive(l.href));
   // visibly still being open for an instant mid-navigation).
   const toggle = document.getElementById("mobile-menu-toggle");
   const menu = document.getElementById("mobile-menu");
+  const backdrop = document.getElementById("mobile-menu-backdrop");
 
   const setMenu = (open: boolean) => {
     menu?.classList.toggle("is-open", open);
+    backdrop?.classList.toggle("is-open", open);
     toggle?.setAttribute("aria-expanded", String(open));
+    // Locks the page itself in place behind the dimmed backdrop — html, not body, since that's what actually
+    // scrolls here (and what Lenis, on a hover-capable device, drives); with nothing left to scroll, any of
+    // Lenis's own wheel-driven scrollTo calls while this is up simply have nothing to do.
+    document.documentElement.style.overflow = open ? "hidden" : "";
   };
   menu?.querySelectorAll<HTMLElement>(":scope > *").forEach((el, i) => el.style.setProperty("--k", String(i)));
   toggle?.addEventListener("click", (event) => {

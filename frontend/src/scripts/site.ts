@@ -1297,20 +1297,43 @@ function init() {
     );
   }
 
-  /* Section titles: line-mask reveal on enter. */
+  /* Section titles: line-mask reveal on enter.
+     autoSplit re-splits the text (and re-fires onSplit, with all-new line elements) whenever the title's own box
+     reflows — a resize, a mobile browser's address bar showing/hiding, a late webfont swap. Without a guard, a
+     re-split AFTER the title had already played its entrance created a brand-new "once" ScrollTrigger on the fresh
+     lines, which (already being on screen) fired again immediately, snapping the finished title back to hidden and
+     replaying the reveal — reading as the title "flashing" and redoing itself, well after the page had settled.
+     Now a re-split after the reveal already played just jumps the new lines straight to their finished state. */
   document.querySelectorAll<HTMLElement>("[data-t3-title]").forEach((el) => {
+    let revealed = false;
+    let st: ScrollTrigger | null = null;
     SplitText.create(el, {
       type: "lines",
       mask: "lines",
       autoSplit: true,
-      onSplit: (self) =>
-        gsap.from(self.lines, {
+      onSplit: (self) => {
+        st?.kill();
+        if (revealed) {
+          gsap.set(self.lines, { yPercent: 0 });
+          return;
+        }
+        const tween = gsap.from(self.lines, {
           yPercent: 140,
           duration: 0.95,
           stagger: 0.09,
           ease: "power4.out",
-          scrollTrigger: { trigger: el, start: "top 88%", once: true },
-        }),
+          scrollTrigger: {
+            trigger: el,
+            start: "top 88%",
+            once: true,
+            onEnter: () => {
+              revealed = true;
+            },
+          },
+        });
+        st = tween.scrollTrigger ?? null;
+        return tween;
+      },
     });
   });
 

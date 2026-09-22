@@ -2919,12 +2919,16 @@
   background: rgba(255, 255, 255, 0.28);
   border-radius: 4px;
 }
-/* fade at the bottom only while there is more text to read */
+/* fade at the bottom only while there is more text to read. .t3-tqwrap is a column flexbox (further down, so a SHORT
+   quote's own auto top/bottom margins can centre it) — flex items shrink to fit by default, and this one carries no
+   real content to resist that, so without flex-shrink:0 the fade was being squashed to 0px tall instead of the 36px
+   below and rendering completely invisible. */
 .t3-tqwrap.is-scroll:not(.at-end)::after {
   content: "";
   position: sticky;
   bottom: 0;
   display: block;
+  flex-shrink: 0;
   height: 36px;
   margin-top: -36px;
   background: linear-gradient(to bottom, transparent, var(--t3-dark));
