@@ -918,6 +918,10 @@
     flex: 0 0 var(--slide-w);
     min-width: 0;
     scroll-snap-align: start;
+    /* without this, a firm/fast swipe can fling straight past 2-3 cards to wherever the momentum runs out — this forces
+       the browser to always stop at the very next card first, so one swipe is always exactly one card, no matter how
+       hard the flick. */
+    scroll-snap-stop: always;
     transition: opacity 0.45s ease;
   }
   .t3-pslider.is-ready .t3-pslide:not(.is-active) {
@@ -2627,6 +2631,11 @@
     margin-inline: -28px;
     padding-inline: 28px;
     scrollbar-width: none;
+    /* a horizontal scroller with no explicit overflow-y also clips the OTHER axis (the spec computes it to "auto"/hidden
+       too, not "visible") — same fix as .t3-ptrack: give the cards' own box-shadow room above/below, then pull that
+       room back in with a matching negative margin so it doesn't add extra visible gap around the row. */
+    padding-block: 52px;
+    margin-block: -52px;
   }
   .t3-tcards::-webkit-scrollbar {
     display: none;

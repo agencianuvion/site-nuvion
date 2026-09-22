@@ -85,13 +85,9 @@ document.querySelectorAll<HTMLElement>("[data-acc]").forEach((group) => {
   const items = [...group.querySelectorAll<HTMLElement>("[data-acc-item]")];
   const openOnly = (target: HTMLElement) =>
     items.forEach((it) => setOpen(it, it === target));
-  // Services: on desktop the first item starts open (hover then moves it); on phones and touch screens they all start closed.
-  if (
-    group.hasAttribute("data-acc-hover") &&
-    (!canHover || window.matchMedia("(max-width: 899px)").matches)
-  ) {
-    items.forEach((it) => setOpen(it, false));
-  }
+  // Services: the first item starts open on every screen size (hover moves it on desktop; a tap moves it on touch) — it
+  // used to start fully closed on phones/touch screens, but with nothing open there was no visual hint this was even an
+  // accordion you could tap open, so visitors on a phone often never discovered the other two services at all.
 
   items.forEach((item) => {
     const trigger = item.querySelector<HTMLElement>("[data-acc-trigger]");
@@ -1828,4 +1824,20 @@ function init() {
     once: true,
   });
   requestAnimationFrame(() => ScrollTrigger.refresh());
+
+  // Every pinned/scrubbed section above (the stacking cards, the testimonials, the author-card reveal, the h2 line
+  // masks) has its scroll start/end baked in pixels at the moment it was measured. If the PAGE'S total height changes
+  // afterwards for any reason — a hero frame/video settling, a webfont swap reflowing a paragraph, a slow image
+  // anywhere finishing after the "load" refresh above already ran — every trigger below that point silently goes out
+  // of sync with the real layout: a title's reveal fires early/late, or (worse) a pinned section's math assumes a
+  // page height that no longer matches, which reads as cards jumping or overlapping the next section. A single
+  // "load" refresh does NOT cover this — "load" only means the initial resources finished, not that nothing on the
+  // page will ever resize again. This keeps everything self-correcting for as long as the page lives, and is WHY this
+  // class of bug is worse on a real deployed network (things really do keep finishing late, at unpredictable times)
+  // than on a local dev server serving everything instantly from disk: locally there is barely a "late" to catch.
+  let bodyResizeTimer: ReturnType<typeof setTimeout> | null = null;
+  new ResizeObserver(() => {
+    if (bodyResizeTimer) clearTimeout(bodyResizeTimer);
+    bodyResizeTimer = setTimeout(() => ScrollTrigger.refresh(), 200);
+  }).observe(document.body);
 }
