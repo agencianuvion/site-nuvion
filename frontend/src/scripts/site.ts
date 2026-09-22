@@ -1847,12 +1847,22 @@ function init() {
   // it — on top of whatever originally needed correcting. So a correction is never forced through mid-pin: it waits,
   // checking every frame, until nothing is currently active, THEN refreshes — always landing in a moment the visitor
   // can't see, instead of in the middle of watching a section it's currently locked into.
+  // Two guards keep this from ever becoming its own problem: `pending` means only ONE such wait is ever running (each
+  // resize below would otherwise be free to start another overlapping one), and it gives up and refreshes anyway after
+  // 90 frames (~1.5s) rather than polling forever on a page with an unusually long-lived pin.
+  let pending = false;
   function refreshWhenIdle() {
-    if (ScrollTrigger.getAll().some((st) => st.isActive)) {
-      requestAnimationFrame(refreshWhenIdle);
-      return;
-    }
-    ScrollTrigger.refresh();
+    if (pending) return;
+    pending = true;
+    const tick = (framesLeft: number) => {
+      if (framesLeft > 0 && ScrollTrigger.getAll().some((st) => st.isActive)) {
+        requestAnimationFrame(() => tick(framesLeft - 1));
+        return;
+      }
+      pending = false;
+      ScrollTrigger.refresh();
+    };
+    tick(90);
   }
 
   window.addEventListener("load", refreshWhenIdle, { once: true });
