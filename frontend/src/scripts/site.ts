@@ -1462,9 +1462,13 @@ function init() {
         return window.innerHeight - (sticky.pinTop() + relTop + i * STACK) + 40;
       };
 
+      // On a phone, 2.1 screens of scroll for 4 cards is more than one (sometimes even two) swipe-with-momentum
+      // covers — needing several separate swipes to get through it, with the natural pause between each one (lifting
+      // and repositioning a thumb) reading as the section "freezing" for a couple of seconds. Shorter on phones so it
+      // comfortably finishes in one or two swipes; unchanged on desktop, where the wheel drives it continuously.
       const sticky = stickyPanel(
         panel,
-        Number(panel.dataset.screens) || (phone ? 2.1 : 2.6),
+        Number(panel.dataset.screens) || (phone ? 1.5 : 2.6),
       );
       // The look of a covered card is recomputed for EVERY card on every render of the timeline (not in the tweens'
       // own onUpdate): when the page opens already scrolled into the stack (reload, back button) GSAP jumps the
