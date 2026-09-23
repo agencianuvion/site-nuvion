@@ -11,7 +11,6 @@ import FaqSection from "../components/site/FaqSection.astro";
 import { faqSchema } from "../lib/faq";
 import { buildBreadcrumbSchema } from "../lib/breadcrumbs";
 import { serviceSchema, webPageSchema } from "../lib/schema";
-import AuthorCard from "../components/site/AuthorCard.astro";
 
 const siteUrl = (Astro.site ?? Astro.url).href;
 const crumbs = [{ label: "Início", href: "/" }, { label: "SEO Técnico" }];
@@ -246,9 +245,7 @@ const auditItems = audit.map((a, i) => ({
 
     <StepsStack id="t3-seo-h" title="Como o SEO" em="acontece" chip="Método" steps={steps} />
 
-    <Bento id="seo-recebe" tone="dark" title="O que você recebe" em="na auditoria" chip="Entregáveis" items={deliverables}>
-      <AuthorCard title="SEO técnico vive entre o código e o negócio" text="Com formação em Administração e Marketing Digital e experiência como desenvolvedor full-stack, o Juan olha o seu site pelos dois lados: como ele funciona por dentro e o que ele precisa entregar para a empresa. É esse cruzamento que orienta o que esta página descreve." />
-    </Bento>
+    <Bento id="seo-recebe" tone="dark" title="O que você recebe" em="na auditoria" chip="Entregáveis" items={deliverables} />
 
     <FaqSection items={faqs} />
   </main>

@@ -28,10 +28,11 @@ const {
   kicker = "Quem está por trás desta página",
   quote = false,
   chips = ["SEO e GEO", "Desenvolvimento full-stack", "UI/UX design", "Inteligência artificial"],
+  // The política editorial link only ever belongs in the footer (Juan's standing preference) — every caller either
+  // overrides this outright or, like this default, simply doesn't carry it.
   links = [
     { label: "LinkedIn", href: FOUNDER.linkedin, external: true },
     { label: "Sobre a Nuvion", href: "/sobre-nos" },
-    { label: "Como revisamos o conteúdo", href: "/politica-editorial" },
   ],
   name = FOUNDER.name,
   role = FOUNDER.role,

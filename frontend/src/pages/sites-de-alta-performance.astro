@@ -13,7 +13,6 @@ import FaqSection from "../components/site/FaqSection.astro";
 import { faqSchema } from "../lib/faq";
 import { buildBreadcrumbSchema } from "../lib/breadcrumbs";
 import { serviceSchema, webPageSchema } from "../lib/schema";
-import AuthorCard from "../components/site/AuthorCard.astro";
 
 const siteUrl = (Astro.site ?? Astro.url).href;
 const crumbs = [{ label: "Início", href: "/" }, { label: "Sites de Alta Performance" }];
@@ -172,11 +171,7 @@ const vitalItems = [
 
     <StepsStack id="sites-processo" title="Como o projeto" em="acontece" chip="Processo" steps={processSteps} />
 
-    <ProofStrip waMessage="Olá! Vi a página de Sites de Alta Performance e quero conversar sobre o meu projeto.">
-      <div slot="after">
-        <AuthorCard title="Interface, código e SEO pensados juntos" text="Um site de alta performance depende de três coisas ao mesmo tempo: uma interface que converte, um código rápido e uma estrutura preparada para as buscas. O Juan atua nas três frentes, como desenvolvedor full-stack com forte atuação em UI/UX, e revisa o que é publicado nesta página." />
-      </div>
-    </ProofStrip>
+    <ProofStrip waMessage="Olá! Vi a página de Sites de Alta Performance e quero conversar sobre o meu projeto." />
 
     <FaqSection items={faqs} />
   </main>

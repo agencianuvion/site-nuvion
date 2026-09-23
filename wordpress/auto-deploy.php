@@ -120,6 +120,24 @@ function site_run_deploy( $reason = 'unknown' ) {
 }
 
 /**
+ * Debounced trigger: several saves close together (editing a post, clicking Update a few times while checking the
+ * result, WordPress's own revision/meta saves that still count as "save_post") used to fire one full GitHub Actions
+ * dispatch EACH — several deploy pipelines starting almost together, each opening its own SSH connection to rsync
+ * the build, which is what actually spiked CPU/IOPS on the hosting account (confirmed against real usage graphs:
+ * a burst of 6 dispatches inside 2 minutes lined up exactly with a CPU/IOPS spike). Instead of dispatching right
+ * away, this schedules ONE single WP-Cron event 90 seconds out and clears/reschedules it on every new call — so a
+ * flurry of saves collapses into exactly one deploy, fired 90s after the LAST one settles.
+ * Relies on WP-Cron's normal behaviour (it runs on the next request to this WordPress install, not on a wall-clock
+ * timer) — the deploy can land a little later than exactly 90s if the site gets no traffic in that window, which is
+ * an acceptable trade for not hammering the server every time someone saves.
+ */
+function site_queue_deploy( $reason = 'unknown' ) {
+	wp_clear_scheduled_hook( 'site_run_debounced_deploy' );
+	wp_schedule_single_event( time() + 90, 'site_run_debounced_deploy', array( $reason ) );
+}
+add_action( 'site_run_debounced_deploy', 'site_run_deploy' );
+
+/**
  * Posts — skip autosaves/revisions, and drafts (nothing public changed
  * yet). TODO: add more `add_action('save_post_XXX', ...)` lines below for
  * any custom post type this project adds (e.g. 'save_post_project' for a
@@ -132,7 +150,7 @@ function site_maybe_deploy_on_save( $post_id, $post ) {
 	if ( ! in_array( $post->post_status, array( 'publish', 'future', 'private' ), true ) ) {
 		return;
 	}
-	site_run_deploy( sprintf( 'save_post:%s:#%d:%s', $post->post_type, $post_id, $post->post_status ) );
+	site_queue_deploy( sprintf( 'save_post:%s:#%d:%s', $post->post_type, $post_id, $post->post_status ) );
 }
 add_action( 'save_post_post', 'site_maybe_deploy_on_save', 10, 2 );
 
@@ -155,7 +173,7 @@ function site_maybe_deploy_on_delete( $post_id ) {
 		// signature of WordPress's own daily Trash-cleanup cron permanently
 		// deleting something old, rather than a human clicking "Delete
 		// Permanently".
-		site_run_deploy( sprintf( '%s:%s:#%d', current_action(), $post_type, $post_id ) );
+		site_queue_deploy( sprintf( '%s:%s:#%d', current_action(), $post_type, $post_id ) );
 	}
 }
 add_action( 'trashed_post', 'site_maybe_deploy_on_delete' );
