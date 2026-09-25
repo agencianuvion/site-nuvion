@@ -11,3 +11,6 @@ transparentes/
 design-reference/*.jpg
 design-reference/*.mp4
 /*.mp4
+
+# Temp folder of frontend/scripts/build-hero-frames.mjs (removed by the script itself; only left behind if it crashes)
+frontend/.hero-tmp/
