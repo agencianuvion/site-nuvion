@@ -47,6 +47,16 @@
  * sidebar indicator just never leaves its "Publishing…" state — harmless,
  * deploys themselves are entirely unaffected.
  *
+ * PUBLISH MODE — manual by default. Saving content only marks the site as
+ * "has unsent changes" (option site_deploy_dirty); nothing is rebuilt until
+ * someone presses "Send changes to the site" in the wp-admin sidebar (POST
+ * /wp-json/site/v1/deploy). That lets an editor make many edits, review
+ * them, and publish once — instead of one build per save. To go back to
+ * "every save deploys immediately", set in wp-config.php:
+ *   define( 'SITE_DEPLOY_MODE', 'auto' );
+ * Every save/delete hook goes through site_request_deploy(), so the mode is
+ * decided in exactly one place.
+ *
  * Usage: drop into wp-content/mu-plugins/.
  */
 
@@ -54,6 +64,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
+// Repo that receives the repository_dispatch event.
 const SITE_DEPLOY_GITHUB_OWNER = 'agencianuvion';
 const SITE_DEPLOY_GITHUB_REPO  = 'site-nuvion';
 
@@ -94,6 +105,10 @@ function site_run_deploy( $reason = 'unknown' ) {
 
 	site_log_deploy_trigger( $reason );
 
+	// Everything saved so far ships in this build; edits made after this
+	// point mark the site "dirty" again.
+	delete_option( 'site_deploy_dirty' );
+
 	// Marks a deploy as under way — site_receive_deploy_status() clears
 	// this the moment GitHub Actions reports back, which is what lets the
 	// sidebar indicator show a spinner for exactly as long as a real
@@ -119,23 +134,52 @@ function site_run_deploy( $reason = 'unknown' ) {
 	);
 }
 
+/** True when SITE_DEPLOY_MODE is 'auto' (every save deploys). Default is manual. */
+function site_deploy_is_auto() {
+	return defined( 'SITE_DEPLOY_MODE' ) && 'auto' === SITE_DEPLOY_MODE;
+}
+
+/** Flags that content was saved but not yet sent to the site. Keeps the post IDs (capped) so the UI can show "N items changed". */
+function site_mark_deploy_dirty( $post_id = 0 ) {
+	$dirty = get_option( 'site_deploy_dirty' );
+	if ( ! is_array( $dirty ) || empty( $dirty['since'] ) ) {
+		$dirty = array(
+			'since' => current_time( 'mysql' ),
+			'ids'   => array(),
+		);
+	}
+	$post_id = (int) $post_id;
+	if ( $post_id && ! in_array( $post_id, $dirty['ids'], true ) && count( $dirty['ids'] ) < 500 ) {
+		$dirty['ids'][] = $post_id;
+	}
+	update_option( 'site_deploy_dirty', $dirty, false );
+}
+
 /**
- * Debounced trigger: several saves close together (editing a post, clicking Update a few times while checking the
- * result, WordPress's own revision/meta saves that still count as "save_post") used to fire one full GitHub Actions
- * dispatch EACH — several deploy pipelines starting almost together, each opening its own SSH connection to rsync
- * the build, which is what actually spiked CPU/IOPS on the hosting account (confirmed against real usage graphs:
- * a burst of 6 dispatches inside 2 minutes lined up exactly with a CPU/IOPS spike). Instead of dispatching right
- * away, this schedules ONE single WP-Cron event 90 seconds out and clears/reschedules it on every new call — so a
- * flurry of saves collapses into exactly one deploy, fired 90s after the LAST one settles.
- * Relies on WP-Cron's normal behaviour (it runs on the next request to this WordPress install, not on a wall-clock
- * timer) — the deploy can land a little later than exactly 90s if the site gets no traffic in that window, which is
- * an acceptable trade for not hammering the server every time someone saves.
+ * Auto mode only: several saves close together used to fire one GitHub Actions dispatch EACH (a burst of 6 inside
+ * 2 minutes lined up with a CPU/IOPS spike on the shared hosting account). This schedules ONE single WP-Cron event
+ * 90 seconds out and reschedules it on every new call, so a flurry of saves collapses into a single deploy fired
+ * 90s after the LAST one. WP-Cron runs on the next request, so it can land a little later than 90s on a quiet site.
+ * Manual mode (the default) never gets here: it only marks the site dirty and the button dispatches once.
  */
 function site_queue_deploy( $reason = 'unknown' ) {
 	wp_clear_scheduled_hook( 'site_run_debounced_deploy' );
 	wp_schedule_single_event( time() + 90, 'site_run_debounced_deploy', array( $reason ) );
 }
 add_action( 'site_run_debounced_deploy', 'site_run_deploy' );
+
+/**
+ * The one entry point every save/delete hook (and any custom code, e.g. an
+ * options page or an AJAX toggle) should call: in auto mode, schedules a
+ * debounced deploy; otherwise only marks the site dirty.
+ */
+function site_request_deploy( $post_id = 0, $reason = 'unknown' ) {
+	if ( site_deploy_is_auto() ) {
+		site_queue_deploy( $reason );
+		return;
+	}
+	site_mark_deploy_dirty( $post_id );
+}
 
 /**
  * Posts — skip autosaves/revisions, and drafts (nothing public changed
@@ -150,7 +194,7 @@ function site_maybe_deploy_on_save( $post_id, $post ) {
 	if ( ! in_array( $post->post_status, array( 'publish', 'future', 'private' ), true ) ) {
 		return;
 	}
-	site_queue_deploy( sprintf( 'save_post:%s:#%d:%s', $post->post_type, $post_id, $post->post_status ) );
+	site_request_deploy( $post_id, sprintf( 'save_post:%s:#%d:%s', $post->post_type, $post_id, $post->post_status ) );
 }
 add_action( 'save_post_post', 'site_maybe_deploy_on_save', 10, 2 );
 
@@ -173,7 +217,7 @@ function site_maybe_deploy_on_delete( $post_id ) {
 		// signature of WordPress's own daily Trash-cleanup cron permanently
 		// deleting something old, rather than a human clicking "Delete
 		// Permanently".
-		site_queue_deploy( sprintf( '%s:%s:#%d', current_action(), $post_type, $post_id ) );
+		site_request_deploy( $post_id, sprintf( '%s:%s:#%d', current_action(), $post_type, $post_id ) );
 	}
 }
 add_action( 'trashed_post', 'site_maybe_deploy_on_delete' );
@@ -196,6 +240,33 @@ add_action(
 				'methods'             => 'POST',
 				'callback'            => 'site_receive_deploy_status',
 				'permission_callback' => '__return_true', // Auth is the shared token below, not a WP capability — GitHub Actions has neither a cookie nor a JWT.
+			)
+		);
+	}
+);
+
+/**
+ * The "Send changes to the site" button. Capability: manage_site_options
+ * (granted to the restricted Editor by editor-role.php) or manage_options.
+ */
+add_action(
+	'rest_api_init',
+	function () {
+		register_rest_route(
+			'site/v1',
+			'/deploy',
+			array(
+				'methods'             => 'POST',
+				'callback'            => function () {
+					if ( ! defined( 'SITE_GITHUB_DISPATCH_TOKEN' ) || ! SITE_GITHUB_DISPATCH_TOKEN ) {
+						return new WP_REST_Response( array( 'error' => 'Publishing is not configured.' ), 501 );
+					}
+					site_run_deploy( 'manual_button:user#' . get_current_user_id() );
+					return new WP_REST_Response( array( 'state' => 'deploying' ), 200 );
+				},
+				'permission_callback' => function () {
+					return current_user_can( 'manage_site_options' ) || current_user_can( 'manage_options' );
+				},
 			)
 		);
 	}
@@ -244,6 +315,8 @@ function site_receive_deploy_status( WP_REST_Request $request ) {
  * staleness/edge cases is here, not duplicated in JS:
  *  - "deploying": a dispatch went out and no result has arrived yet.
  *  - "success" / "failure": the last dispatch's real outcome.
+ *  - "dirty": content was saved and not yet sent (manual mode) — the
+ *    sidebar shows the "Send changes" button. Failure wins over dirty.
  *  - "idle": nothing has ever been dispatched (fresh install, or the
  *    GitHub token isn't configured at all).
  * A "pending" flag older than 8 minutes — well past what 3 retries of a
@@ -268,33 +341,58 @@ add_action(
 );
 
 function site_get_deploy_status() {
+	$can_deploy = current_user_can( 'manage_site_options' ) || current_user_can( 'manage_options' );
+
 	$pending_since = get_option( 'site_deploy_pending' );
 	if ( $pending_since ) {
 		$pending_age = time() - strtotime( $pending_since );
 		if ( $pending_age >= 0 && $pending_age < 8 * MINUTE_IN_SECONDS ) {
-			return new WP_REST_Response( array( 'state' => 'deploying' ), 200 );
+			return new WP_REST_Response(
+				array(
+					'state'      => 'deploying',
+					'can_deploy' => $can_deploy,
+					'auto'       => site_deploy_is_auto(),
+					'dirty'      => false,
+				),
+				200
+			);
 		}
 		// Stale — GitHub likely never got the dispatch at all. Clear it so
 		// it doesn't keep getting treated as "deploying" on every request.
 		delete_option( 'site_deploy_pending' );
 	}
 
-	$last = get_option( 'site_last_deploy' );
-	if ( ! $last || empty( $last['time'] ) ) {
-		return new WP_REST_Response( array( 'state' => 'idle' ), 200 );
+	$dirty = get_option( 'site_deploy_dirty' );
+	$extra = array(
+		'can_deploy' => $can_deploy,
+		'auto'       => site_deploy_is_auto(),
+		'dirty'      => false,
+	);
+	if ( is_array( $dirty ) && ! empty( $dirty['since'] ) ) {
+		$extra['dirty']       = true;
+		$extra['dirty_count'] = count( (array) ( $dirty['ids'] ?? array() ) );
+		$extra['dirty_ago']   = human_time_diff( strtotime( $dirty['since'] ) ) . ' ago';
 	}
 
-	return new WP_REST_Response(
-		array(
-			'state'    => 'success' === $last['status'] ? 'success' : 'failure',
-			// Formatted here (not left to the browser) so the sidebar script
-			// never has to parse a MySQL timestamp string itself — that
-			// would need to account for the site's configured timezone vs.
-			// the visitor's, which human_time_diff() already handles.
-			'time_ago' => human_time_diff( strtotime( $last['time'] ) ) . ' ago',
-		),
-		200
-	);
+	$last     = get_option( 'site_last_deploy' );
+	$last_ok  = ( $last && ! empty( $last['time'] ) ) ? $last : null;
+	// Formatted here (not left to the browser) so the sidebar script never
+	// has to parse a MySQL timestamp — human_time_diff() already handles the
+	// site's timezone vs. the visitor's.
+	$time_ago = $last_ok ? human_time_diff( strtotime( $last_ok['time'] ) ) . ' ago' : '';
+
+	// Precedence: failure (red) > unsent changes (amber) > up to date (green).
+	if ( $last_ok && 'success' !== $last_ok['status'] ) {
+		$state = 'failure';
+	} elseif ( $extra['dirty'] ) {
+		$state = 'dirty';
+	} elseif ( $last_ok ) {
+		$state = 'success';
+	} else {
+		$state = 'idle';
+	}
+
+	return new WP_REST_Response( array_merge( array( 'state' => $state, 'time_ago' => $time_ago ), $extra ), 200 );
 }
 
 /**

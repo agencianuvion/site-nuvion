@@ -22,8 +22,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 const SITE_NAME                = 'Nuvion';                                                            // login screen link title / logo alt text
-const SITE_ADMIN_CAPTION       = 'Administração do site';                                             // small caption under the sidebar logo
-const SITE_ADMIN_ACCENT_COLOR  = '#CC4E14';                                                            // brand accent — buttons, current nav item, focus rings, login button
+const SITE_ADMIN_CAPTION       = 'Painel Administrativo';                                             // small caption under the sidebar logo
+const SITE_ADMIN_VIEW_URL      = 'https://preview.agencianuvion.com.br';                              // "Ver site" button under the caption — point at https://agencianuvion.com.br once the new site is live
+const SITE_ADMIN_ACCENT_COLOR = '#CC4E14';                                                            // brand accent — buttons, current nav item, focus rings, login button
 const SITE_ADMIN_LOGO_SIDEBAR  = 'https://agencianuvion.com.br/images/logo-horizontal-white.png'; // shown above the sidebar menu — needs a LIGHT logo, sidebar background is dark
 const SITE_ADMIN_LOGO_TOPBAR   = 'https://agencianuvion.com.br/images/logo-horizontal-white.png'; // shown top-left of the admin bar, replacing the WordPress logo — also needs a light logo
 
@@ -95,7 +96,8 @@ function site_admin_sidebar_brand() {
 			brand.id = 'site-sidebar-brand';
 			brand.innerHTML =
 				'<img src="<?php echo esc_url( SITE_ADMIN_LOGO_SIDEBAR ); ?>" alt="<?php echo esc_attr( SITE_NAME ); ?>">' +
-				'<span><?php echo esc_js( SITE_ADMIN_CAPTION ); ?></span>';
+				'<span><?php echo esc_js( SITE_ADMIN_CAPTION ); ?></span>' +
+				'<a class="site-view-link" href="<?php echo esc_url( SITE_ADMIN_VIEW_URL ); ?>" target="_blank" rel="noopener">Ver site</a>';
 			wrap.insertBefore( brand, menu );
 		})();
 	</script>
@@ -207,6 +209,14 @@ function site_admin_reskin_css() {
 			margin-top: 14px; color: var(--site-text-muted);
 			font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .12em;
 		}
+		#site-sidebar-brand .site-view-link {
+			margin-top: 16px; padding: 7px 18px; border-radius: 999px;
+			border: 1px solid var(--site-accent); color: var(--site-accent);
+			font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; text-decoration: none;
+			transition: background .2s ease, color .2s ease;
+		}
+		#site-sidebar-brand .site-view-link:hover,
+		#site-sidebar-brand .site-view-link:focus-visible { background: var(--site-accent); color: #fff; }
 		/* Icon-only "folded" sidebar has no room for the full wordmark + caption. */
 		body.folded #site-sidebar-brand { display: none; }
 

@@ -125,29 +125,80 @@ function site_grant_caps( $role_name, $caps ) {
 /**
  * ---------------------------------------------------------------------
  * 2. Deploy status indicator — bottom of the sidebar, above "Collapse
- *    Menu". See wordpress/auto-deploy.php for the GET route this polls.
+ *    Menu". A status card (colored light + title + sub-line) with four
+ *    states — up to date (green), unsent changes (amber, with the "Send
+ *    changes to the site" button), publishing (blue, progress bar), failed
+ *    (red, "Try again"). See wordpress/auto-deploy.php for the routes it
+ *    polls and posts to. Uses --site-* variables from admin-branding.php.
  * ---------------------------------------------------------------------
  */
 function site_admin_sidebar_deploy_status() {
-	$rest_url = esc_url_raw( rest_url( 'site/v1/deploy-status' ) );
-	$nonce    = wp_create_nonce( 'wp_rest' );
+	$rest_url   = esc_url_raw( rest_url( 'site/v1/deploy-status' ) );
+	$deploy_url = esc_url_raw( rest_url( 'site/v1/deploy' ) );
+	$nonce      = wp_create_nonce( 'wp_rest' );
 	?>
 	<style>
 		#site-deploy-status {
-			display: none; align-items: center; gap: 10px;
-			margin: 4px 10px 14px; padding: 10px 12px;
-			border-radius: 6px; font-size: 12px; font-weight: 500;
-			background: rgba(0, 0, 0, 0.04); color: #555;
+			--sd-c: 63, 185, 80;
+			display: none; flex-direction: column; gap: 10px;
+			margin: 4px 10px 14px; padding: 12px 13px;
+			border-radius: 10px; font-size: 12px;
+			background: linear-gradient(180deg, rgba(var(--sd-c), .07), rgba(var(--sd-c), .025)), var(--site-bg-elevated-2, #26282f);
+			border: 1px solid rgba(var(--sd-c), .22);
+			color: var(--site-text, #f1f1f2);
+			transition: border-color .3s ease, background .3s ease;
 		}
-		.site-deploy-icon { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
-		#site-deploy-status.is-deploying .site-deploy-icon {
-			background: transparent; border: 2px solid #2563eb; border-top-color: transparent;
-			animation: site-deploy-spin 0.8s linear infinite;
+		#site-deploy-status.is-success   { --sd-c: 63, 185, 80; }
+		#site-deploy-status.is-dirty     { --sd-c: 245, 165, 36; border-color: rgba(var(--sd-c), .4); }
+		#site-deploy-status.is-failure   { --sd-c: 229, 72, 77;  border-color: rgba(var(--sd-c), .5); }
+		#site-deploy-status.is-deploying { --sd-c: 59, 130, 246; border-color: rgba(var(--sd-c), .4); }
+
+		#site-deploy-status .sd-head { display: flex; align-items: flex-start; gap: 11px; }
+		#site-deploy-status .sd-light {
+			flex: 0 0 auto; width: 10px; height: 10px; margin-top: 3px; border-radius: 50%;
+			background: rgb(var(--sd-c));
+			box-shadow: 0 0 0 3px rgba(var(--sd-c), .16), 0 0 12px rgba(var(--sd-c), .6);
 		}
-		#site-deploy-status.is-success .site-deploy-icon { background: #3fb950; border: none; }
-		#site-deploy-status.is-failure .site-deploy-icon { background: #d1242f; border: none; }
-		@keyframes site-deploy-spin { to { transform: rotate(360deg); } }
-		body.folded #site-deploy-status { display: none !important; }
+		#site-deploy-status.is-dirty .sd-light     { animation: sd-pulse 1.9s ease-in-out infinite; }
+		#site-deploy-status.is-deploying .sd-light { animation: sd-pulse 1.2s ease-in-out infinite; }
+		#site-deploy-status.is-failure .sd-light   { animation: sd-pulse 1s ease-in-out infinite; }
+		@keyframes sd-pulse {
+			0%, 100% { box-shadow: 0 0 0 3px rgba(var(--sd-c), .16), 0 0 8px rgba(var(--sd-c), .45); }
+			50%      { box-shadow: 0 0 0 6px rgba(var(--sd-c), .06), 0 0 20px rgba(var(--sd-c), .95); }
+		}
+		#site-deploy-status .sd-text { min-width: 0; }
+		#site-deploy-status .sd-title { font-size: 12.5px; font-weight: 600; line-height: 1.35; color: var(--site-text, #f1f1f2); }
+		#site-deploy-status .sd-sub { margin-top: 2px; font-size: 11.5px; line-height: 1.4; color: var(--site-text-muted, #9a9ea6); }
+
+		#site-deploy-status .sd-btn {
+			display: block; width: 100%; box-sizing: border-box; padding: 8px 10px;
+			border: 0; border-radius: 7px; cursor: pointer;
+			font: inherit; font-size: 12px; font-weight: 600; letter-spacing: .01em;
+			background: rgb(var(--sd-c)); color: #1c1e23;
+			box-shadow: inset 0 1px 0 rgba(255, 255, 255, .28), 0 1px 2px rgba(0, 0, 0, .25);
+			transition: filter .2s ease, transform .1s ease;
+		}
+		#site-deploy-status.is-failure .sd-btn { color: #fff; }
+		#site-deploy-status .sd-btn:hover { filter: brightness(1.08); }
+		#site-deploy-status .sd-btn:active { transform: translateY(1px); }
+		#site-deploy-status .sd-btn:focus-visible { outline: 2px solid rgba(var(--sd-c), .9); outline-offset: 2px; }
+		#site-deploy-status .sd-btn[disabled] { opacity: .6; cursor: default; filter: none; }
+
+		#site-deploy-status .sd-bar { position: relative; height: 3px; overflow: hidden; border-radius: 3px; background: rgba(var(--sd-c), .18); }
+		#site-deploy-status .sd-bar::after {
+			content: ""; position: absolute; inset: 0 auto 0 0; width: 38%; border-radius: 3px;
+			background: linear-gradient(90deg, transparent, rgb(var(--sd-c)), transparent);
+			animation: sd-slide 1.3s ease-in-out infinite;
+		}
+		@keyframes sd-slide { from { transform: translateX(-100%); } to { transform: translateX(270%); } }
+
+		body.folded #site-deploy-status { margin: 6px 4px 12px; padding: 10px 0; align-items: center; }
+		body.folded #site-deploy-status .sd-text,
+		body.folded #site-deploy-status .sd-btn,
+		body.folded #site-deploy-status .sd-bar { display: none; }
+		@media (prefers-reduced-motion: reduce) {
+			#site-deploy-status .sd-light, #site-deploy-status .sd-bar::after { animation: none; }
+		}
 	</style>
 	<script>
 		(function () {
@@ -155,38 +206,88 @@ function site_admin_sidebar_deploy_status() {
 			if ( ! wrap ) {
 				return;
 			}
+			// #collapse-menu lives INSIDE #adminmenu, not directly in the
+			// wrap — so anchor to the sidebar footer block (admin-branding.php,
+			// which renders earlier) when it's present, else just append.
 			var collapse = document.getElementById( 'collapse-menu' );
+			var footer   = document.getElementById( 'site-sidebar-footer' );
 
 			var el = document.createElement( 'div' );
 			el.id = 'site-deploy-status';
-			el.style.display = 'none';
-			if ( collapse && collapse.parentElement === wrap ) {
+			el.setAttribute( 'role', 'status' );
+			el.setAttribute( 'aria-live', 'polite' );
+			if ( footer && footer.parentElement === wrap ) {
+				wrap.insertBefore( el, footer );
+			} else if ( collapse && collapse.parentElement === wrap ) {
 				wrap.insertBefore( el, collapse );
 			} else {
 				wrap.appendChild( el );
 			}
 
 			var restUrl = <?php echo wp_json_encode( $rest_url ); ?>;
+			var deployUrl = <?php echo wp_json_encode( $deploy_url ); ?>;
 			var nonce = <?php echo wp_json_encode( $nonce ); ?>;
-			var labels = {
-				deploying: 'Publishing changes…',
-				success: 'Site up to date',
-				failure: 'Publish failed',
-			};
+			var timer = null;
+
+			function esc( t ) {
+				var d = document.createElement( 'div' );
+				d.textContent = t;
+				return d.innerHTML;
+			}
+
+			function plural( n ) {
+				return n + ( n === 1 ? ' item changed' : ' items changed' );
+			}
 
 			function render( data ) {
 				var state = data.state;
-				if ( state === 'idle' || ! labels[ state ] ) {
+				if ( state === 'idle' ) {
 					el.style.display = 'none';
 					return;
 				}
-				var label = labels[ state ] + ( data.time_ago ? ' · ' + data.time_ago : '' );
+				var title = '', sub = '', extra = '';
+				var canDeploy = !! data.can_deploy;
+
+				if ( state === 'success' ) {
+					title = 'Site up to date';
+					sub = data.time_ago ? 'Published ' + data.time_ago : '';
+				} else if ( state === 'dirty' ) {
+					title = 'Unsent changes';
+					sub = ( data.dirty_count ? plural( data.dirty_count ) + ' · ' : 'Saved ' ) + ( data.dirty_ago || '' );
+					if ( canDeploy ) {
+						extra = '<button type="button" class="sd-btn">Send changes to the site</button>';
+					} else {
+						sub += ' · awaiting send';
+					}
+				} else if ( state === 'failure' ) {
+					title = 'Publish failed';
+					sub = ( data.time_ago ? data.time_ago + ' · ' : '' ) + 'the site is still on the previous version';
+					if ( canDeploy ) {
+						extra = '<button type="button" class="sd-btn">Try again</button>';
+					}
+				} else if ( state === 'deploying' ) {
+					title = 'Publishing changes…';
+					sub = 'Usually takes about a minute';
+					extra = '<div class="sd-bar" aria-hidden="true"></div>';
+				} else {
+					el.style.display = 'none';
+					return;
+				}
+
 				el.className = 'is-' + state;
-				el.innerHTML = '<span class="site-deploy-icon" aria-hidden="true"></span><span>' + label + '</span>';
+				el.innerHTML =
+					'<div class="sd-head"><span class="sd-light" aria-hidden="true"></span><div class="sd-text"><div class="sd-title">' +
+					esc( title ) + '</div>' + ( sub ? '<div class="sd-sub">' + esc( sub ) + '</div>' : '' ) + '</div></div>' + extra;
 				el.style.display = 'flex';
 			}
 
-			var timer = null;
+			function schedule( data ) {
+				if ( timer ) {
+					clearTimeout( timer );
+				}
+				timer = setTimeout( poll, data && data.state === 'deploying' ? 4000 : 20000 );
+			}
+
 			function poll() {
 				fetch( restUrl, { headers: { 'X-WP-Nonce': nonce }, cache: 'no-store', credentials: 'same-origin' } )
 					.then( function ( res ) {
@@ -197,13 +298,37 @@ function site_admin_sidebar_deploy_status() {
 							return;
 						}
 						render( data );
-						if ( timer ) {
-							clearTimeout( timer );
-						}
-						timer = setTimeout( poll, data.state === 'deploying' ? 4000 : 20000 );
+						schedule( data );
 					} )
 					.catch( function () {} );
 			}
+
+			el.addEventListener( 'click', function ( ev ) {
+				var btn = ev.target.closest ? ev.target.closest( '.sd-btn' ) : null;
+				if ( ! btn || btn.disabled ) {
+					return;
+				}
+				btn.disabled = true;
+				btn.textContent = 'Sending…';
+				fetch( deployUrl, { method: 'POST', headers: { 'X-WP-Nonce': nonce }, credentials: 'same-origin' } )
+					.then( function ( res ) {
+						if ( ! res.ok ) {
+							throw new Error( 'fail' );
+						}
+						render( { state: 'deploying', can_deploy: true } );
+						schedule( { state: 'deploying' } );
+					} )
+					.catch( function () {
+						btn.disabled = false;
+						btn.textContent = 'Could not send. Try again';
+					} );
+			} );
+
+			document.addEventListener( 'visibilitychange', function () {
+				if ( ! document.hidden ) {
+					poll();
+				}
+			} );
 
 			poll();
 		})();
