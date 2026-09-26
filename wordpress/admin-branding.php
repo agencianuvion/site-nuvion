@@ -239,11 +239,11 @@ function site_admin_reskin_css() {
 		   `margin-top:auto` empurra o rodapé até embaixo quando sobra espaço.
 		   Qualquer bloco inserido ANTES dele (ex.: indicador de deploy, ver
 		   client-access.php) fica logo sob "Recolher menu". */
-		#adminmenuwrap { display: flex; flex-direction: column; min-height: 100vh; }
+		#adminmenuwrap { display: flex; flex-direction: column; min-height: calc(100vh - var(--wp-admin--admin-bar--height, 32px)); box-sizing: border-box; }
 		#site-sidebar-footer {
 			margin-top: auto;
 			display: flex; flex-direction: column; align-items: center; gap: 14px;
-			padding: 24px 16px 28px; text-align: center;
+			padding: 28px 16px 40px; text-align: center;
 			background: var(--site-bg-elevated);
 			border-top: 1px solid var(--site-border-soft);
 		}
@@ -256,7 +256,7 @@ function site_admin_reskin_css() {
 		#site-sidebar-footer .site-sidebar-logout:focus { color: var(--site-accent) !important; }
 		#site-sidebar-footer .site-sidebar-agency { display: block; line-height: 0; opacity: .55; transition: opacity .18s ease; }
 		#site-sidebar-footer .site-sidebar-agency:hover { opacity: .9; }
-		#site-sidebar-footer .site-sidebar-agency img { width: 150px; max-width: 82%; height: auto; }
+		#site-sidebar-footer .site-sidebar-agency img { width: 130px; max-width: 78%; height: auto; display: block; }
 		/* Sidebar recolhida (ícones): sem rodapé e sem esticar a coluna. */
 		body.folded #adminmenuwrap { min-height: 0; }
 		body.folded #site-sidebar-footer { display: none; }
