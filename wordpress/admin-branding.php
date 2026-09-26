@@ -25,7 +25,7 @@ const SITE_NAME                = 'Nuvion';                                      
 const SITE_ADMIN_CAPTION       = 'Painel Administrativo';                                             // small caption under the sidebar logo
 const SITE_ADMIN_ACCENT_COLOR  = '#CC4E14';                                                           // brand accent — buttons, current nav item, focus rings, login button
 const SITE_ADMIN_LOGO_SIDEBAR  = 'https://system.agencianuvion.com.br/wp-content/uploads/2026/09/logo-nuvion-light.png'; // shown above the sidebar menu — needs a LIGHT logo, sidebar background is dark
-const SITE_ADMIN_LOGO_FOOTER   = '';                                                              // agency mark at the bottom of the sidebar — empty: the agency IS Nuvion, whose logo is already above the menu
+const SITE_ADMIN_LOGO_FOOTER   = 'https://system.agencianuvion.com.br/wp-content/uploads/2026/09/logo-nuvion-light.png'; // agency mark at the very bottom of the sidebar (with "Sair") — needs a LIGHT logo; '' hides it
 const SITE_ADMIN_VIEW_URL      = 'https://preview.agencianuvion.com.br';                              // "Ver Site" button under the caption — point at https://agencianuvion.com.br once the new site is live
 const SITE_ADMIN_LOGO_TOPBAR   = 'https://system.agencianuvion.com.br/wp-content/uploads/2026/09/logo-nuvion-light.png'; // shown top-left of the admin bar, replacing the WordPress logo — also needs a light logo
 
@@ -106,8 +106,8 @@ function site_admin_sidebar_brand() {
 			footer.innerHTML =
 				'<a class="site-sidebar-logout" href="<?php echo esc_url( wp_logout_url() ); ?>">Sair</a>' +
 				<?php if ( '' !== SITE_ADMIN_LOGO_FOOTER ) : ?>
-				'<a class="site-sidebar-agency" href="https://example.com" target="_blank" rel="noopener">' + // TODO: agency link
-				'<img src="<?php echo esc_url( SITE_ADMIN_LOGO_FOOTER ); ?>" alt="Agency"></a>' +
+				'<a class="site-sidebar-agency" href="https://agencianuvion.com.br" target="_blank" rel="noopener">' +
+				'<img src="<?php echo esc_url( SITE_ADMIN_LOGO_FOOTER ); ?>" alt="<?php echo esc_attr( SITE_NAME ); ?>"></a>' +
 				<?php endif; ?>
 				'';
 			wrap.appendChild( footer );
