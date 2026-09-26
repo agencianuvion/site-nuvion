@@ -1433,6 +1433,13 @@
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.08);
     border: 1px solid rgba(255, 255, 255, 0.14);
+    overflow: hidden;
+  }
+  .t3-tavatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
   .t3-tvideo {
     position: relative;
@@ -2956,6 +2963,12 @@
   }
   .t3-tcard.is-video .t3-tcard-in {
     grid-template-rows: auto minmax(0, 1fr);
+  }
+  .t3-tavatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
   .t3-tvideo {
     min-height: 120px;

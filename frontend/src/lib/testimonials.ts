@@ -1,6 +1,19 @@
-// PLACEHOLDER testimonials — no real client said any of this. Swap for real text or video
-// (set video: true and drop a poster/embed into .t3-tvideo). Names/companies stay generic on purpose.
-export const testimonials = [
+import { wpCollection, decodeEntities } from "./wp-data";
+
+// Testimonials are edited in WordPress (Depoimentos: title = the person's name, "Ordem" = position in the slider; text, role,
+// optional video link and optional photo in the meta box). The PLACEHOLDER list below (no real client said any of it) is the
+// FALLBACK used only when WordPress is unreachable or has none yet.
+export interface Testimonial {
+  quote: string;
+  name: string;
+  role: string;
+  /** True when the card is a video testimonial (a video link was set). */
+  video: boolean;
+  videoUrl?: string;
+  photo?: string;
+}
+
+const localTestimonials: Testimonial[] = [
   {
     quote: "Aqui entra o depoimento real de um cliente da Nuvion. Este texto serve só para avaliar o tamanho da fonte, a quebra de linhas e o ritmo da animação.",
     name: "Nome do cliente",
@@ -27,3 +40,25 @@ export const testimonials = [
     video: false,
   },
 ];
+
+interface WpDepoimento {
+  title: { rendered: string };
+  fields?: { quote: string; role: string; video_url: string; photo: string };
+}
+
+async function loadTestimonials(): Promise<Testimonial[]> {
+  const items = await wpCollection<WpDepoimento>("depoimentos", "&orderby=menu_order&order=asc");
+  const fromWp = (items ?? [])
+    .filter((d) => d.fields?.quote?.trim())
+    .map((d) => ({
+      quote: d.fields!.quote,
+      name: decodeEntities(d.title.rendered),
+      role: d.fields!.role,
+      video: !!d.fields!.video_url,
+      videoUrl: d.fields!.video_url || undefined,
+      photo: d.fields!.photo || undefined,
+    }));
+  return fromWp.length ? fromWp : localTestimonials;
+}
+
+export const testimonials: Testimonial[] = await loadTestimonials();

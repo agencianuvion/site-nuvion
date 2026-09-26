@@ -1,6 +1,9 @@
-// Aggregate results across the clients' projects, shown on the portfolio page. EVERY VALUE HERE IS A TEST PLACEHOLDER until the
-// real totals (with period and source) are entered; they must not go live as they are. The same real numbers must be used
-// everywhere on the site (e.g. the "1M+ leads" of the About page). Shaped for a WordPress options panel.
+import { wpOptions, text } from "./wp-data";
+
+// Aggregate results across the clients' projects, shown on the portfolio page. Edited in WordPress ("Dados da Nuvion" → Resultados);
+// the values below are the FALLBACK used when WordPress is unreachable. EVERY VALUE IS A TEST PLACEHOLDER until the real totals
+// (with period and source) are entered; they must not go live as they are. The same real numbers must be used everywhere on the
+// site (e.g. the "1M+ leads" of the About page).
 export interface Result {
   /** Number the counter counts up to (already in the unit of the suffix: 1.2 + "M" = 1.2 million). */
   count: number;
@@ -11,10 +14,25 @@ export interface Result {
   /** Small drawing that plays with the number. */
   viz: "line" | "bars" | "dots" | "rings";
 }
-export const resultsSource = "Somatório dos projetos, 2015 a 2026 (números de teste). Fonte: painéis dos clientes (Google Analytics, Search Console e CRM).";
-export const results: Result[] = [
+const localSource = "Somatório dos projetos, 2015 a 2026 (números de teste). Fonte: painéis dos clientes (Google Analytics, Search Console e CRM).";
+const localResults: Result[] = [
   { count: 1.2, decimals: 1, prefix: "+", suffix: "M", label: "Leads gerados", viz: "line" },
   { count: 8.4, decimals: 1, suffix: "M", label: "Visualizações de página", viz: "bars" },
   { count: 32, suffix: "M", label: "Impressões no Google", viz: "dots" },
   { count: 4.8, decimals: 1, suffix: "%", label: "CTR médio nas buscas orgânicas", viz: "rings" },
 ];
+
+const options = await wpOptions();
+const items = options?.results?.items?.filter((r) => r.label?.trim());
+
+export const resultsSource: string = text(options?.results?.source, localSource);
+export const results: Result[] = items?.length
+  ? items.map((r) => ({
+      count: r.count,
+      decimals: r.decimals || undefined,
+      prefix: r.prefix || undefined,
+      suffix: r.suffix || undefined,
+      label: r.label,
+      viz: r.viz,
+    }))
+  : localResults;

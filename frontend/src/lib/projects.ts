@@ -1,18 +1,20 @@
 import { cutText } from "./blog";
+import { wpCollection, decodeEntities, type WpImage } from "./wp-data";
 
-// Portfolio data. It is shaped like the WordPress custom post type ("Projetos") that will replace it, so keep it plain:
+// Portfolio data. It comes from the WordPress custom post type "Projetos" (see loadProjects below); the local list is only the FALLBACK
+// used when WordPress is unreachable or has none yet. The fields, plain:
 //   - name: company name; url: the live site (the address shown is derived from it); segment: a term of the "Segmentos" taxonomy
 //     (the list below stands in for it; new terms are added in WordPress);
 //   - featured: the switch in the CPT. The page highlights the MOST RECENT featured project (by date);
 //   - descriptionHtml: the rich-text field. When it is empty NOTHING is shown for the description (no placeholder text);
 //   - photos: public/images/projects/<slug>-640|1000|1800.webp; alt: text for the photo.
-// The order of the array is the order used by the home slider and the strips; the portfolio page sorts by date.
+// The order is the "Ordem" field in WordPress (menu_order): it is the order of the home slider and the strips; the portfolio page sorts by date.
 // url values are TEST addresses until the real ones are entered. Spoudaios' segment is an assumption, to be confirmed.
 export interface Segment {
   slug: string;
   label: string;
 }
-export const segments: Segment[] = [
+const localSegments: Segment[] = [
   { slug: "imobiliario", label: "Imobiliário" },
   { slug: "construcao", label: "Construção" },
   { slug: "saude", label: "Saúde" },
@@ -30,11 +32,13 @@ export interface Project {
   /** Rich text from the WordPress editor (trusted HTML). Empty or missing = nothing is rendered. */
   descriptionHtml?: string;
   alt: string;
+  /** The photo as uploaded to WordPress (url = original, srcset = every size WordPress made). Missing in the local fallback, whose files are public/images/projects/<slug>-640|1000|1800.webp. */
+  image?: { url: string; srcset: string; width: number; height: number };
 }
 // TEST descriptions, so the layout can be judged with text in place. They are NOT real: replace them in WordPress before publishing.
 const TEST_SHORT = "<p><strong>(Texto de teste.)</strong> Aqui entra a descrição do projeto: quem é o cliente, o desafio que ele tinha e o que a Nuvion construiu para resolver. O texto é escrito no editor do WordPress e aceita <strong>números</strong>, listas e links.</p><p>Resultados de exemplo: <strong>+120%</strong> em visitas orgânicas e <strong>3x</strong> mais contatos em 6 meses (números de teste).</p>";
 const TEST_LONG = TEST_SHORT + "<p>Este é um exemplo de descrição mais longa, para testar a rolagem dentro do painel. O projeto começou por um diagnóstico técnico do site anterior, seguido de uma nova arquitetura de páginas, de textos escritos para responder às perguntas reais dos clientes e de uma estrutura de dados pensada para o Google e para as respostas das IAs.</p><p>Depois do lançamento, o acompanhamento mensal mostrou o que funcionava e o que precisava de ajuste, e cada decisão ficou registrada e explicada ao cliente.</p><ul><li>Site novo, rápido e responsivo</li><li>SEO técnico e dados estruturados</li><li>Conteúdo preparado para GEO</li></ul>";
-export const projects: Project[] = [
+const localProjects: Project[] = [
   { slug: "patio-alameda", name: "Pátio Alameda", url: "https://www.exemplo.com.br", segment: "imobiliario", date: "2026-03-12", descriptionHtml: TEST_SHORT, alt: "Site do Pátio Alameda exibido em notebook e celular" },
   { slug: "wegg", name: "Wegg", url: "https://www.exemplo.com.br", segment: "construcao", featured: true, date: "2026-08-10", descriptionHtml: TEST_LONG, alt: "Site da construtora Wegg exibido em monitor e celular" },
   { slug: "spoudaios", name: "Spoudaios", url: "https://www.exemplo.com.br", segment: "servicos", date: "2026-04-20", descriptionHtml: TEST_SHORT, alt: "Site do Spoudaios exibido em notebook e celular" },
@@ -42,6 +46,73 @@ export const projects: Project[] = [
   { slug: "placas-em-12-horas", name: "Placas em 12 Horas", url: "https://www.exemplo.com.br", segment: "industria", date: "2026-02-05", descriptionHtml: TEST_SHORT, alt: "Site da Placas em 12 Horas exibido em monitor e celular" },
   { slug: "onliving", name: "OnLiving", url: "https://www.exemplo.com.br", segment: "imobiliario", date: "2026-07-01", descriptionHtml: TEST_SHORT, alt: "Site da OnLiving exibido em monitor e celular" },
 ];
+
+
+interface WpProjeto {
+  slug: string;
+  date: string;
+  title: { rendered: string };
+  fields?: {
+    url: string;
+    description: string;
+    featured: boolean;
+    segment: { slug: string; name: string } | null;
+    image: (WpImage & { srcset: string }) | null;
+  };
+}
+interface WpSegmento {
+  slug: string;
+  name: string;
+}
+
+async function loadProjects(): Promise<{ projects: Project[]; segments: Segment[] }> {
+  const items = await wpCollection<WpProjeto>("projetos", "&orderby=menu_order&order=asc");
+  const fromWp: Project[] = (items ?? [])
+    .filter((p) => p.fields?.image?.url)
+    .map((p) => {
+      const f = p.fields!;
+      const name = decodeEntities(p.title.rendered);
+      return {
+        slug: p.slug,
+        name,
+        url: f.url || undefined,
+        segment: f.segment?.slug ?? "",
+        featured: f.featured,
+        date: p.date,
+        descriptionHtml: f.description,
+        alt: f.image!.alt || `Site da ${name}`,
+        image: { url: f.image!.url, srcset: f.image!.srcset, width: f.image!.width, height: f.image!.height },
+      };
+    });
+  if (!fromWp.length) return { projects: localProjects, segments: localSegments };
+
+  // Segments in the order they were created in WordPress (the chips of the portfolio follow it).
+  const terms = await wpCollection<WpSegmento>("segmento", "&orderby=id&order=asc");
+  const fromTerms = (terms ?? []).map((t) => ({ slug: t.slug, label: decodeEntities(t.name) }));
+  return { projects: fromWp, segments: fromTerms.length ? fromTerms : localSegments };
+}
+
+const loaded = await loadProjects();
+export const projects: Project[] = loaded.projects;
+export const segments: Segment[] = loaded.segments;
+
+/** Picture URL of a project at (about) the given width. WordPress projects use the size WordPress made that fits; the local fallback has fixed files. */
+export function projectImg(p: Project, width: 640 | 1000 | 1800): string {
+  if (!p.image) return `/images/projects/${p.slug}-${width}.webp`;
+  if (width === 1800) return p.image.url;
+  const sizes = p.image.srcset
+    .split(",")
+    .map((s) => s.trim().split(/\s+/))
+    .map(([url, w]) => ({ url, w: parseInt(w, 10) }))
+    .filter((s) => s.url && s.w)
+    .sort((a, b) => a.w - b.w);
+  return (sizes.find((s) => s.w >= width) ?? sizes[sizes.length - 1])?.url ?? p.image.url;
+}
+/** The srcset attribute for a project's picture (640/1000/1800 in the fallback; every size WordPress made otherwise). */
+export function projectSrcset(p: Project, widths: (640 | 1000 | 1800)[] = [640, 1000, 1800]): string {
+  if (p.image?.srcset) return p.image.srcset;
+  return widths.map((w) => `${projectImg(p, w)} ${w}w`).join(", ");
+}
 
 export const segmentLabel = (slug: string) => segments.find((s) => s.slug === slug)?.label ?? slug;
 /** "https://www.exemplo.com.br/x" -> "exemplo.com.br" */

@@ -1198,10 +1198,11 @@ function countUp(scope: ParentNode) {
     const pre = el.dataset.prefix ?? "";
     const suf = el.dataset.suffix ?? "";
     const state = { v: 0 };
-    // "k-to-m": counts in thousands and lands on "1M+" (a plain 0 -> 1 would just jump)
+    // "k-to-m": counts in thousands and lands on "1M+" / "1,5M+" (a plain 0 -> 1 would just jump); below 1000 it stays in "k"
     const dec = Number(el.dataset.decimals ?? 0);
+    const kToMEnd = to >= 1000 ? (to / 1000).toFixed(to % 1000 ? 1 : 0).replace(".", ",") + "M+" : Math.round(to) + "k+";
     const fmt = (v: number) =>
-      el.dataset.format === "k-to-m" ? (Math.round(v) >= 1000 ? "1M+" : Math.round(v) + "k") : pre + v.toFixed(dec).replace(".", ",") + suf;
+      el.dataset.format === "k-to-m" ? (Math.round(v) >= to ? kToMEnd : Math.round(v) + "k") : pre + v.toFixed(dec).replace(".", ",") + suf;
     el.textContent = fmt(0);
     gsap.to(state, {
       v: to,

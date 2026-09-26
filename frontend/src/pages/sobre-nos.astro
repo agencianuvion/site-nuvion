@@ -13,6 +13,7 @@ import { buildBreadcrumbSchema } from "../lib/breadcrumbs";
 import AuthorCard from "../components/site/AuthorCard.astro";
 import { founderSchema, aboutPageSchema } from "../lib/schema";
 import { FOUNDER } from "../lib/contact";
+import { about } from "../lib/about";
 
 const siteUrl = (Astro.site ?? Astro.url).href;
 const crumbs = [{ label: "Início", href: "/" }, { label: "Sobre Nós" }];
@@ -21,31 +22,22 @@ const crumbs = [{ label: "Início", href: "/" }, { label: "Sobre Nós" }];
 const bars = Array.from({ length: 11 }, (_, i) => i);
 const dots = Array.from({ length: 24 }, (_, i) => i);
 
-const founderQuote =
-  "Fundei a Nuvion depois de ver o mesmo erro se repetir em dezenas de negócios: sites bonitos, feitos com carinho, que não traziam um cliente sequer. E a internet mudou. Hoje não basta aparecer no Google, é preciso aparecer também na resposta que a inteligência artificial dá quando alguém pergunta por um produto ou serviço como o seu. Por isso decidi focar a Nuvion inteiramente nisso: arquitetura de site, SEO técnico e GEO trabalhando juntos, sem prometer o que a gente não vai entregar.";
-
-const values = [
-  { title: "Foco no resultado", text: "O seu retorno é a métrica que importa. Não trabalhamos por vaidade, trabalhamos por ROI." },
-  { title: "Transparência estratégica", text: "Dados claros, sem enrolação, para você tomar decisão com segurança." },
-  { title: "Expertise humana e tecnologia", text: "Tecnologia sozinha não resolve. É a combinação com julgamento humano que faz a diferença." },
-];
-
 const mvv = [
   {
     num: "Missão",
-    title: "Simplificar o crescimento digital",
-    text: "Simplificar o crescimento digital das empresas que atendemos, construindo sites que funcionam como ativos de aquisição, não só cartões de visita.",
+    title: about.mission.title,
+    text: about.mission.text,
     size: "hero" as const,
   },
   {
     num: "Visão",
-    title: "A referência em SEO técnico e GEO",
-    text: "Ser a principal referência em arquitetura digital para SEO técnico e GEO, reconhecida por transformar a presença online dos nossos clientes em um ativo previsível.",
+    title: about.vision.title,
+    text: about.vision.text,
     size: "wide" as const,
   },
-  { num: "Valor", title: values[0].title, text: values[0].text },
-  { num: "Valor", title: values[1].title, text: values[1].text },
-  { num: "Valor", title: values[2].title, text: values[2].text, size: "full" as const, hot: true },
+  { num: "Valor", title: about.values[0].title, text: about.values[0].text },
+  { num: "Valor", title: about.values[1].title, text: about.values[1].text },
+  { num: "Valor", title: about.values[2].title, text: about.values[2].text, size: "full" as const, hot: true },
 ];
 
 ---
@@ -77,7 +69,7 @@ const mvv = [
       <div slot="visual" class="ph-stats">
         <div class="ph-stat ph-stat-wide">
           <div class="ph-stat-txt">
-            <b data-count="11">11</b>
+            <b data-count={about.years}>{about.years}</b>
             <span>Anos de experiência</span>
           </div>
           <div class="ph-bars" aria-hidden="true">
@@ -85,14 +77,14 @@ const mvv = [
           </div>
         </div>
         <div class="ph-stat">
-          <b data-count="150" data-prefix="+">+150</b>
+          <b data-count={about.projects} data-prefix="+">+{about.projects}</b>
           <span>Projetos entregues</span>
           <div class="ph-dots" aria-hidden="true">
             {dots.map((i) => <i style={`--i:${i}`} />)}
           </div>
         </div>
         <div class="ph-stat">
-          <b data-count="1000" data-format="k-to-m">1M+</b>
+          <b data-count={about.leadsK} data-format="k-to-m">{about.leadsText}</b>
           <span>Leads gerados</span>
           <svg class="ph-spark" viewBox="0 0 120 44" preserveAspectRatio="none" aria-hidden="true">
             <path class="ph-spark-area" d="M2 40 C 20 38, 30 34, 46 30 S 74 22, 88 14 S 108 6, 118 4 L118 44 L2 44 Z" />
@@ -103,8 +95,8 @@ const mvv = [
         <div class="ph-stat ph-stat-wide ph-stat-hot">
           <span class="ph-pin" aria-hidden="true"><i></i></span>
           <div class="ph-stat-txt">
-            <b class="ph-place">Atendemos todo o Brasil</b>
-            <span>Empresas de qualquer estado</span>
+            <b class="ph-place">{about.place}</b>
+            <span>{about.placeSub}</span>
           </div>
         </div>
       </div>
@@ -118,7 +110,7 @@ const mvv = [
       <AuthorCard
         kicker="Quem está por trás da Nuvion"
         title="Bonito não basta: o site precisa trazer cliente"
-        text={"\u201C" + founderQuote + "\u201D"}
+        text={"\u201C" + about.founderQuote + "\u201D"}
         quote
         chips={["SEO e GEO", "Desenvolvimento full-stack", "UI/UX design", "Inteligência artificial", "Administração e Marketing Digital"]}
         links={[

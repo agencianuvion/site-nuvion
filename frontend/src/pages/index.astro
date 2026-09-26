@@ -5,7 +5,7 @@
 // stats, testimonials, team photos or prices (the numbers in "stats" were given by the client).
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { waLink } from "../lib/contact";
-import { projects, segmentLabel, hasText, introFromHtml } from "../lib/projects";
+import { projects, segmentLabel, hasText, introFromHtml, projectImg, projectSrcset } from "../lib/projects";
 import { steps } from "../lib/process";
 import { getVisiblePosts } from "../lib/blog";
 import Testimonials from "../components/site/Testimonials.astro";
@@ -323,11 +323,11 @@ const pageSchema = faqSchema(faqs);
             projects.map((pr, i) => (
               <div class="t3-pslide" role="group" aria-roledescription="slide" aria-label={`${i + 1} de ${projects.length}`}>
                 <article class="t3-pcard">
-                  <figure class="t3-pmedia" data-full={`/images/projects/${pr.slug}-1800.webp`} data-name={pr.name}>
+                  <figure class="t3-pmedia" data-full={projectImg(pr, 1800)} data-name={pr.name}>
                     <img
                       class="t3-proj-img"
-                      src={`/images/projects/${pr.slug}-1000.webp`}
-                      srcset={`/images/projects/${pr.slug}-640.webp 640w, /images/projects/${pr.slug}-1000.webp 1000w, /images/projects/${pr.slug}-1800.webp 1800w`}
+                      src={projectImg(pr, 1000)}
+                      srcset={projectSrcset(pr)}
                       sizes="(max-width: 1000px) 88vw, 700px"
                       width="1800"
                       height="1012"

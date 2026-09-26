@@ -45,7 +45,7 @@ const labels = ["Empresas atendidas pela Nuvion", "Mais empresas atendidas pela 
                     {row.map((l) => (
                       <li>
                         <img
-                          src={`/images/clients/${l.slug}.webp`}
+                          src={l.src}
                           alt={copy === 0 ? l.name : ""}
                           width={l.w}
                           height={l.h}

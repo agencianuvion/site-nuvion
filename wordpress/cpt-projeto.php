@@ -43,8 +43,8 @@ add_action(
 				'rest_base'          => 'projetos',
 				'menu_icon'          => 'dashicons-portfolio',
 				'menu_position'      => 20,
-				// title + photo only: the description and the other fields are in fields-projeto.php's meta box.
-				'supports'           => array( 'title', 'thumbnail' ),
+				// title + photo + "Ordem" (the order of the home slider and the strips); the other fields are in fields-projeto.php's meta box.
+				'supports'           => array( 'title', 'thumbnail', 'page-attributes' ),
 			)
 		);
 
@@ -85,3 +85,13 @@ foreach ( array( 'created_segmento', 'edited_segmento', 'delete_segmento' ) as $
 		}
 	);
 }
+
+/** The list shows the projects in the site's order ("Ordem", then newest first) unless the admin picks another sort. */
+add_action(
+	'pre_get_posts',
+	function ( $q ) {
+		if ( is_admin() && $q->is_main_query() && 'projeto' === $q->get( 'post_type' ) && ! isset( $_GET['orderby'] ) ) {
+			$q->set( 'orderby', array( 'menu_order' => 'ASC', 'date' => 'DESC' ) );
+		}
+	}
+);

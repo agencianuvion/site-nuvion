@@ -1,12 +1,15 @@
-// Client/partner logos (white, transparent — for dark backgrounds). Swap the files in public/images/clients/ for the coloured versions later; keep the same slugs and update w/h if the size changes.
+// Client/partner logos (white, transparent — for dark backgrounds). They are edited in WordPress (Clientes: title = name, featured image = logo, "Ordem" = position); the list below is the FALLBACK used when WordPress is unreachable or has none yet (files in public/images/clients/, same slugs).
+import { wpCollection, decodeEntities, type WpImage } from "./wp-data";
 export interface ClientLogo {
   slug: string;
   name: string;
   w: number;
   h: number;
+  /** Where the logo image is (a WordPress upload, or /images/clients/<slug>.webp in the fallback). */
+  src: string;
 }
 
-export const clientLogos: ClientLogo[] = [
+const localLogos: Omit<ClientLogo, "src">[] = [
   {
     "slug": "amc-clinica-odontologica",
     "name": "AMC Clínica Odontológica",
@@ -176,3 +179,26 @@ export const clientLogos: ClientLogo[] = [
     "h": 85
   }
 ];
+
+
+interface WpCliente {
+  slug: string;
+  title: { rendered: string };
+  fields?: { logo: WpImage | null };
+}
+
+async function loadClientLogos(): Promise<ClientLogo[]> {
+  const items = await wpCollection<WpCliente>("clientes", "&orderby=menu_order&order=asc");
+  const fromWp = (items ?? [])
+    .filter((c) => c.fields?.logo?.url)
+    .map((c) => ({
+      slug: c.slug,
+      name: decodeEntities(c.title.rendered),
+      w: c.fields!.logo!.width || 150,
+      h: c.fields!.logo!.height || 60,
+      src: c.fields!.logo!.url,
+    }));
+  return fromWp.length ? fromWp : localLogos.map((l) => ({ ...l, src: `/images/clients/${l.slug}.webp` }));
+}
+
+export const clientLogos: ClientLogo[] = await loadClientLogos();
