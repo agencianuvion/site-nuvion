@@ -254,9 +254,9 @@ function site_admin_reskin_css() {
 		}
 		#site-sidebar-footer .site-sidebar-logout:hover,
 		#site-sidebar-footer .site-sidebar-logout:focus { color: var(--site-accent) !important; }
-		#site-sidebar-footer .site-sidebar-agency { display: block; line-height: 0; opacity: .55; transition: opacity .18s ease; }
+		#site-sidebar-footer .site-sidebar-agency { display: block; align-self: center; width: 150px; max-width: calc(100% - 32px); margin: 0 auto; line-height: 0; opacity: .55; transition: opacity .18s ease; }
 		#site-sidebar-footer .site-sidebar-agency:hover { opacity: .9; }
-		#site-sidebar-footer .site-sidebar-agency img { width: 130px; max-width: 78%; height: auto; display: block; }
+		#site-sidebar-footer .site-sidebar-agency img { display: block; width: 100%; height: auto; }
 		/* Sidebar recolhida (ícones): sem rodapé e sem esticar a coluna. */
 		body.folded #adminmenuwrap { min-height: 0; }
 		body.folded #site-sidebar-footer { display: none; }
