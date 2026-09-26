@@ -23,9 +23,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 const SITE_NAME                = 'Nuvion';                                                            // login screen link title / logo alt text
 const SITE_ADMIN_CAPTION       = 'Painel Administrativo';                                             // small caption under the sidebar logo
-const SITE_ADMIN_VIEW_URL      = 'https://preview.agencianuvion.com.br';                              // "Ver site" button under the caption — point at https://agencianuvion.com.br once the new site is live
-const SITE_ADMIN_ACCENT_COLOR = '#CC4E14';                                                            // brand accent — buttons, current nav item, focus rings, login button
+const SITE_ADMIN_ACCENT_COLOR  = '#CC4E14';                                                           // brand accent — buttons, current nav item, focus rings, login button
 const SITE_ADMIN_LOGO_SIDEBAR  = 'https://agencianuvion.com.br/images/logo-horizontal-white.png'; // shown above the sidebar menu — needs a LIGHT logo, sidebar background is dark
+const SITE_ADMIN_LOGO_FOOTER   = '';                                                              // agency mark at the bottom of the sidebar — empty: the agency IS Nuvion, whose logo is already above the menu
+const SITE_ADMIN_VIEW_URL      = 'https://preview.agencianuvion.com.br';                              // "Ver Site" button under the caption — point at https://agencianuvion.com.br once the new site is live
 const SITE_ADMIN_LOGO_TOPBAR   = 'https://agencianuvion.com.br/images/logo-horizontal-white.png'; // shown top-left of the admin bar, replacing the WordPress logo — also needs a light logo
 
 /**
@@ -97,8 +98,19 @@ function site_admin_sidebar_brand() {
 			brand.innerHTML =
 				'<img src="<?php echo esc_url( SITE_ADMIN_LOGO_SIDEBAR ); ?>" alt="<?php echo esc_attr( SITE_NAME ); ?>">' +
 				'<span><?php echo esc_js( SITE_ADMIN_CAPTION ); ?></span>' +
-				'<a class="site-view-link" href="<?php echo esc_url( SITE_ADMIN_VIEW_URL ); ?>" target="_blank" rel="noopener">Ver site</a>';
+				'<a class="site-sidebar-viewsite" href="<?php echo esc_url( '' !== SITE_ADMIN_VIEW_URL ? SITE_ADMIN_VIEW_URL : home_url( '/' ) ); ?>" target="_blank" rel="noopener">Ver Site</a>';
 			wrap.insertBefore( brand, menu );
+
+			var footer = document.createElement( 'div' );
+			footer.id = 'site-sidebar-footer';
+			footer.innerHTML =
+				'<a class="site-sidebar-logout" href="<?php echo esc_url( wp_logout_url() ); ?>">Sair</a>' +
+				<?php if ( '' !== SITE_ADMIN_LOGO_FOOTER ) : ?>
+				'<a class="site-sidebar-agency" href="https://example.com" target="_blank" rel="noopener">' + // TODO: agency link
+				'<img src="<?php echo esc_url( SITE_ADMIN_LOGO_FOOTER ); ?>" alt="Agency"></a>' +
+				<?php endif; ?>
+				'';
+			wrap.appendChild( footer );
 		})();
 	</script>
 	<?php
@@ -209,16 +221,45 @@ function site_admin_reskin_css() {
 			margin-top: 14px; color: var(--site-text-muted);
 			font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .12em;
 		}
-		#site-sidebar-brand .site-view-link {
-			margin-top: 16px; padding: 7px 18px; border-radius: 999px;
-			border: 1px solid var(--site-accent); color: var(--site-accent);
-			font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; text-decoration: none;
-			transition: background .2s ease, color .2s ease;
+		/* Botão "Ver Site" sob a legenda — contorno na cor de destaque. */
+		#site-sidebar-brand .site-sidebar-viewsite {
+			margin-top: 16px; padding: 7px 18px;
+			border: 1px solid var(--site-accent); border-radius: 999px;
+			color: var(--site-text) !important; background: transparent; box-shadow: none !important;
+			font-size: 12px; font-weight: 600; letter-spacing: .04em; text-decoration: none;
+			transition: background .18s ease, color .18s ease;
 		}
-		#site-sidebar-brand .site-view-link:hover,
-		#site-sidebar-brand .site-view-link:focus-visible { background: var(--site-accent); color: #fff; }
+		#site-sidebar-brand .site-sidebar-viewsite:hover,
+		#site-sidebar-brand .site-sidebar-viewsite:focus { background: var(--site-accent); color: #fff !important; }
 		/* Icon-only "folded" sidebar has no room for the full wordmark + caption. */
 		body.folded #site-sidebar-brand { display: none; }
+
+		/* Rodapé da sidebar — "Sair" + marca da agência, ancorado no fim da
+		   coluna. #adminmenuwrap vira flex-column com altura mínima de viewport;
+		   `margin-top:auto` empurra o rodapé até embaixo quando sobra espaço.
+		   Qualquer bloco inserido ANTES dele (ex.: indicador de deploy, ver
+		   client-access.php) fica logo sob "Recolher menu". */
+		#adminmenuwrap { display: flex; flex-direction: column; min-height: 100vh; }
+		#site-sidebar-footer {
+			margin-top: auto;
+			display: flex; flex-direction: column; align-items: center; gap: 14px;
+			padding: 24px 16px 28px; text-align: center;
+			background: var(--site-bg-elevated);
+			border-top: 1px solid var(--site-border-soft);
+		}
+		#site-sidebar-footer .site-sidebar-logout {
+			color: var(--site-text-faint) !important; box-shadow: none !important;
+			font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .12em;
+			text-decoration: none;
+		}
+		#site-sidebar-footer .site-sidebar-logout:hover,
+		#site-sidebar-footer .site-sidebar-logout:focus { color: var(--site-accent) !important; }
+		#site-sidebar-footer .site-sidebar-agency { display: block; line-height: 0; opacity: .55; transition: opacity .18s ease; }
+		#site-sidebar-footer .site-sidebar-agency:hover { opacity: .9; }
+		#site-sidebar-footer .site-sidebar-agency img { width: 150px; max-width: 82%; height: auto; }
+		/* Sidebar recolhida (ícones): sem rodapé e sem esticar a coluna. */
+		body.folded #adminmenuwrap { min-height: 0; }
+		body.folded #site-sidebar-footer { display: none; }
 
 		/* Sidebar menu — dark chrome, current item as a rounded "pill" rather
 		   than a full-bleed block, closer to a modern SaaS dashboard nav. */
