@@ -24,10 +24,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 const SITE_NAME                = 'Nuvion';                                                            // login screen link title / logo alt text
 const SITE_ADMIN_CAPTION       = 'Painel Administrativo';                                             // small caption under the sidebar logo
 const SITE_ADMIN_ACCENT_COLOR  = '#CC4E14';                                                           // brand accent — buttons, current nav item, focus rings, login button
-const SITE_ADMIN_LOGO_SIDEBAR  = 'https://agencianuvion.com.br/images/logo-horizontal-white.png'; // shown above the sidebar menu — needs a LIGHT logo, sidebar background is dark
+const SITE_ADMIN_LOGO_SIDEBAR  = 'https://system.agencianuvion.com.br/wp-content/uploads/2026/09/logo-nuvion-light.png'; // shown above the sidebar menu — needs a LIGHT logo, sidebar background is dark
 const SITE_ADMIN_LOGO_FOOTER   = '';                                                              // agency mark at the bottom of the sidebar — empty: the agency IS Nuvion, whose logo is already above the menu
 const SITE_ADMIN_VIEW_URL      = 'https://preview.agencianuvion.com.br';                              // "Ver Site" button under the caption — point at https://agencianuvion.com.br once the new site is live
-const SITE_ADMIN_LOGO_TOPBAR   = 'https://agencianuvion.com.br/images/logo-horizontal-white.png'; // shown top-left of the admin bar, replacing the WordPress logo — also needs a light logo
+const SITE_ADMIN_LOGO_TOPBAR   = 'https://system.agencianuvion.com.br/wp-content/uploads/2026/09/logo-nuvion-light.png'; // shown top-left of the admin bar, replacing the WordPress logo — also needs a light logo
 
 /**
  * ---------------------------------------------------------------------
