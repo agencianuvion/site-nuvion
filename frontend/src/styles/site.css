@@ -5199,6 +5199,7 @@ body:not(:has(.t3-hero-full)) main.t3 {
 }
 .tb-q {
   margin: 0;
+  margin-block: auto; /* centres a short quote in the space above the name; long ones collapse this and the box scrolls (same mechanism as .t3-tq) */
   font-weight: 400;
   letter-spacing: -0.01em;
   line-height: 1.6;

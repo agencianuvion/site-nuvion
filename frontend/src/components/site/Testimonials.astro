@@ -21,6 +21,20 @@ const { layout = "stack", tone = "light", logos = true, title = "O que dizem nos
 const vlogoH = (l: { w: number; h: number }) => Math.round(Math.max(18, Math.min(44, 140 / (l.w / l.h))));
 /** [true, true, true, false, false] for a 3-star rating — filled stars first, so the row is just a map over this. */
 const stars = (n: number) => Array.from({ length: 5 }, (_, i) => i < n);
+/**
+ * A short testimonial gets a much bigger quote than a long one, so it fills roughly the same amount of the card
+ * instead of leaving empty space above the name (the card's height is fixed — see .tsl's --tsl-h). Word count reads
+ * more consistently across punctuation styles than character count. Long quotes land back at the original small
+ * size and rely on the card's existing internal scroll (.t3-tqwrap's "is-scroll" class, in site.ts) as the fallback.
+ */
+function quoteFontSize(quote: string): string {
+  const words = quote.trim().split(/\s+/).filter(Boolean).length;
+  if (words <= 12) return "clamp(22px, 3.6vw, 34px)";
+  if (words <= 25) return "clamp(19px, 3vw, 30px)";
+  if (words <= 45) return "clamp(17px, 2.55vw, 26px)";
+  if (words <= 80) return "clamp(16px, 2vw, 21px)";
+  return "clamp(15px, 1.6vw, 18px)";
+}
 ---
 
 {
@@ -49,7 +63,7 @@ const stars = (n: number) => Array.from({ length: 5 }, (_, i) => i < n);
                   ))}
                 </div>
               )}
-              <div class="t3-tqwrap"><blockquote class="tb-q">{t.quote}</blockquote></div>
+              <div class="t3-tqwrap"><blockquote class="tb-q" style={`font-size:${quoteFontSize(t.quote)}`}>{t.quote}</blockquote></div>
               <footer class="t3-tby">
                 <span class="t3-tavatar" aria-hidden="true">{t.photo && <img src={t.photo} alt="" width="44" height="44" loading="lazy" decoding="async" />}</span>
                 <span class="t3-tby-info">
@@ -116,7 +130,7 @@ const stars = (n: number) => Array.from({ length: 5 }, (_, i) => i < n);
                     ))}
                   </div>
                 )}
-                <div class="t3-tqwrap"><blockquote class="t3-tq">{t.quote}</blockquote></div>
+                <div class="t3-tqwrap"><blockquote class="t3-tq" style={`font-size:${quoteFontSize(t.quote)}`}>{t.quote}</blockquote></div>
                 <footer class="t3-tby">
                   <span class="t3-tavatar" aria-hidden="true">{t.photo && <img src={t.photo} alt="" width="44" height="44" loading="lazy" decoding="async" />}</span>
                   <span class="t3-tby-info">
