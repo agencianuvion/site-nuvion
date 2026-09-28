@@ -5222,8 +5222,8 @@ body:not(:has(.t3-hero-full)) main.t3 {
 .tb-card .t3-tqwrap {
   flex: 1 1 auto;
   min-height: 0;
-  font-size: clamp(16px, 1.25vw, 18px);
-  line-height: 1.6;
+  font-size: clamp(15px, 2.55vw, 26px);
+  line-height: 1.35;
 }
 .tb-card .tb-q {
   font-size: inherit;
@@ -5239,6 +5239,56 @@ body:not(:has(.t3-hero-full)) main.t3 {
 .tsl.is-solo .tb-q {
   font-weight: 500;
   letter-spacing: -0.02em;
+}
+/* Name/company under the quote: the name is the post title (never "Nome do cliente" on a real entry), set apart from
+   the smaller company line and the optional Google badge. Unscoped so both testimonial layouts (this bento card and
+   the grid ".t3-tcard" on the home) get the same stacked name/company/badge column. */
+.t3-tby-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.tb-card .t3-tby strong {
+  font-size: clamp(15px, 1.1vw, 17px);
+  font-weight: 700;
+}
+.tb-card .t3-tby em {
+  font-size: 13px;
+}
+.t3-gbadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  margin-top: 6px;
+  padding: 3px 9px 3px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: rgba(255, 255, 255, 0.72);
+}
+.t3-gbadge svg {
+  width: 12px;
+  height: 12px;
+  flex: none;
+}
+/* 5-star row, right above the quote (Depoimentos with a "Nota" set in wp-admin). */
+.t3-stars {
+  display: flex;
+  gap: 3px;
+  margin: 10px 0 0;
+}
+.t3-stars svg {
+  width: 15px;
+  height: 15px;
+  fill: rgba(255, 255, 255, 0.18);
+}
+.t3-stars svg.is-on {
+  fill: #f5a524;
 }
 
 /* ---- Portfolio page ---- */

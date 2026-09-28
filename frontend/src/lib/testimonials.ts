@@ -11,6 +11,10 @@ export interface Testimonial {
   video: boolean;
   videoUrl?: string;
   photo?: string;
+  /** True when the "Avaliação do Google" switch is on (the review was collected from the Google Business Profile). */
+  fromGoogle?: boolean;
+  /** 1-5 stars; undefined/0 = no stars shown. */
+  rating?: number;
 }
 
 const localTestimonials: Testimonial[] = [
@@ -43,7 +47,7 @@ const localTestimonials: Testimonial[] = [
 
 interface WpDepoimento {
   title: { rendered: string };
-  fields?: { quote: string; role: string; video_url: string; photo: string };
+  fields?: { quote: string; role: string; from_google: boolean; rating: number; video_url: string; photo: string };
 }
 
 async function loadTestimonials(): Promise<Testimonial[]> {
@@ -57,6 +61,8 @@ async function loadTestimonials(): Promise<Testimonial[]> {
       video: !!d.fields!.video_url,
       videoUrl: d.fields!.video_url || undefined,
       photo: d.fields!.photo || undefined,
+      fromGoogle: !!d.fields!.from_google,
+      rating: d.fields!.rating || undefined,
     }));
   return fromWp.length ? fromWp : localTestimonials;
 }
