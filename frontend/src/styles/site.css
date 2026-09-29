@@ -4960,10 +4960,17 @@ body:not(:has(.t3-hero-full)) main.t3 {
 /* founder quote inside the author card (About) — a longer quote can be more than one paragraph (see AuthorCard.astro) */
 .ac-quote {
   margin: 0;
-  max-width: 74ch;
+  max-width: 100%;
   font-size: clamp(15px, 1.15vw, 17px);
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.78);
+}
+/* ".ac p" (the shorter argument-text variant, capped at 68ch) is a plain descendant selector, so it was also matching
+   these <p> tags now that a quote can be more than one paragraph — .ac .ac-quote beats it on specificity regardless
+   of source order, letting these paragraphs use the blockquote's own width/color instead. */
+.ac .ac-quote p {
+  max-width: 100%;
+  color: inherit;
 }
 .ac-quote p + p {
   margin-top: 1em;
