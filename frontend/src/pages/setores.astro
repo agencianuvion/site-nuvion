@@ -92,10 +92,21 @@ const sectorNames = ["Saúde e estética", "Construção e imobiliário", "Indú
       waMessage="Olá! Quero conversar sobre um site para o meu negócio."
     >
       Sites e buscas para <em>o seu setor.</em>
-      <ul slot="visual" class="ph-chips">
-        {sectorNames.map((n) => <li>{n}</li>)}
-        <li>+ qualquer outro modelo de negócio</li>
-      </ul>
+      <div slot="visual" class="ph-net-wrap">
+        <svg class="ph-net" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true">
+          <path class="ph-net-line" d="M20 46 L150 92 L250 44 L380 104" />
+          <path class="ph-net-line" d="M34 224 L146 182 L228 240 L362 196" />
+          <path class="ph-net-line" d="M18 142 L118 138 L198 168 L322 150" />
+          <circle class="ph-net-dot" cx="150" cy="92" r="3" />
+          <circle class="ph-net-dot" cx="250" cy="44" r="3" />
+          <circle class="ph-net-dot" cx="146" cy="182" r="3" />
+          <circle class="ph-net-dot" cx="322" cy="150" r="3" />
+        </svg>
+        <ul class="ph-chips">
+          {sectorNames.map((n, i) => <li style={`--i:${i}`}>{n}</li>)}
+          <li class="ph-chip-wild" style={`--i:${sectorNames.length}`}>+ qualquer outro modelo de negócio</li>
+        </ul>
+      </div>
     </PageHero>
 
     <Bento
