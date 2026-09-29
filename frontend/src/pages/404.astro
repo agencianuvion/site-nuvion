@@ -91,10 +91,8 @@ import { waLink } from "../lib/contact";
   .nf {
     display: flex;
     align-items: center;
-    /* the same "fill the screen" calc as the home's full-height hero (.t3-hero-full) — a literal 100vh would run
-       past the viewport once the .t3 layout's own side/top gap is added on top of it */
-    min-height: calc(100vh - var(--t3-gap));
-    min-height: calc(100svh - var(--t3-gap));
+    min-height: calc(90vh - var(--t3-gap));
+    min-height: calc(90svh - var(--t3-gap));
   }
   .nf-in {
     position: relative;
