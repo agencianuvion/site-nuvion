@@ -43,6 +43,6 @@ export const about = {
   values: localValues.map((v, i) => ({ title: text(wpValues[i]?.title, v.title), text: text(wpValues[i]?.text, v.text) })),
   founderQuote: text(
     options?.founder?.quote,
-    "Fundei a Nuvion depois de ver o mesmo erro se repetir em dezenas de negócios: sites bonitos, feitos com carinho, que não traziam um cliente sequer. E a internet mudou. Hoje não basta aparecer no Google, é preciso aparecer também na resposta que a inteligência artificial dá quando alguém pergunta por um produto ou serviço como o seu. Por isso decidi focar a Nuvion inteiramente nisso: arquitetura de site, SEO técnico e GEO trabalhando juntos, sem prometer o que a gente não vai entregar."
+    "Fundei a Nuvion depois de ver o mesmo erro se repetir em dezenas de negócios. Sites bonitos aos olhos de quem manda no negócio, mas sem nenhuma estrutura técnica pra aparecer no Google, e quase nenhum cliente chegando por eles. Depois a internet mudou de novo. Hoje não basta aparecer na busca, é preciso aparecer também na resposta que a inteligência artificial dá quando alguém pergunta por um produto ou serviço como o seu, e quem não se adaptou ficou ainda mais pra trás. Foi por isso que decidi focar a Nuvion inteiramente em arquitetura de site, SEO técnico e GEO trabalhando juntos, sem prometer o que a gente não vai entregar. E olha, isso não quer dizer abrir mão da beleza: a gente entrega tudo isso e o site continua incrível."
   ),
 };
