@@ -11,7 +11,8 @@ interface Link {
 }
 interface Props {
   title: string;
-  text: string;
+  /** A single string, or several paragraphs (e.g. a longer founder quote) rendered as separate <p>s. */
+  text: string | string[];
   kicker?: string;
   quote?: boolean;
   chips?: string[];
@@ -38,6 +39,11 @@ const {
   role = FOUNDER.role,
   photo = FOUNDER.photo,
 } = Astro.props;
+// Curly quotes wrap the WHOLE quote (opening on the first paragraph, closing on the last), not each paragraph.
+const paragraphs = Array.isArray(text) ? text : [text];
+const quoted = quote
+  ? paragraphs.map((p, i) => (i === 0 ? "“" : "") + p + (i === paragraphs.length - 1 ? "”" : ""))
+  : paragraphs;
 ---
 
 <aside class="ac" data-reveal aria-label={kicker}>
@@ -45,7 +51,15 @@ const {
   <div class="ac-body">
     <span class="ac-k">{kicker}</span>
     <h3>{title}</h3>
-    {quote ? <blockquote class="ac-quote">{text}</blockquote> : <p>{text}</p>}
+    {
+      quote ? (
+        <blockquote class="ac-quote">
+          {quoted.map((p) => <p>{p}</p>)}
+        </blockquote>
+      ) : (
+        quoted.map((p) => <p>{p}</p>)
+      )
+    }
     {
       chips && chips.length > 0 && (
         <ul class="ac-chips" role="list">

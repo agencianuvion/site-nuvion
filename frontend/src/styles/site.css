@@ -4838,7 +4838,7 @@ body:not(:has(.t3-hero-full)) main.t3 {
     color-mix(in srgb, #fff 5%, var(--t3-dark));
 }
 .ac-photo {
-  width: clamp(150px, 17vw, 230px);
+  width: clamp(170px, 19vw, 260px);
   height: 100%;
   min-height: 100%;
   border-radius: 18px;
@@ -4957,13 +4957,16 @@ body:not(:has(.t3-hero-full)) main.t3 {
   border-bottom-color: rgba(255, 255, 255, 0.1);
 }
 
-/* founder quote inside the author card (About) */
+/* founder quote inside the author card (About) — a longer quote can be more than one paragraph (see AuthorCard.astro) */
 .ac-quote {
   margin: 0;
   max-width: 74ch;
   font-size: clamp(15px, 1.15vw, 17px);
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.78);
+}
+.ac-quote p + p {
+  margin-top: 1em;
 }
 @media (prefers-reduced-motion: reduce) {
   .ph-stat *,

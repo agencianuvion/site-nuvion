@@ -111,7 +111,7 @@ function site_opt_schema() {
 						'founder_education' => array( 'type' => 'text', 'label' => 'Formação', 'default' => 'Formação superior em Administração e Marketing Digital' ),
 						'founder_photo'     => array( 'type' => 'image', 'label' => 'Foto', 'default' => 0, 'desc' => 'Vazia, o site usa a foto que já está nele.' ),
 						'founder_bio'       => array( 'type' => 'textarea', 'label' => 'Mini biografia', 'default' => 'Juan Carlo Fabra Gomez é diretor da Agência Nuvion, desenvolvedor web full-stack e especialista em SEO e GEO. Com forte atuação em UI/UX design e integração de inteligência artificial, ele foca em impulsionar o posicionamento digital de marcas através de arquitetura de conteúdo e engenharia de performance.' ),
-						'founder_quote'     => array( 'type' => 'textarea', 'label' => 'Citação do fundador (Sobre Nós)', 'default' => '', 'desc' => 'Vazia, o site usa o texto que já está nele. Escreva com a sua voz.' ),
+						'founder_quote'     => array( 'type' => 'textarea', 'label' => 'Citação do fundador (Sobre Nós)', 'default' => '', 'desc' => 'Vazia, o site usa o texto que já está nele. Escreva com a sua voz. Uma linha em branco entre parágrafos cria parágrafos separados no cartão.' ),
 					),
 				),
 			),

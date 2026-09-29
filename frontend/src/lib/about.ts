@@ -41,8 +41,14 @@ export const about = {
     ),
   },
   values: localValues.map((v, i) => ({ title: text(wpValues[i]?.title, v.title), text: text(wpValues[i]?.text, v.text) })),
-  founderQuote: text(
-    options?.founder?.quote,
-    "Todo santo dia eu via o mesmo problema se repetindo. O dono do negócio orgulhoso do site novo, bonito, exatamente do jeito que sonhou, só que na prática quase ninguém achava aquele site no Google. Por fora tinha cara de profissional, mas por dentro faltava a base técnica pra realmente aparecer numa busca. Depois a internet mudou de novo. Hoje não basta aparecer no Google, é preciso aparecer também quando a inteligência artificial responde alguém que pergunta por um produto ou serviço como o seu, e quem não acompanhou essa mudança ficou ainda mais pra trás. Foi por isso que resolvi focar a Nuvion em juntar arquitetura de site, SEO técnico e GEO numa coisa só. E o site continua bonito, viu? A gente simplesmente não abre mão disso."
-  ),
+  /** Founder's manifesto, as one or more paragraphs. In WordPress a blank line between paragraphs splits them (see
+   * options-nuvion.php's "founder_quote" field). AuthorCard wraps the whole thing in curly quotes. */
+  founderQuote: (() => {
+    const raw = options?.founder?.quote?.trim();
+    if (raw) return raw.split(/\n{2,}/).map((p) => p.trim()).filter(Boolean);
+    return [
+      "Desde 2018, atuo nos bastidores de projetos digitais e vi o mesmo erro se repetir à exaustão: empresas investindo pesado em interfaces esteticamente perfeitas, mas completamente invisíveis. Durante anos, o mercado abraçou a ilusão de que um site bonito era o suficiente. O resultado sempre foi o mesmo: vitrines caras com tráfego zero.",
+      "Se focar apenas na estética já era um erro grave, hoje se tornou fatal. Com a evolução dos buscadores e a chegada das Inteligências Artificiais (GEO), a estética vazia é o caminho mais rápido para a irrelevância. Foi exatamente para corrigir essa falha crônica que direcionei a operação da Nuvion para uma única frente: unir o rigor da arquitetura web e do SEO Técnico à Otimização Generativa. Nós não construímos simples ‘cartões de visita’. Construímos máquinas de aquisição orgânica, sem abrir mão de um milímetro sequer de elegância no design.",
+    ];
+  })(),
 };
