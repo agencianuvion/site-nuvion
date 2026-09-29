@@ -1,19 +1,183 @@
 ---
+// A dedicated 404, not the generic PageHero every other page uses — on-brand joke for an SEO/GEO agency: a fake
+// "search with zero results" for the URL that doesn't exist, with a few real links styled like search results.
 import BaseLayout from "../layouts/BaseLayout.astro";
-import PageHero from "../components/shared/PageHero.astro";
+import { waLink } from "../lib/contact";
 ---
 
 <BaseLayout title="Página não encontrada — Nuvion" description="A página que você procura não existe ou mudou de endereço." noindex>
   <main class="t3">
-    <PageHero
-      compact
-      eyebrow="Erro 404"
-      frame="r06"
-      description="O endereço pode ter mudado ou nunca ter existido. Volte para o início ou fale com a gente."
-      ctaLabel="Falar com a Nuvion"
-      secondary={{ label: "Voltar ao início", href: "/" }}
-    >
-      Essa página <em>não existe.</em>
-    </PageHero>
+    <section class="t3-panel t3-dark nf" aria-labelledby="nf-h1">
+      <div class="ph-bg" aria-hidden="true"></div>
+      <div class="nf-in">
+        <span class="t3-chip" style="padding-top:0"><i></i>Erro 404</span>
+        <h1 id="nf-h1" class="nf-title">Essa página <em>não existe.</em></h1>
+
+        <div class="nf-search">
+          <svg class="nf-search-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <span class="nf-search-text">
+            <span data-nf-url>/</span><span class="nf-caret" aria-hidden="true">|</span>
+          </span>
+        </div>
+        <p class="nf-zero">
+          0 resultados encontrados. Nem a gente, que é especialista em SEO e GEO, conseguiu indexar essa página.
+        </p>
+
+        <ul class="nf-results">
+          <li class="nf-result">
+            <a href="/">
+              <span class="nf-result-title">Início — Agência Nuvion</span>
+              <span class="nf-result-url">agencianuvion.com.br</span>
+              <span class="nf-result-desc">Sites de alta performance, SEO técnico e GEO. Comece por aqui.</span>
+            </a>
+          </li>
+          <li class="nf-result">
+            <a href="/blog">
+              <span class="nf-result-title">Blog — artigos sobre SEO e GEO</span>
+              <span class="nf-result-url">agencianuvion.com.br/blog</span>
+              <span class="nf-result-desc">Conteúdo sobre arquitetura de site, SEO técnico e otimização para IAs.</span>
+            </a>
+          </li>
+          <li class="nf-result">
+            <a href={waLink("Olá! Cheguei numa página que não existe no site e queria falar com vocês.")} target="_blank" rel="noopener">
+              <span class="nf-result-title">Falar com a Nuvion</span>
+              <span class="nf-result-url">wa.me</span>
+              <span class="nf-result-desc">Prefere resolver direto? Manda uma mensagem pelo WhatsApp.</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </section>
   </main>
 </BaseLayout>
+
+<script>
+  // The 404 route is static (same build for every broken URL), so the URL itself only exists client-side —
+  // "typed into" the fake search bar once the real page (and JS) has loaded.
+  const el = document.querySelector<HTMLElement>("[data-nf-url]");
+  if (el && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    const path = location.pathname && location.pathname !== "/" ? location.pathname : "/pagina-que-voce-tentou-abrir";
+    let i = 0;
+    el.textContent = "";
+    const type = () => {
+      el.textContent = path.slice(0, i);
+      i++;
+      if (i <= path.length) setTimeout(type, 45);
+    };
+    type();
+  } else if (el) {
+    el.textContent = location.pathname && location.pathname !== "/" ? location.pathname : "/pagina-que-voce-tentou-abrir";
+  }
+</script>
+
+<style>
+  .nf {
+    display: flex;
+    align-items: center;
+    min-height: clamp(520px, 70vh, 680px);
+  }
+  .nf-in {
+    position: relative;
+    z-index: 1;
+    max-width: 620px;
+    margin: 0 auto;
+    padding: clamp(40px, 6vw, 72px) clamp(20px, 4vw, 40px);
+    text-align: center;
+  }
+  .nf-title {
+    margin: 18px 0 36px;
+    font-size: clamp(32px, 5vw, 54px);
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    line-height: 1.08;
+  }
+  .nf-title em {
+    font-style: normal;
+    color: var(--color-nv-orange);
+  }
+  .nf-search {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 22px;
+    border-radius: 999px;
+    background: #fff;
+    color: #111;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+  }
+  .nf-search-ico {
+    width: 19px;
+    height: 19px;
+    flex: none;
+    color: #8a8a8a;
+  }
+  .nf-search-text {
+    overflow: hidden;
+    white-space: nowrap;
+    font-family: var(--t3-mono);
+    font-size: 14px;
+    text-align: left;
+  }
+  .nf-caret {
+    animation: nf-blink 1s step-end infinite;
+  }
+  @keyframes nf-blink {
+    50% {
+      opacity: 0;
+    }
+  }
+  .nf-zero {
+    margin: 22px 0 0;
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.6);
+  }
+  .nf-results {
+    list-style: none;
+    margin: 32px 0 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    text-align: left;
+  }
+  .nf-result a {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 15px 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.13);
+    background: rgba(255, 255, 255, 0.04);
+    text-decoration: none;
+    transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+  }
+  .nf-result a:hover,
+  .nf-result a:focus-visible {
+    border-color: rgba(204, 78, 20, 0.55);
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateX(4px);
+  }
+  .nf-result-title {
+    font-weight: 600;
+    font-size: 15px;
+    color: var(--color-nv-orange);
+  }
+  .nf-result-url {
+    font-family: var(--t3-mono);
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.42);
+  }
+  .nf-result-desc {
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.62);
+  }
+  @media (max-width: 560px) {
+    .nf-search-text {
+      font-size: 12.5px;
+    }
+  }
+</style>
