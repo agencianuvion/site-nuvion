@@ -98,7 +98,7 @@ const sectorNames = ["Saúde e estética", "Construção e imobiliário", "Indú
           <div class="orbit-hub-wrap">
             <img class="orbit-hub" src="/images/mark-nuvion.png" alt="" width="72" height="72" />
           </div>
-          {[...sectorNames, "Outro modelo de negócio"].map((n, i) => (
+          {[...sectorNames, "Qualquer modelo de negócio"].map((n, i) => (
             <div class="orbit-arm" style={`--i:${i}`}>
               <div class="orbit-item" style={`--i:${i}`}>
                 <span class:list={["orbit-ico", { "is-wild": i === sectorNames.length }]} set:html={`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${i === sectorNames.length ? sectorIconWild : sectorIcons[i]}</svg>`} />

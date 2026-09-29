@@ -4292,6 +4292,17 @@ body:not(:has(.t3-hero-full)) main.t3 {
   height: 100%;
   object-fit: contain;
   filter: drop-shadow(0 0 18px rgba(204, 78, 20, 0.6));
+  transition: transform 0.35s var(--ease-nv), filter 0.35s ease;
+}
+/* The hub itself reacts too: brighter glow, a little bigger, rings speed up — its own small "alive" moment,
+   independent of what hovering an orbiting icon does. */
+.orbit-hub-wrap:hover .orbit-hub {
+  transform: scale(1.12);
+  filter: drop-shadow(0 0 26px rgba(204, 78, 20, 0.85));
+}
+.orbit-hub-wrap:hover::before,
+.orbit-hub-wrap:hover::after {
+  animation-duration: 1.2s;
 }
 /* Arms: each spins at the SAME rate/duration, only staggered by a negative delay proportional to its index/count —
    that alone spaces them evenly around the circle AND keeps them moving together, no separate angle math needed. */
@@ -4328,8 +4339,9 @@ body:not(:has(.t3-hero-full)) main.t3 {
     transform: translate(-50%, -50%) rotate(-360deg);
   }
 }
-/* Hovering anywhere in the orbit freezes every arm/item where it is — otherwise a tooltip would drift out from
-   under the cursor before it could be read. */
+/* Hovering anywhere in the orbit freezes the ring in place — otherwise a tooltip would drift out from under the
+   cursor before it could be read. The icons themselves keep a small independent float going (below), so the whole
+   thing doesn't read as fully stopped. */
 .orbit:hover .orbit-arm,
 .orbit:hover .orbit-item {
   animation-play-state: paused;
@@ -4345,6 +4357,15 @@ body:not(:has(.t3-hero-full)) main.t3 {
   background: color-mix(in srgb, var(--t3-dark) 55%, rgba(255, 255, 255, 0.06));
   color: var(--color-nv-orange);
   transition: border-color 0.25s ease, background 0.25s ease;
+  /* A different element from .orbit-arm/.orbit-item on purpose, and never paused on hover — a gentle bob that keeps
+     going the whole time, so freezing the ring's position doesn't read as the visual going fully dead. */
+  animation: orbit-ico-float 3s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.3s);
+}
+@keyframes orbit-ico-float {
+  50% {
+    transform: translateY(-4px);
+  }
 }
 .orbit-item:hover .orbit-ico {
   border-color: rgba(204, 78, 20, 0.7);
