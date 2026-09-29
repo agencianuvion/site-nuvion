@@ -3,12 +3,15 @@
  * Fields for "Projetos" — native meta box + a resolved REST node (no fields plugin), same pattern as the starter's
  * fields-example.php (meta box → save_post → register_rest_field), plus its "featured" switch (side box + list column).
  *
+ *   subtitle     one line under the company name in the portfolio. EMPTY = nothing is shown
  *   url          address of the live site (the portfolio shows the host, e.g. "exemplo.com.br", under "Ver site")
  *   description  rich text (numbers, lists, links). EMPTY = nothing is shown for the description
+ *   results      repeater: the project's own numbers (prefix, number, suffix, label), counters under the text. EMPTY = no strip
  *   featured     "Destaque" switch: the portfolio highlights the most recent featured project
  *
  * REST: GET /wp-json/wp/v2/projetos?per_page=100 → each item has `date`, `slug`, `title.rendered`, and
- * `fields: { url, description, featured, segment: {slug, name}, image: {url, width, height, alt, srcset} }`.
+ * `fields: { subtitle, url, description, results: [{count, decimals, prefix, suffix, label}], featured, segment: {slug, name},
+ * image: {url, width, height, alt, srcset} }`.
  *
  * Usage: drop into wp-content/mu-plugins/, alongside cpt-projeto.php. Needs 00-site-helpers.php + auto-deploy.php.
  */
@@ -51,15 +54,29 @@ function site_projeto_featured_box( $post ) {
 
 function site_projeto_fields_box( $post ) {
 	wp_nonce_field( 'site_save_projeto_fields', 'site_projeto_fields_nonce' );
-	$url = get_post_meta( $post->ID, 'site_url', true );
+	$url      = get_post_meta( $post->ID, 'site_url', true );
+	$subtitle = get_post_meta( $post->ID, 'subtitle', true );
+	$results  = site_projeto_results( $post->ID );
 	?>
 	<style>
 		#site_projeto_fields .site-f { margin: 0 0 22px; }
 		#site_projeto_fields .site-f:last-child { margin-bottom: 0; }
 		#site_projeto_fields .site-f > label { display: block; font-weight: 600; margin-bottom: 6px; }
-		#site_projeto_fields .site-f input[type=url] { width: 100%; }
+		#site_projeto_fields .site-f input[type=url],
+		#site_projeto_fields .site-f input.site-wide { width: 100%; }
 		#site_projeto_fields .description { margin: 6px 0 0; color: #646970; }
+		#site_projeto_fields .site-rs-head,
+		#site_projeto_fields .site-rs-row { display: grid; grid-template-columns: 70px 110px 70px minmax(0, 1fr) 32px; gap: 8px; align-items: center; }
+		#site_projeto_fields .site-rs-head { margin-bottom: 4px; font-size: 12px; color: #646970; }
+		#site_projeto_fields .site-rs-row { margin-bottom: 8px; }
+		#site_projeto_fields .site-rs-row input { width: 100%; }
+		#site_projeto_fields .site-rs-del { padding: 0; width: 32px; min-height: 30px; line-height: 1; }
 	</style>
+	<div class="site-f">
+		<label for="site_projeto_subtitle">Subtítulo</label>
+		<input type="text" class="site-wide" id="site_projeto_subtitle" name="site_projeto_subtitle" value="<?php echo esc_attr( $subtitle ); ?>" maxlength="140" placeholder="Ex.: Imobiliária de alto padrão em Florianópolis">
+		<p class="description">Uma linha curta embaixo do nome da empresa, no Portfólio. Vazio, nada aparece.</p>
+	</div>
 	<div class="site-f">
 		<label for="site_projeto_url">Endereço do site</label>
 		<input type="url" id="site_projeto_url" name="site_projeto_url" value="<?php echo esc_attr( $url ); ?>" placeholder="https://www.empresa.com.br">
@@ -70,8 +87,72 @@ function site_projeto_fields_box( $post ) {
 		<?php wp_editor( get_post_meta( $post->ID, 'description', true ), 'site_projeto_description', array( 'textarea_rows' => 12, 'media_buttons' => false ) ); ?>
 		<p class="description">Quem é o cliente, o desafio e o que a Nuvion construiu. Aceita títulos, listas, números em negrito e links. Vazia, nenhum texto aparece no site.</p>
 	</div>
+	<div class="site-f">
+		<label>Resultados do projeto</label>
+		<div class="site-rs-head" aria-hidden="true"><span>Antes</span><span>Número</span><span>Depois</span><span>Legenda</span><span></span></div>
+		<div class="site-rs-list">
+			<?php
+			foreach ( $results as $r ) {
+				site_projeto_result_row( $r );
+			}
+			?>
+		</div>
+		<template id="site-rs-tpl"><?php site_projeto_result_row( array() ); ?></template>
+		<button type="button" class="button" id="site-rs-add">+ Adicionar número</button>
+		<p class="description">Os números aparecem como contadores embaixo do texto, no Portfólio (até 4 por linha). Ex.: <code>+</code> <code>120</code> <code>%</code> "em visitas orgânicas"; <code>3</code> <code>x</code> "mais contatos". O número aceita vírgula (4,8). Linhas sem número ou sem legenda são ignoradas; sem nenhum número, a faixa não aparece.</p>
+	</div>
+	<script>
+		( function () {
+			var list = document.querySelector( '#site_projeto_fields .site-rs-list' );
+			var tpl = document.getElementById( 'site-rs-tpl' );
+			document.getElementById( 'site-rs-add' ).addEventListener( 'click', function () {
+				list.appendChild( tpl.content.cloneNode( true ) );
+				list.lastElementChild.querySelector( 'input[name$="[count][]"]' ).focus();
+			} );
+			list.addEventListener( 'click', function ( e ) {
+				var del = e.target.closest( '.site-rs-del' );
+				if ( del ) { del.closest( '.site-rs-row' ).remove(); }
+			} );
+		} )();
+	</script>
 	<p class="description">A foto do projeto é a imagem destacada (à direita), horizontal, com 1800 px de largura ou mais. O texto alternativo é o "Texto alternativo" da imagem na biblioteca de mídia; se estiver vazio, o site usa "Site da &lt;empresa&gt;".</p>
 	<?php
+}
+
+/** The project's numbers as saved: a list of {prefix, count, suffix, label}; `count` is the number as typed ("4,8"). */
+function site_projeto_results( $post_id ) {
+	$v = get_post_meta( $post_id, 'results', true );
+	return is_array( $v ) ? $v : array();
+}
+
+/** One row of the "Resultados do projeto" repeater (empty array = the blank row of the template). */
+function site_projeto_result_row( $r ) {
+	$v = function ( $k ) use ( $r ) {
+		return esc_attr( $r[ $k ] ?? '' );
+	};
+	?>
+	<div class="site-rs-row">
+		<input type="text" name="site_rs[prefix][]" value="<?php echo $v( 'prefix' ); ?>" maxlength="3" placeholder="+" aria-label="Antes do número">
+		<input type="text" name="site_rs[count][]" value="<?php echo $v( 'count' ); ?>" inputmode="decimal" placeholder="120" aria-label="Número">
+		<input type="text" name="site_rs[suffix][]" value="<?php echo $v( 'suffix' ); ?>" maxlength="4" placeholder="%" aria-label="Depois do número">
+		<input type="text" name="site_rs[label][]" value="<?php echo $v( 'label' ); ?>" maxlength="80" placeholder="em visitas orgânicas" aria-label="Legenda">
+		<button type="button" class="button site-rs-del" aria-label="Remover este número">&times;</button>
+	</div>
+	<?php
+}
+
+/** "1.200,5" / "4,8" / "4.8" / "120" → [float, decimals]; null when it is not a number. A dot is a decimal point only when
+ * there is no comma and 1-2 digits follow it ("4.8"); otherwise it separates thousands ("1.200"). */
+function site_projeto_parse_count( $s ) {
+	$s = str_replace( ' ', '', trim( (string) $s ) );
+	if ( ! ( false === strpos( $s, ',' ) && preg_match( '/^\d+\.\d{1,2}$/', $s ) ) ) {
+		$s = str_replace( array( '.', ',' ), array( '', '.' ), $s );
+	}
+	if ( '' === $s || ! is_numeric( $s ) ) {
+		return null;
+	}
+	$dot = strpos( $s, '.' );
+	return array( (float) $s, false === $dot ? 0 : min( 2, strlen( $s ) - $dot - 1 ) );
 }
 
 add_action(
@@ -83,7 +164,23 @@ add_action(
 		if ( wp_is_post_autosave( $post_id ) || wp_is_post_revision( $post_id ) || ! current_user_can( 'edit_post', $post_id ) ) {
 			return;
 		}
+		update_post_meta( $post_id, 'subtitle', sanitize_text_field( wp_unslash( $_POST['site_projeto_subtitle'] ?? '' ) ) );
 		update_post_meta( $post_id, 'site_url', esc_url_raw( wp_unslash( $_POST['site_projeto_url'] ?? '' ) ) );
+		// the repeater arrives as parallel lists (site_rs[count][i] goes with site_rs[label][i]); keep only complete rows
+		$rs   = wp_unslash( $_POST['site_rs'] ?? array() );
+		$rows = array();
+		foreach ( (array) ( $rs['count'] ?? array() ) as $i => $count ) {
+			$row = array(
+				'prefix' => sanitize_text_field( $rs['prefix'][ $i ] ?? '' ),
+				'count'  => sanitize_text_field( $count ),
+				'suffix' => sanitize_text_field( $rs['suffix'][ $i ] ?? '' ),
+				'label'  => sanitize_text_field( $rs['label'][ $i ] ?? '' ),
+			);
+			if ( null !== site_projeto_parse_count( $row['count'] ) && '' !== $row['label'] ) {
+				$rows[] = $row;
+			}
+		}
+		update_post_meta( $post_id, 'results', $rows );
 		// wp_kses_post: it came out of wp_editor(), so it is HTML — restricted to what post content itself allows.
 		update_post_meta( $post_id, 'description', wp_kses_post( wp_unslash( $_POST['site_projeto_description'] ?? '' ) ) );
 		update_post_meta( $post_id, 'featured', empty( $_POST['site_featured'] ) ? 0 : 1 );
@@ -242,10 +339,25 @@ add_action(
 					if ( $image && '' === $image['alt'] ) {
 						$image['alt'] = 'Site da ' . get_the_title( $id );
 					}
+					$results = array();
+					foreach ( site_projeto_results( $id ) as $r ) {
+						$n = site_projeto_parse_count( $r['count'] ?? '' );
+						if ( $n ) {
+							$results[] = array(
+								'count'    => $n[0],
+								'decimals' => $n[1],
+								'prefix'   => (string) ( $r['prefix'] ?? '' ),
+								'suffix'   => (string) ( $r['suffix'] ?? '' ),
+								'label'    => (string) ( $r['label'] ?? '' ),
+							);
+						}
+					}
 					return array(
+						'subtitle'    => (string) get_post_meta( $id, 'subtitle', true ),
 						'url'         => (string) get_post_meta( $id, 'site_url', true ),
 						// wpautop() turns the editor's plain line breaks into real <p> tags.
 						'description' => wpautop( (string) get_post_meta( $id, 'description', true ) ),
+						'results'     => $results,
 						'featured'    => (bool) get_post_meta( $id, 'featured', true ),
 						'segment'     => $term ? array( 'slug' => $term->slug, 'name' => $term->name ) : null,
 						'image'       => $image,

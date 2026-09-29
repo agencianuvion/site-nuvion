@@ -7,7 +7,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/shared/PageHero.astro";
 import Results from "../components/site/Results.astro";
 import ClientsMarquee from "../components/site/ClientsMarquee.astro";
-import { projects, segments, segmentLabel, siteHost, featuredProject, hasText, projectImg, projectSrcset, type Project } from "../lib/projects";
+import { projects, segments, segmentLabel, siteHost, featuredProject, hasText, projectImg, projectSrcset, type Project, type ProjectResult } from "../lib/projects";
 import { buildBreadcrumbSchema } from "../lib/breadcrumbs";
 import { portfolioSchema } from "../lib/schema";
 
@@ -26,6 +26,8 @@ const count = (slug: string) => projects.filter((p) => p.segment === slug).lengt
 const mosaic = [feat, ...byDate.filter((p) => p !== feat)].filter(Boolean).slice(0, 3);
 const img = (p: Project, w: 640 | 1000 | 1800) => projectImg(p, w);
 const srcset = (p: Project) => projectSrcset(p);
+// the finished value is in the HTML (no-JS / reduced motion); the script counts up to it each time the project is shown
+const numText = (r: ProjectResult) => (r.prefix ?? "") + r.count.toFixed(r.decimals ?? 0).replace(".", ",") + (r.suffix ?? "");
 
 ---
 
@@ -102,6 +104,7 @@ const srcset = (p: Project) => projectSrcset(p);
                     {p === feat && <span class="pf-k"><i></i>Em destaque</span>}
                     <span class="pf-seg">{segmentLabel(p.segment)}</span>
                     <h3>{p.name}</h3>
+                    {p.subtitle && <p class="vt-sub">{p.subtitle}</p>}
                     {
                       p.url && (
                         <div class="vt-actions">
@@ -113,6 +116,18 @@ const srcset = (p: Project) => projectSrcset(p);
                   </div>
                   {hasText(p.descriptionHtml) && <div class="t3-tqwrap vt-text"><div class="pf-rich" set:html={p.descriptionHtml} /></div>}
                 </div>
+                {
+                  !!p.results?.length && (
+                    <ul class="vt-nums" style={`--n:${Math.min(p.results.length, 4)}`} aria-label={`Resultados do projeto ${p.name}`}>
+                      {p.results.map((r) => (
+                        <li class="vt-num">
+                          <b data-count={r.count} data-decimals={r.decimals ?? 0} data-prefix={r.prefix ?? ""} data-suffix={r.suffix ?? ""}>{numText(r)}</b>
+                          <span>{r.label}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )
+                }
               </article>
             ))
           }

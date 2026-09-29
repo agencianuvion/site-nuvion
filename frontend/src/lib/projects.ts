@@ -21,9 +21,21 @@ const localSegments: Segment[] = [
   { slug: "industria", label: "Indústria e comunicação visual" },
   { slug: "servicos", label: "Serviços profissionais" },
 ];
+/** One of the project's own numbers (the counters under its text on the portfolio). Same shape as lib/results.ts. */
+export interface ProjectResult {
+  count: number;
+  decimals?: number;
+  prefix?: string;
+  suffix?: string;
+  label: string;
+}
 export interface Project {
   slug: string;
   name: string;
+  /** One line under the name on the portfolio. Empty or missing = nothing is rendered. */
+  subtitle?: string;
+  /** The "Resultados do projeto" repeater. Empty = no counters strip. */
+  results?: ProjectResult[];
   url?: string;
   segment: string;
   featured?: boolean;
@@ -38,11 +50,18 @@ export interface Project {
 // TEST descriptions, so the layout can be judged with text in place. They are NOT real: replace them in WordPress before publishing.
 const TEST_SHORT = "<p><strong>(Texto de teste.)</strong> Aqui entra a descrição do projeto: quem é o cliente, o desafio que ele tinha e o que a Nuvion construiu para resolver. O texto é escrito no editor do WordPress e aceita <strong>números</strong>, listas e links.</p><p>Resultados de exemplo: <strong>+120%</strong> em visitas orgânicas e <strong>3x</strong> mais contatos em 6 meses (números de teste).</p>";
 const TEST_LONG = TEST_SHORT + "<p>Este é um exemplo de descrição mais longa, para testar a rolagem dentro do painel. O projeto começou por um diagnóstico técnico do site anterior, seguido de uma nova arquitetura de páginas, de textos escritos para responder às perguntas reais dos clientes e de uma estrutura de dados pensada para o Google e para as respostas das IAs.</p><p>Depois do lançamento, o acompanhamento mensal mostrou o que funcionava e o que precisava de ajuste, e cada decisão ficou registrada e explicada ao cliente.</p><ul><li>Site novo, rápido e responsivo</li><li>SEO técnico e dados estruturados</li><li>Conteúdo preparado para GEO</li></ul>";
+// TEST numbers (and subtitle), so the counters strip can be judged in place: 1, 3 and 4 items. NOT real.
+const TEST_RESULTS: ProjectResult[] = [
+  { count: 120, prefix: "+", suffix: "%", label: "em visitas orgânicas (teste)" },
+  { count: 3, suffix: "x", label: "mais contatos pelo site (teste)" },
+  { count: 4.8, decimals: 1, suffix: "%", label: "de CTR nas buscas (teste)" },
+  { count: 38, prefix: "+", label: "palavras-chave na 1ª página (teste)" },
+];
 const localProjects: Project[] = [
-  { slug: "patio-alameda", name: "Pátio Alameda", url: "https://www.exemplo.com.br", segment: "imobiliario", date: "2026-03-12", descriptionHtml: TEST_SHORT, alt: "Site do Pátio Alameda exibido em notebook e celular" },
-  { slug: "wegg", name: "Wegg", url: "https://www.exemplo.com.br", segment: "construcao", featured: true, date: "2026-08-10", descriptionHtml: TEST_LONG, alt: "Site da construtora Wegg exibido em monitor e celular" },
+  { slug: "patio-alameda", name: "Pátio Alameda", url: "https://www.exemplo.com.br", segment: "imobiliario", date: "2026-03-12", descriptionHtml: TEST_SHORT, results: TEST_RESULTS.slice(0, 1), alt: "Site do Pátio Alameda exibido em notebook e celular" },
+  { slug: "wegg", name: "Wegg", subtitle: "Construtora e incorporadora (subtítulo de teste)", url: "https://www.exemplo.com.br", segment: "construcao", featured: true, date: "2026-08-10", descriptionHtml: TEST_LONG, results: TEST_RESULTS, alt: "Site da construtora Wegg exibido em monitor e celular" },
   { slug: "spoudaios", name: "Spoudaios", url: "https://www.exemplo.com.br", segment: "servicos", date: "2026-04-20", descriptionHtml: TEST_SHORT, alt: "Site do Spoudaios exibido em notebook e celular" },
-  { slug: "androclinic", name: "AndroClinic", url: "https://www.exemplo.com.br", segment: "saude", featured: true, date: "2026-06-02", descriptionHtml: TEST_SHORT, alt: "Site da AndroClinic exibido em monitor e celular" },
+  { slug: "androclinic", name: "AndroClinic", subtitle: "Clínica de saúde masculina (subtítulo de teste)", url: "https://www.exemplo.com.br", segment: "saude", featured: true, date: "2026-06-02", descriptionHtml: TEST_SHORT, results: TEST_RESULTS.slice(0, 3), alt: "Site da AndroClinic exibido em monitor e celular" },
   { slug: "placas-em-12-horas", name: "Placas em 12 Horas", url: "https://www.exemplo.com.br", segment: "industria", date: "2026-02-05", descriptionHtml: TEST_SHORT, alt: "Site da Placas em 12 Horas exibido em monitor e celular" },
   { slug: "onliving", name: "OnLiving", url: "https://www.exemplo.com.br", segment: "imobiliario", date: "2026-07-01", descriptionHtml: TEST_SHORT, alt: "Site da OnLiving exibido em monitor e celular" },
 ];
@@ -53,8 +72,10 @@ interface WpProjeto {
   date: string;
   title: { rendered: string };
   fields?: {
+    subtitle?: string;
     url: string;
     description: string;
+    results?: { count: number; decimals: number; prefix: string; suffix: string; label: string }[];
     featured: boolean;
     segment: { slug: string; name: string } | null;
     image: (WpImage & { srcset: string }) | null;
@@ -75,6 +96,10 @@ async function loadProjects(): Promise<{ projects: Project[]; segments: Segment[
       return {
         slug: p.slug,
         name,
+        subtitle: f.subtitle?.trim() ? decodeEntities(f.subtitle.trim()) : undefined,
+        results: (f.results ?? [])
+          .filter((r) => r.label?.trim())
+          .map((r) => ({ count: r.count, decimals: r.decimals || undefined, prefix: r.prefix || undefined, suffix: r.suffix || undefined, label: decodeEntities(r.label) })),
         url: f.url || undefined,
         segment: f.segment?.slug ?? "",
         featured: f.featured,
