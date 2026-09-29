@@ -23,3 +23,8 @@
 <IfModule mod_deflate.c>
   AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json image/svg+xml
 </IfModule>
+
+# Without this, any real broken URL falls through to the hosting's own generic error page instead of the site's own
+# 404 (frontend/src/pages/404.astro) — the file itself deploys fine and works when visited directly at /404.html,
+# Apache just never reaches for it on its own without being told to.
+ErrorDocument 404 /404.html
