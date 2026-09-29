@@ -1215,7 +1215,11 @@ function countUp(scope: ParentNode) {
     const dec = Number(el.dataset.decimals ?? 0);
     const kToMEnd = to >= 1000 ? (to / 1000).toFixed(to % 1000 ? 1 : 0).replace(".", ",") + "M+" : Math.round(to) + "k+";
     const fmt = (v: number) =>
-      el.dataset.format === "k-to-m" ? (Math.round(v) >= to ? kToMEnd : Math.round(v) + "k") : pre + v.toFixed(dec).replace(".", ",") + suf;
+      el.dataset.format === "k-to-m"
+        ? Math.round(v) >= to
+          ? kToMEnd
+          : Math.round(v) + "k"
+        : pre + v.toLocaleString("pt-BR", { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suf;
     el.textContent = fmt(0);
     // counting the same number again (the portfolio recounts a project each time it is shown) stops the previous run first
     counting.get(el)?.kill();

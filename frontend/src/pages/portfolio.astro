@@ -27,7 +27,8 @@ const mosaic = [feat, ...byDate.filter((p) => p !== feat)].filter(Boolean).slice
 const img = (p: Project, w: 640 | 1000 | 1800) => projectImg(p, w);
 const srcset = (p: Project) => projectSrcset(p);
 // the finished value is in the HTML (no-JS / reduced motion); the script counts up to it each time the project is shown
-const numText = (r: ProjectResult) => (r.prefix ?? "") + r.count.toFixed(r.decimals ?? 0).replace(".", ",") + (r.suffix ?? "");
+const numText = (r: ProjectResult) =>
+  (r.prefix ?? "") + r.count.toLocaleString("pt-BR", { minimumFractionDigits: r.decimals ?? 0, maximumFractionDigits: r.decimals ?? 0 }) + (r.suffix ?? "");
 
 ---
 
