@@ -356,7 +356,7 @@ initBlogList();
 /* ---------- Portfolio showcase ----------
    Tabs on the left, the selected project on the right (crossfade). Pointer hover picks a project (with a short delay), click and
    the arrow keys too. It advances by itself (7 s, a bar fills in the active tab) until the visitor picks one; it pauses while the
-   pointer or focus is inside and while the section is off screen, and never runs with reduced motion. The segment chips hide
+   section is off screen or the tab hidden, and never runs with reduced motion. The segment chips hide
    the projects of other segments. The big picture follows the pointer a little (depth). */
 (() => {
   const root = document.querySelector<HTMLElement>("[data-vt]");
@@ -455,15 +455,11 @@ initBlogList();
   root.addEventListener("animationend", (e) => {
     if ((e as AnimationEvent).animationName === "vt-bar" && auto) step(1);
   });
-  // pause while the pointer / focus is inside or the section is off screen
+  // pause while the section is off screen or the tab is hidden. NOT while the pointer is inside: the section fills the
+  // screen, so the pointer is nearly always over it and the timer would never run (a click already stops it for good)
   const setPaused = (p: boolean) => root.classList.toggle("is-paused", p);
-  let inside = false;
   let onScreen = false;
-  const sync = () => setPaused(inside || !onScreen || document.hidden);
-  root.addEventListener("pointerenter", () => ((inside = true), sync()));
-  root.addEventListener("pointerleave", () => ((inside = false), sync()));
-  root.addEventListener("focusin", () => ((inside = true), sync()));
-  root.addEventListener("focusout", () => ((inside = false), sync()));
+  const sync = () => setPaused(!onScreen || document.hidden);
   document.addEventListener("visibilitychange", sync);
   new IntersectionObserver(
     ([en]) => {

@@ -97,9 +97,6 @@ const numText = (r: ProjectResult) =>
           {
             ordered.map((p, i) => (
               <article class:list={["vt-panel", { "is-active": i === 0 }]} id={`vt-panel-${p.slug}`} role="tabpanel" aria-labelledby={`vt-tab-${p.slug}`}>
-                <figure class="t3-pmedia vt-media" data-full={img(p, 1800)} data-name={p.name}>
-                  <img src={img(p, 1000)} srcset={srcset(p)} sizes="(max-width: 1000px) 92vw, 780px" width="1800" height="1012" alt={p.alt} loading={i === 0 ? "eager" : "lazy"} decoding="async" draggable="false" />
-                </figure>
                 <div class="vt-info">
                   <div class="vt-id">
                     {p === feat && <span class="pf-k"><i></i>Em destaque</span>}
@@ -114,6 +111,9 @@ const numText = (r: ProjectResult) =>
                         </div>
                       )
                     }
+                    <figure class="t3-pmedia vt-media" data-full={img(p, 1800)} data-name={p.name}>
+                      <img src={img(p, 640)} srcset={srcset(p)} sizes="(max-width: 1000px) 92vw, 380px" width="1800" height="1012" alt={p.alt} loading={i === 0 ? "eager" : "lazy"} decoding="async" draggable="false" />
+                    </figure>
                   </div>
                   {hasText(p.descriptionHtml) && <div class="t3-tqwrap vt-text"><div class="pf-rich" set:html={p.descriptionHtml} /></div>}
                 </div>

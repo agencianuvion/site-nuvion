@@ -5723,7 +5723,7 @@ body:not(:has(.t3-hero-full)) main.t3 {
 .vt {
   display: grid;
   grid-template-columns: minmax(250px, 0.62fr) minmax(0, 1.9fr);
-  gap: clamp(16px, 2vw, 28px);
+  gap: clamp(20px, 3vw, 48px);
   align-items: stretch;
 }
 .vt-list-wrap {
@@ -5853,10 +5853,12 @@ html:not(.js) .pf-filter {
 .vt-tab.is-active .vt-bar i {
   animation: vt-bar 7s linear forwards;
 }
-.vt.no-auto .vt-bar {
+/* the script sets these on the section ([data-vt]), not on .vt: a pick by the visitor stops the timer (the bar goes),
+   pointer/focus inside or the section off screen pauses it */
+[data-vt].no-auto .vt-bar {
   display: none;
 }
-.vt.is-paused .vt-tab.is-active .vt-bar i {
+[data-vt].is-paused .vt-tab.is-active .vt-bar i {
   animation-play-state: paused;
 }
 @keyframes vt-bar {
@@ -5892,15 +5894,19 @@ html.js .vt-panel.is-active {
 .vt-panel {
   display: flex;
   flex-direction: column;
-  gap: clamp(14px, 1.6vw, 22px);
+  gap: clamp(26px, 3vw, 44px);
   min-width: 0;
 }
 .vt-panel[hidden] {
   display: none;
 }
+/* the case comes first (name, text, numbers): the picture is a supporting thumbnail at the foot of the left column,
+   opening big in the lightbox (.t3-pmedia[data-full]) */
 .vt-media {
-  aspect-ratio: 21 / 10;
-  border-radius: 24px;
+  align-self: stretch;
+  margin-top: 14px;
+  aspect-ratio: 16 / 9;
+  border-radius: 16px;
 }
 .vt-media img {
   display: block;
@@ -5910,18 +5916,20 @@ html.js .vt-panel.is-active {
   transform: scale(1.06) translate(calc(var(--mx) * -10px), calc(var(--my) * -7px));
   transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+/* the left column (name → picture) sets the row's height; the text box fills exactly that (height 0 = it adds nothing
+   to the row, min-height 100% = it stretches to it) and scrolls inside, so both columns start and end on the same lines */
 .vt-info {
   display: grid;
   grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
-  gap: clamp(16px, 2.4vw, 36px);
-  align-items: start;
+  gap: clamp(24px, 4vw, 64px);
+  align-items: stretch;
   padding: 4px 6px;
 }
 .vt-id {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
+  gap: 14px;
   min-width: 0;
 }
 .vt-id h3 {
@@ -5940,10 +5948,12 @@ html.js .vt-panel.is-active {
 }
 .vt-actions {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 14px;
-  margin-top: 4px;
+  flex-direction: row-reverse;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px 16px;
+  margin-top: 10px;
 }
 .vt-actions .t3-btn {
   display: inline-flex;
@@ -5954,7 +5964,8 @@ html.js .vt-panel.is-active {
   color: color-mix(in srgb, currentColor 55%, transparent);
 }
 .vt-text {
-  max-height: 340px;
+  height: 0;
+  min-height: 100%;
   scrollbar-color: rgba(0, 0, 0, 0.28) transparent;
 }
 .vt-text::-webkit-scrollbar-thumb {
@@ -5966,27 +5977,25 @@ html.js .vt-panel.is-active {
 .vt-text .pf-rich {
   font-size: 16px;
 }
-/* the project's own numbers (WordPress repeater): one row of up to 4, a hairline between them; they count up each time
-   the project is shown (site.ts, portfolio showcase) */
+/* the project's own numbers (WordPress repeater): a strip under the case, one row of up to 4 with a hairline between
+   them (2 per row on phones); they count up each time the project is shown (site.ts) */
 .vt-nums {
   display: grid;
   grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr));
+  gap: 24px 0;
   margin: 0;
-  padding: clamp(18px, 2vw, 26px) 6px 0;
+  padding: clamp(26px, 3vw, 40px) 6px 0;
   list-style: none;
   border-top: 1px solid var(--color-nv-hairline);
 }
 .vt-num {
   min-width: 0;
-  padding: 4px clamp(14px, 1.8vw, 26px);
+  padding: 6px clamp(18px, 2.4vw, 34px);
   border-left: 1px solid var(--color-nv-hairline);
 }
 .vt-num:nth-child(4n + 1) {
   padding-left: 0;
   border-left: 0;
-}
-.vt-num:nth-child(n + 5) {
-  margin-top: 18px;
 }
 .vt-num b {
   display: block;
@@ -6043,13 +6052,17 @@ html.js .vt-panel.is-active {
     grid-template-columns: minmax(0, 1fr);
   }
   .vt-media {
-    aspect-ratio: 16 / 10;
+    margin-top: 8px;
+  }
+  .vt-text {
+    height: auto;
+    min-height: 0;
+    max-height: 340px;
   }
 }
 @media (max-width: 640px) {
   .vt-nums {
     grid-template-columns: repeat(min(var(--n, 4), 2), minmax(0, 1fr));
-    row-gap: 18px;
   }
   .vt-num,
   .vt-num:nth-child(4n + 1) {
@@ -6059,9 +6072,6 @@ html.js .vt-panel.is-active {
   .vt-num:nth-child(2n + 1) {
     padding-left: 0;
     border-left: 0;
-  }
-  .vt-num:nth-child(n + 5) {
-    margin-top: 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {
