@@ -4340,6 +4340,149 @@ body:not(:has(.t3-hero-full)) main.t3 {
   background: transparent;
   color: rgba(255, 255, 255, 0.65);
 }
+
+/* =====================================================================
+   TEMPORARY — Setores hero, side-by-side A/B preview (setores.astro).
+   Delete this whole block, the losing variant's markup, and the toggle script once a direction is picked; keep only
+   the chosen variant's rules (folded back into the .ph-chip-in rules above, for variant A).
+   ===================================================================== */
+.hp-toggle {
+  position: absolute;
+  top: -38px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+.hp-btn {
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.35);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.hp-btn.is-active {
+  border-color: var(--color-nv-orange);
+  color: #fff;
+  background: rgba(204, 78, 20, 0.35);
+}
+.hp-variant {
+  position: relative;
+}
+
+/* ---- Variant A: icon + label chips (instead of flat text pills) ---- */
+.ph-chips-ico {
+  gap: 14px 8px;
+}
+.ph-chips-ico .ph-chip-in {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 92px;
+  padding: 14px 6px 12px;
+  text-align: center;
+  animation: ph-chip-float 7s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 0.4s);
+}
+.ph-chip-ico {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--color-nv-orange);
+}
+.ph-chip-ico svg {
+  width: 19px;
+  height: 19px;
+}
+.ph-chip-wild .ph-chip-ico {
+  border-style: dashed;
+  color: rgba(255, 255, 255, 0.5);
+}
+.ph-chip-label {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.25;
+}
+.ph-chip-wild .ph-chip-label {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* ---- Variant B: icons orbiting a central Nuvion mark ---- */
+.orbit {
+  position: relative;
+  width: min(78%, 300px);
+  aspect-ratio: 1;
+  margin: 20px auto;
+}
+.orbit-hub {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  z-index: 2;
+  filter: drop-shadow(0 0 14px rgba(204, 78, 20, 0.45));
+}
+.orbit-arm {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  animation: orbit-spin 42s linear infinite;
+  animation-delay: calc(var(--i) / var(--n) * -42s);
+}
+@keyframes orbit-spin {
+  from {
+    transform: rotate(0deg) translateX(clamp(78px, 24vw, 118px));
+  }
+  to {
+    transform: rotate(360deg) translateX(clamp(78px, 24vw, 118px));
+  }
+}
+.orbit-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  animation: orbit-spin-rev 42s linear infinite;
+  animation-delay: calc(var(--i) / var(--n) * -42s);
+}
+@keyframes orbit-spin-rev {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+  to {
+    transform: translate(-50%, -50%) rotate(-360deg);
+  }
+}
+.orbit-ico {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: color-mix(in srgb, var(--t3-dark) 55%, rgba(255, 255, 255, 0.06));
+  color: var(--color-nv-orange);
+}
+.orbit-ico svg {
+  width: 20px;
+  height: 20px;
+}
+.orbit-ico.is-wild {
+  border-style: dashed;
+  color: rgba(255, 255, 255, 0.5);
+}
 /* On a phone, wrapping this many chips (Setores) stacks into several tall rows and pushes the rest of the hero down.
    One scrollable row instead — same technique as the portfolio's segment filter (.pf-filter). The network texture is
    desktop/tablet only (below, in the max-width: 900px block) — a scrolling row has no stable footprint for it to sit
