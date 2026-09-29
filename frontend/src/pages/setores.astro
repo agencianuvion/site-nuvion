@@ -93,71 +93,22 @@ const sectorNames = ["Saúde e estética", "Construção e imobiliário", "Indú
       waMessage="Olá! Quero conversar sobre um site para o meu negócio."
     >
       Sites e buscas para <em>o seu setor.</em>
-      <div slot="visual" class="ph-net-wrap" data-hero-preview>
-        {/* TEMPORARY — side-by-side preview while the Juan picks a direction; remove this toggle and whichever
-           variant loses once he decides (keep only the chosen variant's markup + CSS + JS). */}
-        <div class="hp-toggle" role="group" aria-label="Prévia: escolha o visual">
-          <button type="button" class="hp-btn is-active" data-hp="a">A · Ícones</button>
-          <button type="button" class="hp-btn" data-hp="b">B · Órbita</button>
-        </div>
-
-        <div class="hp-variant" data-hp-variant="a">
-          <svg class="ph-net" viewBox="0 0 400 300" preserveAspectRatio="none" aria-hidden="true">
-            <path class="ph-net-line" d="M20 46 L150 92 L250 44 L380 104" />
-            <path class="ph-net-line" d="M34 224 L146 182 L228 240 L362 196" />
-            <path class="ph-net-line" d="M18 142 L118 138 L198 168 L322 150" />
-            <circle class="ph-net-dot" cx="150" cy="92" r="3" />
-            <circle class="ph-net-dot" cx="250" cy="44" r="3" />
-            <circle class="ph-net-dot" cx="146" cy="182" r="3" />
-            <circle class="ph-net-dot" cx="322" cy="150" r="3" />
-          </svg>
-          <ul class="ph-chips ph-chips-ico">
-            {sectorNames.map((n, i) => (
-              <li class="ph-chip-push">
-                <div class="ph-chip-in" style={`--i:${i}`}>
-                  <span class="ph-chip-ico" set:html={`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${sectorIcons[i]}</svg>`} />
-                  <span class="ph-chip-label">{n}</span>
-                </div>
-              </li>
-            ))}
-            <li class="ph-chip-push">
-              <div class="ph-chip-in ph-chip-wild" style={`--i:${sectorNames.length}`}>
-                <span class="ph-chip-ico" set:html={`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${sectorIconWild}</svg>`} />
-                <span class="ph-chip-label">Outro modelo</span>
-              </div>
-            </li>
-          </ul>
-        </div>
-
-        <div class="hp-variant" data-hp-variant="b" hidden>
-          <div class="orbit" style={`--n:${sectorNames.length + 1}`}>
-            <img class="orbit-hub" src="/images/mark-nuvion.png" alt="" width="56" height="56" />
-            {[...sectorNames, "Outro modelo"].map((n, i) => (
-              <div class="orbit-arm" style={`--i:${i}`}>
-                <div class="orbit-item" style={`--i:${i}`}>
-                  <span class:list={["orbit-ico", { "is-wild": i === sectorNames.length }]} set:html={`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${i === sectorNames.length ? sectorIconWild : sectorIcons[i]}</svg>`} />
-                </div>
-              </div>
-            ))}
+      <div slot="visual" class="ph-orbit-wrap">
+        <div class="orbit" style={`--n:${sectorNames.length + 1}`}>
+          <div class="orbit-hub-wrap">
+            <img class="orbit-hub" src="/images/mark-nuvion.png" alt="" width="72" height="72" />
           </div>
+          {[...sectorNames, "Outro modelo de negócio"].map((n, i) => (
+            <div class="orbit-arm" style={`--i:${i}`}>
+              <div class="orbit-item" style={`--i:${i}`}>
+                <span class:list={["orbit-ico", { "is-wild": i === sectorNames.length }]} set:html={`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">${i === sectorNames.length ? sectorIconWild : sectorIcons[i]}</svg>`} />
+                <span class="orbit-tip">{n}</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </PageHero>
-
-    <script>
-      // TEMPORARY preview toggle — delete along with the losing variant once a direction is chosen.
-      document.querySelectorAll<HTMLElement>("[data-hero-preview]").forEach((wrap) => {
-        const btns = [...wrap.querySelectorAll<HTMLButtonElement>(".hp-btn")];
-        btns.forEach((btn) => {
-          btn.addEventListener("click", () => {
-            btns.forEach((b) => b.classList.toggle("is-active", b === btn));
-            wrap.querySelectorAll<HTMLElement>("[data-hp-variant]").forEach((v) => {
-              v.hidden = v.dataset.hpVariant !== btn.dataset.hp;
-            });
-          });
-        });
-      });
-    </script>
 
     <Bento
       id="setores-muda"

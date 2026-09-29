@@ -369,6 +369,8 @@ initBlogList();
   if (!tabs.length || panels.some((p) => !p)) return;
   let auto = !reduced;
   let cur = 0;
+  // the project's numbers count up each time it is shown, once the section has been seen (the first one counts on arrival)
+  let seen = false;
   const visible = () => tabs.map((_, i) => i).filter((i) => !tabs[i].hidden);
   // the list scrolls when there are many projects: keep the active tab in view, and tell (fades) that there is more
   const listEl = tabs[0].parentElement as HTMLElement;
@@ -400,6 +402,7 @@ initBlogList();
       t.tabIndex = on ? 0 : -1;
       panels[k].classList.toggle("is-active", on);
     });
+    if (seen) countUp(panels[i]);
     if (user && auto) {
       auto = false;
       root.classList.add("no-auto");
@@ -462,7 +465,17 @@ initBlogList();
   root.addEventListener("focusin", () => ((inside = true), sync()));
   root.addEventListener("focusout", () => ((inside = false), sync()));
   document.addEventListener("visibilitychange", sync);
-  new IntersectionObserver(([en]) => ((onScreen = en.isIntersecting), sync()), { threshold: 0.25 }).observe(root);
+  new IntersectionObserver(
+    ([en]) => {
+      onScreen = en.isIntersecting;
+      sync();
+      if (onScreen && !seen) {
+        seen = true;
+        countUp(panels[cur]);
+      }
+    },
+    { threshold: 0.25 },
+  ).observe(root);
   sync();
 
   // depth: the picture drifts a little against the pointer
@@ -1060,32 +1073,6 @@ if (iconRow && canHover && !reduced) {
   );
 }
 
-/* Setores hero: the sector pills push away from the cursor and spring back — same magnetic pattern as the authority
-   icons above, just with a wider radius/reach to suit bigger pill shapes instead of small circles. */
-const sectorChips = document.querySelector<HTMLElement>(".ph-chips");
-if (sectorChips && canHover && !reduced) {
-  const pushes = [...sectorChips.querySelectorAll<HTMLElement>(".ph-chip-push")];
-  const RADIUS = 130;
-  const MAX = 26;
-  sectorChips.addEventListener("mousemove", (e) => {
-    for (const el of pushes) {
-      const r = el.getBoundingClientRect();
-      const dx = r.left + r.width / 2 - e.clientX;
-      const dy = r.top + r.height / 2 - e.clientY;
-      const d = Math.hypot(dx, dy);
-      if (d < RADIUS && d > 0.01) {
-        const push = ((RADIUS - d) / RADIUS) * MAX;
-        el.style.transform = `translate(${(dx / d) * push}px, ${(dy / d) * push}px)`;
-      } else {
-        el.style.transform = "";
-      }
-    }
-  });
-  sectorChips.addEventListener("mouseleave", () =>
-    pushes.forEach((el) => (el.style.transform = "")),
-  );
-}
-
 /* ---------- Smooth scrolling ----------
    Mouse wheel / trackpad on desktop: a light inertia (Lenis) driven by the same GSAP ticker as the scroll animations,
    so ScrollTrigger stays in step. Touch screens keep the native scroll (it already has inertia and feels best), and
@@ -1230,7 +1217,9 @@ function countUp(scope: ParentNode) {
     const fmt = (v: number) =>
       el.dataset.format === "k-to-m" ? (Math.round(v) >= to ? kToMEnd : Math.round(v) + "k") : pre + v.toFixed(dec).replace(".", ",") + suf;
     el.textContent = fmt(0);
-    gsap.to(state, {
+    // counting the same number again (the portfolio recounts a project each time it is shown) stops the previous run first
+    counting.get(el)?.kill();
+    counting.set(el, gsap.to(state, {
       v: to,
       duration: 1.9,
       delay: 0.35,
@@ -1238,9 +1227,10 @@ function countUp(scope: ParentNode) {
       onUpdate: () => {
         el.textContent = fmt(state.v);
       },
-    });
+    }));
   });
 }
+const counting = new WeakMap<HTMLElement, gsap.core.Tween>();
 
 function init() {
   /* Hero: headline words rise out of a mask, side elements fade in after. */
