@@ -4267,9 +4267,33 @@ body:not(:has(.t3-hero-full)) main.t3 {
   border-color: rgba(204, 78, 20, 0.55);
   color: #ffb590;
 }
+/* On a phone, wrapping this many chips (Setores) stacks into several tall rows and pushes the rest of the hero down.
+   One scrollable row instead — same technique as the portfolio's segment filter (.pf-filter). */
+@media (max-width: 640px) {
+  .ph-chips {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    max-width: 100%;
+    min-width: 0;
+    scrollbar-width: none;
+    -webkit-mask-image: linear-gradient(90deg, #000 85%, transparent);
+    mask-image: linear-gradient(90deg, #000 85%, transparent);
+  }
+  .ph-chips::-webkit-scrollbar {
+    display: none;
+  }
+  .ph-chips li {
+    flex: none;
+    white-space: nowrap;
+  }
+}
 @media (max-width: 900px) {
   .ph-in {
-    grid-template-columns: 1fr;
+    /* minmax(0, 1fr), not plain 1fr: a plain 1fr track's automatic minimum is its content's max-content size, which
+       for a nowrap chip row (Setores) is the full unwrapped width — that was forcing the whole hero wider than the
+       viewport instead of letting .ph-chips's own horizontal scroll take over. */
+    grid-template-columns: minmax(0, 1fr);
   }
   .ph-vis {
     max-width: 480px;
