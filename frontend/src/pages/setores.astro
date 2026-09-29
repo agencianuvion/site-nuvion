@@ -103,8 +103,14 @@ const sectorNames = ["Saúde e estética", "Construção e imobiliário", "Indú
           <circle class="ph-net-dot" cx="322" cy="150" r="3" />
         </svg>
         <ul class="ph-chips">
-          {sectorNames.map((n, i) => <li style={`--i:${i}`}>{n}</li>)}
-          <li class="ph-chip-wild" style={`--i:${sectorNames.length}`}>+ qualquer outro modelo de negócio</li>
+          {sectorNames.map((n, i) => (
+            <li class="ph-chip-push">
+              <span class="ph-chip-in" style={`--i:${i}`}>{n}</span>
+            </li>
+          ))}
+          <li class="ph-chip-push">
+            <span class="ph-chip-in ph-chip-wild" style={`--i:${sectorNames.length}`}>+ qualquer outro modelo de negócio</span>
+          </li>
         </ul>
       </div>
     </PageHero>

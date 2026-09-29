@@ -1060,6 +1060,32 @@ if (iconRow && canHover && !reduced) {
   );
 }
 
+/* Setores hero: the sector pills push away from the cursor and spring back — same magnetic pattern as the authority
+   icons above, just with a wider radius/reach to suit bigger pill shapes instead of small circles. */
+const sectorChips = document.querySelector<HTMLElement>(".ph-chips");
+if (sectorChips && canHover && !reduced) {
+  const pushes = [...sectorChips.querySelectorAll<HTMLElement>(".ph-chip-push")];
+  const RADIUS = 130;
+  const MAX = 26;
+  sectorChips.addEventListener("mousemove", (e) => {
+    for (const el of pushes) {
+      const r = el.getBoundingClientRect();
+      const dx = r.left + r.width / 2 - e.clientX;
+      const dy = r.top + r.height / 2 - e.clientY;
+      const d = Math.hypot(dx, dy);
+      if (d < RADIUS && d > 0.01) {
+        const push = ((RADIUS - d) / RADIUS) * MAX;
+        el.style.transform = `translate(${(dx / d) * push}px, ${(dy / d) * push}px)`;
+      } else {
+        el.style.transform = "";
+      }
+    }
+  });
+  sectorChips.addEventListener("mouseleave", () =>
+    pushes.forEach((el) => (el.style.transform = "")),
+  );
+}
+
 /* ---------- Smooth scrolling ----------
    Mouse wheel / trackpad on desktop: a light inertia (Lenis) driven by the same GSAP ticker as the scroll animations,
    so ScrollTrigger stays in step. Touch screens keep the native scroll (it already has inertia and feels best), and

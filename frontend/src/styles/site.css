@@ -4305,8 +4305,18 @@ body:not(:has(.t3-hero-full)) main.t3 {
   margin: 0;
   padding: 0;
 }
+/* Two levels, same split as the "authority icons" magnetic row (.t3-icon-row/.t3-ico-push/.t3-ico-in): the JS in
+   site.ts sets transform directly on .ph-chip-push (the pill pushes away from the cursor and springs back via this
+   transition) — putting the idle float animation on a DIFFERENT element (.ph-chip-in) avoids the two transforms
+   fighting each other, since a CSS animation always wins over an inline style on the same element. */
 .ph-chips li {
   list-style: none;
+}
+.ph-chip-push {
+  transition: transform 0.35s var(--ease-nv);
+}
+.ph-chip-in {
+  display: block;
   padding: 10px 16px;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.16);
@@ -4324,7 +4334,7 @@ body:not(:has(.t3-hero-full)) main.t3 {
 }
 /* The catch-all pill is not a real sector, so it reads differently on purpose — dashed, no fill — instead of the old
    "every 3rd chip turns orange" rule, which had no meaning behind it. */
-.ph-chips li.ph-chip-wild {
+.ph-chip-in.ph-chip-wild {
   border-style: dashed;
   border-color: rgba(255, 255, 255, 0.3);
   background: transparent;
@@ -4348,8 +4358,10 @@ body:not(:has(.t3-hero-full)) main.t3 {
   .ph-chips::-webkit-scrollbar {
     display: none;
   }
-  .ph-chips li {
+  .ph-chip-push {
     flex: none;
+  }
+  .ph-chip-in {
     white-space: nowrap;
     animation: none;
   }
