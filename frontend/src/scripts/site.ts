@@ -385,8 +385,34 @@ initBlogList();
   if (!tabs.length || panels.some((p) => !p)) return;
   let auto = !reduced;
   let cur = 0;
-  // the project's numbers count up each time it is shown, once the section has been seen (the first one counts on arrival)
-  let seen = false;
+  // the project's numbers count up only when their strip is actually on screen (on phones it sits far below the picture
+  // and the text): a project shown while its strip is out of view is left "pending" and counts when the strip scrolls in
+  const numsOf = (i: number) => panels[i].querySelector<HTMLElement>(".vt-nums");
+  const inView = new Set<Element>();
+  const pending = new Set<Element>();
+  const countNums = (i: number) => {
+    const n = numsOf(i);
+    pending.clear(); // only the shown project's numbers wait for their strip
+    if (!n) return;
+    if (inView.has(n)) {
+      pending.delete(n);
+      countUp(n);
+    } else pending.add(n);
+  };
+  const numsIO = new IntersectionObserver(
+    (entries) =>
+      entries.forEach((e) => {
+        if (!e.isIntersecting) return void inView.delete(e.target);
+        inView.add(e.target);
+        if (pending.delete(e.target)) countUp(e.target);
+      }),
+    { rootMargin: "0px 0px -12% 0px" },
+  );
+  panels.forEach((_, i) => {
+    const n = numsOf(i);
+    if (n) numsIO.observe(n);
+  });
+  countNums(cur);
   // featured videos: only the shown project's plays, and only while the section is on screen (never with reduced motion:
   // the poster stays)
   const videos = panels.map((p) => p.querySelector<HTMLVideoElement>("video[data-vt-video]"));
@@ -427,7 +453,7 @@ initBlogList();
       t.tabIndex = on ? 0 : -1;
       panels[k].classList.toggle("is-active", on);
     });
-    if (seen) countUp(panels[i]);
+    countNums(i);
     syncVideos();
     if (user && auto) {
       auto = false;
@@ -494,10 +520,6 @@ initBlogList();
     ([en]) => {
       onScreen = en.isIntersecting;
       sync();
-      if (onScreen && !seen) {
-        seen = true;
-        countUp(panels[cur]);
-      }
     },
     { threshold: 0.25 },
   ).observe(root);
