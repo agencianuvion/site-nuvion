@@ -22,6 +22,8 @@ interface Props {
   name?: string;
   role?: string;
   photo?: string;
+  /** A wider photo column (for a landscape-ish picture with room around the person, e.g. the GEO page). */
+  widePhoto?: boolean;
 }
 const {
   title,
@@ -38,6 +40,7 @@ const {
   name = FOUNDER.name,
   role = FOUNDER.role,
   photo = FOUNDER.photo,
+  widePhoto = false,
 } = Astro.props;
 // Curly quotes wrap the WHOLE quote (opening on the first paragraph, closing on the last), not each paragraph.
 const paragraphs = Array.isArray(text) ? text : [text];
@@ -46,7 +49,7 @@ const quoted = quote
   : paragraphs;
 ---
 
-<aside class="ac" data-reveal aria-label={kicker}>
+<aside class:list={["ac", { "ac-wide": widePhoto }]} data-reveal aria-label={kicker}>
   <img class="ac-photo" src={photo} alt={name} width="240" height="240" loading="lazy" decoding="async" />
   <div class="ac-body">
     <span class="ac-k">{kicker}</span>

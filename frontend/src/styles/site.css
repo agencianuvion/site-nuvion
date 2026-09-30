@@ -5001,6 +5001,10 @@ body:not(:has(.t3-hero-full)) main.t3 {
   object-position: 50% 12%;
   border: 1px solid rgba(255, 255, 255, 0.14);
 }
+.ac-wide .ac-photo {
+  width: clamp(200px, 27vw, 400px);
+  object-position: 50% 20%;
+}
 .ac-k {
   font-family: var(--t3-mono, "JetBrains Mono", ui-monospace, monospace);
   font-size: 11px;
@@ -5015,11 +5019,11 @@ body:not(:has(.t3-hero-full)) main.t3 {
   letter-spacing: -0.03em;
   line-height: 1.12;
 }
+/* the argument text uses the card's full width (a 68ch cap left an empty band on the right, Juan 30/09) */
 .ac p {
   margin: 0;
-  max-width: 68ch;
-  font-size: 15px;
-  line-height: 1.65;
+  font-size: clamp(15px, 1.1vw, 16.5px);
+  line-height: 1.7;
   color: rgba(255, 255, 255, 0.68);
 }
 .ac-chips {
@@ -5068,7 +5072,8 @@ body:not(:has(.t3-hero-full)) main.t3 {
   .ac {
     grid-template-columns: 1fr;
   }
-  .ac-photo {
+  .ac-photo,
+  .ac-wide .ac-photo {
     width: 100%;
     height: 220px;
     min-height: 0;
