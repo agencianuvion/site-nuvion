@@ -23,8 +23,8 @@ import { waLink } from "../lib/contact";
           </span>
         </div>
         <p class="nf-zero">
-          0 resultados encontrados. Que ironia: a gente vive de fazer site aparecer no Google, e nem a gente achou
-          essa página. 🙃
+          <span class="nf-zero-count">0 resultados encontrados.</span>
+          <span class="nf-zero-joke">Que ironia: a gente vive de fazer site aparecer no Google, e nem a gente achou essa página. 🙃</span>
         </p>
 
         <div class="nf-suggest">
@@ -147,8 +147,20 @@ import { waLink } from "../lib/contact";
   }
   .nf-zero {
     margin: 22px 0 0;
-    font-size: 14px;
-    color: rgba(255, 255, 255, 0.6);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .nf-zero-count {
+    font-family: var(--t3-mono);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+  }
+  .nf-zero-joke {
+    font-size: 14.5px;
+    color: rgba(255, 255, 255, 0.72);
   }
   .nf-suggest {
     display: grid;
