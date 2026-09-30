@@ -103,7 +103,6 @@ const numText = (r: ProjectResult) =>
               <article class:list={["vt-panel", { "is-active": i === 0 }]} id={`vt-panel-${p.slug}`} role="tabpanel" aria-labelledby={`vt-tab-${p.slug}`}>
                 <div class="vt-info">
                   <div class="vt-id">
-                    {p.featured && <span class="pf-k"><i></i>Em destaque</span>}
                     <span class="pf-seg">{segmentLabel(p.segment)}</span>
                     <h3>{p.name}</h3>
                     {p.subtitle && <p class="vt-sub">{p.subtitle}</p>}
