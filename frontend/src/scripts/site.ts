@@ -1025,8 +1025,10 @@ document.querySelectorAll<HTMLElement>("[data-pslider]").forEach((root) => {
 
   // The hero panel is narrower than the window, so the pointer is tracked across the WHOLE window
   // (the effect keeps going over the side margins) and only paused while the hero is off screen.
-  // GAIN > 1 reaches the outermost frame a little before the window edge.
-  const GAIN = 1.3;
+  // GAIN = 1 maps the true window edges to the outermost frame — a bigger GAIN clamps sooner, leaving a
+  // "dead zone" near each edge where the cursor can still move but the image has already stopped (felt
+  // premature/abrupt at 1.3, the old value).
+  const GAIN = 1;
   let heroVisible = true;
   new IntersectionObserver(
     (entries) => {
