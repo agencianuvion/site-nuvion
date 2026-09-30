@@ -390,21 +390,33 @@ initBlogList();
   const numsOf = (i: number) => panels[i].querySelector<HTMLElement>(".vt-nums");
   const inView = new Set<Element>();
   const pending = new Set<Element>();
+  // one number at a time: it rises into view, then counts up (countUp waits a beat of its own), then the next one
+  const revealNums = (n: Element) => {
+    const items = [...n.querySelectorAll<HTMLElement>(".vt-num")];
+    gsap.killTweensOf(items);
+    if (reduced) return void gsap.set(items, { clearProps: "opacity,transform" });
+    items.forEach((li, k) =>
+      gsap.fromTo(li, { opacity: 0, y: 18 }, { opacity: 1, y: 0, duration: 0.5, delay: k * 0.45, ease: "power2.out", onStart: () => countUp(li) }),
+    );
+  };
   const countNums = (i: number) => {
     const n = numsOf(i);
     pending.clear(); // only the shown project's numbers wait for their strip
     if (!n) return;
     if (inView.has(n)) {
       pending.delete(n);
-      countUp(n);
-    } else pending.add(n);
+      revealNums(n);
+    } else {
+      pending.add(n);
+      if (!reduced) gsap.set(n.querySelectorAll(".vt-num"), { opacity: 0 }); // hidden until they come in, one by one
+    }
   };
   const numsIO = new IntersectionObserver(
     (entries) =>
       entries.forEach((e) => {
         if (!e.isIntersecting) return void inView.delete(e.target);
         inView.add(e.target);
-        if (pending.delete(e.target)) countUp(e.target);
+        if (pending.delete(e.target)) revealNums(e.target);
       }),
     { rootMargin: "0px 0px -12% 0px" },
   );
