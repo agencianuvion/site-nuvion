@@ -5002,9 +5002,17 @@ body:not(:has(.t3-hero-full)) main.t3 {
   object-position: 50% 12%;
   border: 1px solid rgba(255, 255, 255, 0.14);
 }
+/* wide photo: it must NOT set the card's height (its own proportions made it taller than the text): height 0 = it adds
+   nothing to the row, min-height 100% = it fills the row the text sets; the text is centred in that height */
+.ac-wide {
+  align-items: center;
+}
 .ac-wide .ac-photo {
+  align-self: stretch;
   width: clamp(200px, 27vw, 400px);
-  object-position: 50% 20%;
+  height: 0;
+  min-height: 100%;
+  object-position: 50% 22%;
 }
 .ac-k {
   font-family: var(--t3-mono, "JetBrains Mono", ui-monospace, monospace);

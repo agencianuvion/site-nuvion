@@ -259,7 +259,7 @@ add_action(
 				'methods'             => 'POST',
 				'callback'            => function () {
 					if ( ! defined( 'SITE_GITHUB_DISPATCH_TOKEN' ) || ! SITE_GITHUB_DISPATCH_TOKEN ) {
-						return new WP_REST_Response( array( 'error' => 'Publishing is not configured.' ), 501 );
+						return new WP_REST_Response( array( 'error' => 'A publicação não está configurada.' ), 501 );
 					}
 					site_run_deploy( 'manual_button:user#' . get_current_user_id() );
 					return new WP_REST_Response( array( 'state' => 'deploying' ), 200 );
@@ -274,7 +274,7 @@ add_action(
 
 function site_receive_deploy_status( WP_REST_Request $request ) {
 	if ( ! defined( 'SITE_DEPLOY_STATUS_TOKEN' ) || ! SITE_DEPLOY_STATUS_TOKEN ) {
-		return new WP_REST_Response( array( 'error' => 'Not configured' ), 501 );
+		return new WP_REST_Response( array( 'error' => 'Não configurado' ), 501 );
 	}
 
 	// hash_equals (not ===) — timing-safe comparison, so a slow string
@@ -286,7 +286,7 @@ function site_receive_deploy_status( WP_REST_Request $request ) {
 
 	$status = $request->get_param( 'status' );
 	if ( ! in_array( $status, array( 'success', 'failure', 'cancelled' ), true ) ) {
-		return new WP_REST_Response( array( 'error' => 'Invalid status' ), 400 );
+		return new WP_REST_Response( array( 'error' => 'Status inválido' ), 400 );
 	}
 
 	delete_option( 'site_deploy_pending' );
@@ -371,7 +371,7 @@ function site_get_deploy_status() {
 	if ( is_array( $dirty ) && ! empty( $dirty['since'] ) ) {
 		$extra['dirty']       = true;
 		$extra['dirty_count'] = count( (array) ( $dirty['ids'] ?? array() ) );
-		$extra['dirty_ago']   = human_time_diff( strtotime( $dirty['since'] ) ) . ' ago';
+		$extra['dirty_ago']   = 'há ' . human_time_diff( strtotime( $dirty['since'] ) );
 	}
 
 	$last     = get_option( 'site_last_deploy' );
@@ -379,7 +379,7 @@ function site_get_deploy_status() {
 	// Formatted here (not left to the browser) so the sidebar script never
 	// has to parse a MySQL timestamp — human_time_diff() already handles the
 	// site's timezone vs. the visitor's.
-	$time_ago = $last_ok ? human_time_diff( strtotime( $last_ok['time'] ) ) . ' ago' : '';
+	$time_ago = $last_ok ? 'há ' . human_time_diff( strtotime( $last_ok['time'] ) ) : '';
 
 	// Precedence: failure (red) > unsent changes (amber) > up to date (green).
 	if ( $last_ok && 'success' !== $last_ok['status'] ) {
@@ -434,19 +434,19 @@ add_action(
 	'admin_menu',
 	function () {
 		add_management_page(
-			'Deploy Log',
-			'Deploy Log',
+			'Registro de publicações',
+			'Registro de publicações',
 			'manage_options',
 			'site-deploy-log',
 			function () {
 				$log = array_reverse( get_option( 'site_deploy_trigger_log', array() ) );
-				echo '<div class="wrap"><h1>Deploy Log</h1>';
-				echo '<p>The most recent deploy triggers, newest first. A dispatch that reached GitHub but is missing here did not come from this site — rotate SITE_GITHUB_DISPATCH_TOKEN.</p>';
+				echo '<div class="wrap"><h1>Registro de publicações</h1>';
+				echo '<p>Os disparos de publicação mais recentes, do mais novo para o mais antigo. Um disparo que chegou ao GitHub e não aparece aqui não veio deste site: troque o SITE_GITHUB_DISPATCH_TOKEN.</p>';
 				if ( empty( $log ) ) {
-					echo '<p><em>Nothing logged yet.</em></p></div>';
+					echo '<p><em>Nada registrado ainda.</em></p></div>';
 					return;
 				}
-				echo '<table class="widefat striped"><thead><tr><th style="width:220px">When</th><th>Reason</th></tr></thead><tbody>';
+				echo '<table class="widefat striped"><thead><tr><th style="width:220px">Quando</th><th>Motivo</th></tr></thead><tbody>';
 				foreach ( $log as $entry ) {
 					printf(
 						'<tr><td>%s</td><td><code>%s</code></td></tr>',

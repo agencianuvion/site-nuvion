@@ -102,6 +102,7 @@ async function loadProjects(): Promise<{ projects: Project[]; segments: Segment[
         subtitle: f.subtitle?.trim() ? decodeEntities(f.subtitle.trim()) : undefined,
         results: (f.results ?? [])
           .filter((r) => r.label?.trim())
+          .slice(0, 4) // one row of the portfolio strip (WordPress also stops at 4)
           .map((r) => ({ count: r.count, decimals: r.decimals || undefined, prefix: r.prefix || undefined, suffix: r.suffix || undefined, label: decodeEntities(r.label) })),
         video: f.video?.url ? { url: f.video.url, type: f.video.type || "video/mp4" } : undefined,
         url: f.url || undefined,
@@ -146,6 +147,9 @@ export function projectSrcset(p: Project, widths: (640 | 1000 | 1800)[] = [640, 
 export const segmentLabel = (slug: string) => segments.find((s) => s.slug === slug)?.label ?? slug;
 /** "https://www.exemplo.com.br/x" -> "exemplo.com.br" */
 export const siteHost = (url?: string) => (url ? new URL(url).hostname.replace(/^www\./, "") : "");
+/** Up to `n` projects for the showcases (home slider, portfolio hero mosaic): the ones with the "Destaque" switch on, in
+ * the WordPress "Ordem"; when fewer than `n` are featured, the others (same order) fill the rest. */
+export const highlightProjects = (n: number) => [...projects.filter((p) => p.featured), ...projects.filter((p) => !p.featured)].slice(0, n);
 /** The most recent project that has the "featured" switch on (undefined when none has). */
 export const featuredProject = () => [...projects].filter((p) => p.featured).sort((a, b) => b.date.localeCompare(a.date))[0];
 export const hasText = (html?: string) => !!html && html.replace(/<[^>]*>/g, "").trim().length > 0;

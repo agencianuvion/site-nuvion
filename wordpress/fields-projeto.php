@@ -117,7 +117,7 @@ function site_projeto_fields_box( $post ) {
 		</div>
 		<template id="site-rs-tpl"><?php site_projeto_result_row( array() ); ?></template>
 		<button type="button" class="button" id="site-rs-add">+ Adicionar número</button>
-		<p class="description">Os números aparecem como contadores embaixo do texto, no Portfólio (até 4 por linha). Ex.: <code>+</code> <code>120</code> <code>%</code> "em visitas orgânicas"; <code>3</code> <code>x</code> "mais contatos". O número aceita vírgula (4,8). Linhas sem número ou sem legenda são ignoradas; sem nenhum número, a faixa não aparece.</p>
+		<p class="description">Os números aparecem como contadores embaixo do texto, no Portfólio (no máximo 4, numa linha só). Ex.: <code>+</code> <code>120</code> <code>%</code> "em visitas orgânicas"; <code>3</code> <code>x</code> "mais contatos". O número aceita vírgula (4,8). Linhas sem número ou sem legenda são ignoradas; sem nenhum número, a faixa não aparece.</p>
 	</div>
 	<div class="site-f">
 		<label>Vídeo em destaque (opcional)</label>
@@ -162,24 +162,38 @@ function site_projeto_fields_box( $post ) {
 		( function () {
 			var list = document.querySelector( '#site_projeto_fields .site-rs-list' );
 			var tpl = document.getElementById( 'site-rs-tpl' );
-			document.getElementById( 'site-rs-add' ).addEventListener( 'click', function () {
+			var add = document.getElementById( 'site-rs-add' );
+			var MAX = <?php echo (int) SITE_PROJETO_RESULTS_MAX; ?>;
+			// at most MAX numbers: the button switches off (and says why) once the list is full
+			function limit() {
+				var full = list.children.length >= MAX;
+				add.disabled = full;
+				add.textContent = full ? 'Máximo de ' + MAX + ' números' : '+ Adicionar número';
+			}
+			add.addEventListener( 'click', function () {
+				if ( list.children.length >= MAX ) { return; }
 				list.appendChild( tpl.content.cloneNode( true ) );
 				list.lastElementChild.querySelector( 'input[name$="[count][]"]' ).focus();
+				limit();
 			} );
 			list.addEventListener( 'click', function ( e ) {
 				var del = e.target.closest( '.site-rs-del' );
-				if ( del ) { del.closest( '.site-rs-row' ).remove(); }
+				if ( del ) { del.closest( '.site-rs-row' ).remove(); limit(); }
 			} );
+			limit();
 		} )();
 	</script>
 	<p class="description">A foto do projeto é a imagem destacada (à direita), horizontal, com 1800 px de largura ou mais. O texto alternativo é o "Texto alternativo" da imagem na biblioteca de mídia; se estiver vazio, o site usa "Site da &lt;empresa&gt;".</p>
 	<?php
 }
 
+/** At most this many numbers per project (one row of the portfolio strip). */
+const SITE_PROJETO_RESULTS_MAX = 4;
+
 /** The project's numbers as saved: a list of {prefix, count, suffix, label}; `count` is the number as typed ("4,8"). */
 function site_projeto_results( $post_id ) {
 	$v = get_post_meta( $post_id, 'results', true );
-	return is_array( $v ) ? $v : array();
+	return is_array( $v ) ? array_slice( $v, 0, SITE_PROJETO_RESULTS_MAX ) : array();
 }
 
 /** One row of the "Resultados do projeto" repeater (empty array = the blank row of the template). */
@@ -242,6 +256,9 @@ add_action(
 			);
 			if ( null !== site_projeto_parse_count( $row['count'] ) && '' !== $row['label'] ) {
 				$rows[] = $row;
+			}
+			if ( count( $rows ) >= SITE_PROJETO_RESULTS_MAX ) {
+				break;
 			}
 		}
 		update_post_meta( $post_id, 'results', $rows );

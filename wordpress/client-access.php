@@ -236,7 +236,7 @@ function site_admin_sidebar_deploy_status() {
 			}
 
 			function plural( n ) {
-				return n + ( n === 1 ? ' item changed' : ' items changed' );
+				return n + ( n === 1 ? ' item alterado' : ' itens alterados' );
 			}
 
 			function render( data ) {
@@ -249,25 +249,25 @@ function site_admin_sidebar_deploy_status() {
 				var canDeploy = !! data.can_deploy;
 
 				if ( state === 'success' ) {
-					title = 'Site up to date';
-					sub = data.time_ago ? 'Published ' + data.time_ago : '';
+					title = 'Site atualizado';
+					sub = data.time_ago ? 'Publicado ' + data.time_ago : '';
 				} else if ( state === 'dirty' ) {
-					title = 'Unsent changes';
-					sub = ( data.dirty_count ? plural( data.dirty_count ) + ' · ' : 'Saved ' ) + ( data.dirty_ago || '' );
+					title = 'Alterações não enviadas';
+					sub = ( data.dirty_count ? plural( data.dirty_count ) + ' · ' : 'Salvo ' ) + ( data.dirty_ago || '' );
 					if ( canDeploy ) {
-						extra = '<button type="button" class="sd-btn">Send changes to the site</button>';
+						extra = '<button type="button" class="sd-btn">Enviar alterações ao site</button>';
 					} else {
-						sub += ' · awaiting send';
+						sub += ' · aguardando envio';
 					}
 				} else if ( state === 'failure' ) {
-					title = 'Publish failed';
-					sub = ( data.time_ago ? data.time_ago + ' · ' : '' ) + 'the site is still on the previous version';
+					title = 'Falha na publicação';
+					sub = ( data.time_ago ? data.time_ago + ' · ' : '' ) + 'o site continua na versão anterior';
 					if ( canDeploy ) {
-						extra = '<button type="button" class="sd-btn">Try again</button>';
+						extra = '<button type="button" class="sd-btn">Tentar de novo</button>';
 					}
 				} else if ( state === 'deploying' ) {
-					title = 'Publishing changes…';
-					sub = 'Usually takes about a minute';
+					title = 'Publicando alterações…';
+					sub = 'Costuma levar cerca de um minuto';
 					extra = '<div class="sd-bar" aria-hidden="true"></div>';
 				} else {
 					el.style.display = 'none';
@@ -309,7 +309,7 @@ function site_admin_sidebar_deploy_status() {
 					return;
 				}
 				btn.disabled = true;
-				btn.textContent = 'Sending…';
+				btn.textContent = 'Enviando…';
 				fetch( deployUrl, { method: 'POST', headers: { 'X-WP-Nonce': nonce }, credentials: 'same-origin' } )
 					.then( function ( res ) {
 						if ( ! res.ok ) {
@@ -320,7 +320,7 @@ function site_admin_sidebar_deploy_status() {
 					} )
 					.catch( function () {
 						btn.disabled = false;
-						btn.textContent = 'Could not send. Try again';
+						btn.textContent = 'Não foi possível enviar. Tente de novo';
 					} );
 			} );
 

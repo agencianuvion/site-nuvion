@@ -5,7 +5,7 @@
 // stats, testimonials, team photos or prices (the numbers in "stats" were given by the client).
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { waLink } from "../lib/contact";
-import { projects, segmentLabel, hasText, introFromHtml, projectImg, projectSrcset } from "../lib/projects";
+import { highlightProjects, segmentLabel, hasText, introFromHtml, projectImg, projectSrcset } from "../lib/projects";
 import { steps } from "../lib/process";
 import { getVisiblePosts } from "../lib/blog";
 import Testimonials from "../components/site/Testimonials.astro";
@@ -79,6 +79,8 @@ const services = [
 
 
 const pageSchema = faqSchema(faqs);
+// "Alguns projetos realizados": 3 projects, the ones marked "Destaque" in WordPress (the rest fill in when fewer are marked)
+const homeProjects = highlightProjects(3);
 ---
 
 <BaseLayout
@@ -320,8 +322,8 @@ const pageSchema = faqSchema(faqs);
       <div class="t3-pslider" data-pslider>
         <div class="t3-ptrack" role="region" aria-roledescription="carrossel" tabindex="0" aria-label="Projetos realizados (use as setas do teclado para navegar)">
           {
-            projects.map((pr, i) => (
-              <div class="t3-pslide" role="group" aria-roledescription="slide" aria-label={`${i + 1} de ${projects.length}`}>
+            homeProjects.map((pr, i) => (
+              <div class="t3-pslide" role="group" aria-roledescription="slide" aria-label={`${i + 1} de ${homeProjects.length}`}>
                 <article class="t3-pcard">
                   <figure class="t3-pmedia" data-full={projectImg(pr, 1800)} data-name={pr.name}>
                     <img
@@ -339,7 +341,7 @@ const pageSchema = faqSchema(faqs);
                   </figure>
                   <div class="t3-pinfo">
                     <div class="t3-pmeta">
-                      <span class="t3-pno">{`${String(i + 1).padStart(2, "0")} / ${String(projects.length).padStart(2, "0")}`}</span>
+                      <span class="t3-pno">{`${String(i + 1).padStart(2, "0")} / ${String(homeProjects.length).padStart(2, "0")}`}</span>
                     </div>
                     <h3 class="t3-pname">{pr.name}</h3>
                     <ul class="t3-pchips" role="list">
@@ -357,7 +359,7 @@ const pageSchema = faqSchema(faqs);
         </div>
 
         <div class="t3-pctrl">
-          <span class="t3-pcount" aria-live="polite"><b data-pcur>01</b> / {String(projects.length).padStart(2, "0")}</span>
+          <span class="t3-pcount" aria-live="polite"><b data-pcur>01</b> / {String(homeProjects.length).padStart(2, "0")}</span>
           <span class="t3-pprog" aria-hidden="true"><i data-pbar></i></span>
           <div class="t3-parrows">
             <button type="button" class="t3-parrow" data-pdir="-1" aria-label="Projeto anterior">
