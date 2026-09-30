@@ -36,6 +36,8 @@ export interface Project {
   subtitle?: string;
   /** The "Resultados do projeto" repeater. Empty = no counters strip. */
   results?: ProjectResult[];
+  /** Optional featured video (media library MP4): plays muted in a loop instead of the photo, on the portfolio only. */
+  video?: { url: string; type: string };
   url?: string;
   segment: string;
   featured?: boolean;
@@ -73,6 +75,7 @@ interface WpProjeto {
   title: { rendered: string };
   fields?: {
     subtitle?: string;
+    video?: { url: string; type: string } | null;
     url: string;
     description: string;
     results?: { count: number; decimals: number; prefix: string; suffix: string; label: string }[];
@@ -100,6 +103,7 @@ async function loadProjects(): Promise<{ projects: Project[]; segments: Segment[
         results: (f.results ?? [])
           .filter((r) => r.label?.trim())
           .map((r) => ({ count: r.count, decimals: r.decimals || undefined, prefix: r.prefix || undefined, suffix: r.suffix || undefined, label: decodeEntities(r.label) })),
+        video: f.video?.url ? { url: f.video.url, type: f.video.type || "video/mp4" } : undefined,
         url: f.url || undefined,
         segment: f.segment?.slug ?? "",
         featured: f.featured,

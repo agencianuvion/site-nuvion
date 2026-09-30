@@ -7,10 +7,11 @@
  *   url          address of the live site (the portfolio shows the host, e.g. "exemplo.com.br", under "Ver site")
  *   description  rich text (numbers, lists, links). EMPTY = nothing is shown for the description
  *   results      repeater: the project's own numbers (prefix, number, suffix, label), counters under the text. EMPTY = no strip
+ *   video_id     optional featured video (media library attachment): plays instead of the photo, portfolio only
  *   featured     "Destaque" switch: the portfolio highlights the most recent featured project
  *
  * REST: GET /wp-json/wp/v2/projetos?per_page=100 → each item has `date`, `slug`, `title.rendered`, and
- * `fields: { subtitle, url, description, results: [{count, decimals, prefix, suffix, label}], featured, segment: {slug, name},
+ * `fields: { subtitle, video: {url, type} | null, url, description, results: [{count, decimals, prefix, suffix, label}], featured, segment: {slug, name},
  * image: {url, width, height, alt, srcset} }`.
  *
  * Usage: drop into wp-content/mu-plugins/, alongside cpt-projeto.php. Needs 00-site-helpers.php + auto-deploy.php.
@@ -25,6 +26,17 @@ add_action(
 	function () {
 		add_meta_box( 'site_projeto_fields', 'Dados do projeto', 'site_projeto_fields_box', 'projeto', 'normal', 'high' );
 		add_meta_box( 'site_projeto_featured', 'Destaque', 'site_projeto_featured_box', 'projeto', 'side', 'high' );
+	}
+);
+
+// the "Vídeo em destaque" picker uses the media library modal
+add_action(
+	'admin_enqueue_scripts',
+	function () {
+		$screen = get_current_screen();
+		if ( $screen && 'projeto' === $screen->post_type && 'post' === $screen->base ) {
+			wp_enqueue_media();
+		}
 	}
 );
 
@@ -57,6 +69,8 @@ function site_projeto_fields_box( $post ) {
 	$url      = get_post_meta( $post->ID, 'site_url', true );
 	$subtitle = get_post_meta( $post->ID, 'subtitle', true );
 	$results  = site_projeto_results( $post->ID );
+	$video_id = (int) get_post_meta( $post->ID, 'video_id', true );
+	$video    = $video_id ? wp_get_attachment_url( $video_id ) : '';
 	?>
 	<style>
 		#site_projeto_fields .site-f { margin: 0 0 22px; }
@@ -71,6 +85,10 @@ function site_projeto_fields_box( $post ) {
 		#site_projeto_fields .site-rs-row { margin-bottom: 8px; }
 		#site_projeto_fields .site-rs-row input { width: 100%; }
 		#site_projeto_fields .site-rs-del { padding: 0; width: 32px; min-height: 30px; line-height: 1; }
+		#site_projeto_fields .site-video { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+		#site_projeto_fields .site-video video { display: block; width: 320px; max-width: 100%; border-radius: 6px; background: #000; }
+		#site_projeto_fields .site-video video:not([src]),
+		#site_projeto_fields .site-video video[src=""] { display: none; }
 	</style>
 	<div class="site-f">
 		<label for="site_projeto_subtitle">Subtítulo</label>
@@ -101,6 +119,45 @@ function site_projeto_fields_box( $post ) {
 		<button type="button" class="button" id="site-rs-add">+ Adicionar número</button>
 		<p class="description">Os números aparecem como contadores embaixo do texto, no Portfólio (até 4 por linha). Ex.: <code>+</code> <code>120</code> <code>%</code> "em visitas orgânicas"; <code>3</code> <code>x</code> "mais contatos". O número aceita vírgula (4,8). Linhas sem número ou sem legenda são ignoradas; sem nenhum número, a faixa não aparece.</p>
 	</div>
+	<div class="site-f">
+		<label>Vídeo em destaque (opcional)</label>
+		<div class="site-video">
+			<video src="<?php echo esc_url( $video ); ?>" muted loop playsinline controls preload="metadata"></video>
+			<input type="hidden" name="site_projeto_video" id="site_projeto_video" value="<?php echo $video_id ? (int) $video_id : ''; ?>">
+			<button type="button" class="button" id="site-video-pick"><?php echo $video ? 'Trocar vídeo' : 'Escolher vídeo'; ?></button>
+			<button type="button" class="button-link-delete" id="site-video-del" <?php echo $video ? '' : 'hidden'; ?>>Remover vídeo</button>
+		</div>
+		<p class="description">Só no Portfólio: no lugar da foto, toca sozinho, sem som e em loop; ao clicar, abre ampliado. A imagem destacada continua obrigatória (é a capa do vídeo e a foto da home e das faixas). Use MP4 (H.264), 10 a 30 segundos, sem áudio, com 1280 px de largura e até uns 8 MB.</p>
+	</div>
+	<script>
+		( function () {
+			var input = document.getElementById( 'site_projeto_video' );
+			var video = document.querySelector( '#site_projeto_fields .site-video video' );
+			var pick = document.getElementById( 'site-video-pick' );
+			var del = document.getElementById( 'site-video-del' );
+			var frame;
+			pick.addEventListener( 'click', function () {
+				if ( ! frame ) {
+					frame = wp.media( { title: 'Vídeo em destaque', button: { text: 'Usar este vídeo' }, library: { type: 'video' }, multiple: false } );
+					frame.on( 'select', function () {
+						var a = frame.state().get( 'selection' ).first().toJSON();
+						input.value = a.id;
+						video.src = a.url;
+						pick.textContent = 'Trocar vídeo';
+						del.hidden = false;
+					} );
+				}
+				frame.open();
+			} );
+			del.addEventListener( 'click', function () {
+				input.value = '';
+				video.removeAttribute( 'src' );
+				video.load();
+				pick.textContent = 'Escolher vídeo';
+				del.hidden = true;
+			} );
+		} )();
+	</script>
 	<script>
 		( function () {
 			var list = document.querySelector( '#site_projeto_fields .site-rs-list' );
@@ -165,6 +222,13 @@ add_action(
 			return;
 		}
 		update_post_meta( $post_id, 'subtitle', sanitize_text_field( wp_unslash( $_POST['site_projeto_subtitle'] ?? '' ) ) );
+		// the featured video: an attachment id from the media library, kept only if it really is a video
+		$video_id = absint( $_POST['site_projeto_video'] ?? 0 );
+		if ( $video_id && 0 === strpos( (string) get_post_mime_type( $video_id ), 'video/' ) ) {
+			update_post_meta( $post_id, 'video_id', $video_id );
+		} else {
+			delete_post_meta( $post_id, 'video_id' );
+		}
 		update_post_meta( $post_id, 'site_url', esc_url_raw( wp_unslash( $_POST['site_projeto_url'] ?? '' ) ) );
 		// the repeater arrives as parallel lists (site_rs[count][i] goes with site_rs[label][i]); keep only complete rows
 		$rs   = wp_unslash( $_POST['site_rs'] ?? array() );
@@ -352,8 +416,11 @@ add_action(
 							);
 						}
 					}
+					$video_id = (int) get_post_meta( $id, 'video_id', true );
+					$video    = $video_id ? wp_get_attachment_url( $video_id ) : '';
 					return array(
 						'subtitle'    => (string) get_post_meta( $id, 'subtitle', true ),
+						'video'       => $video ? array( 'url' => $video, 'type' => (string) get_post_mime_type( $video_id ) ) : null,
 						'url'         => (string) get_post_meta( $id, 'site_url', true ),
 						// wpautop() turns the editor's plain line breaks into real <p> tags.
 						'description' => wpautop( (string) get_post_meta( $id, 'description', true ) ),

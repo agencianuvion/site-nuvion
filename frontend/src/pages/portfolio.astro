@@ -111,8 +111,18 @@ const numText = (r: ProjectResult) =>
                         </div>
                       )
                     }
-                    <figure class="t3-pmedia vt-media" data-full={img(p, 1800)} data-name={p.name}>
-                      <img src={img(p, 640)} srcset={srcset(p)} sizes="(max-width: 1000px) 92vw, 380px" width="1800" height="1012" alt={p.alt} loading={i === 0 ? "eager" : "lazy"} decoding="async" draggable="false" />
+                    <figure class="t3-pmedia vt-media" data-full={img(p, 1800)} data-video={p.video?.url} data-name={p.name}>
+                      {
+                        p.video ? (
+                          // muted loop, played by the showcase script only while its project is shown (preload none: nothing
+                          // downloads until then); the photo is the poster
+                          <video muted loop playsinline preload="none" poster={img(p, 640)} aria-label={p.alt} data-vt-video>
+                            <source src={p.video.url} type={p.video.type} />
+                          </video>
+                        ) : (
+                          <img src={img(p, 640)} srcset={srcset(p)} sizes="(max-width: 1000px) 92vw, 380px" width="1800" height="1012" alt={p.alt} loading={i === 0 ? "eager" : "lazy"} decoding="async" draggable="false" />
+                        )
+                      }
                     </figure>
                   </div>
                   {hasText(p.descriptionHtml) && <div class="t3-tqwrap vt-text"><div class="pf-rich" set:html={p.descriptionHtml} /></div>}

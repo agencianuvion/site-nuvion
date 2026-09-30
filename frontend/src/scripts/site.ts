@@ -123,6 +123,7 @@ document.querySelectorAll<HTMLElement>("[data-acc]").forEach((group) => {
   if (!figs.length) return;
   let dlg: HTMLDialogElement | null = null;
   let img: HTMLImageElement;
+  let vid: HTMLVideoElement;
   let cap: HTMLElement;
   let index = 0;
   const arrow = (d: string) =>
@@ -134,8 +135,21 @@ document.querySelectorAll<HTMLElement>("[data-acc]").forEach((group) => {
     index = (i + list.length) % list.length;
     const f = list[index];
     dlg?.querySelectorAll<HTMLElement>(".t3-lb-nav").forEach((b) => (b.hidden = list.length < 2));
-    img.src = f.dataset.full ?? "";
-    img.alt = f.querySelector("img")?.alt ?? "";
+    // a project with a featured video (portfolio) opens the video, with sound controls; the others the big picture
+    const video = f.dataset.video;
+    img.hidden = !!video;
+    vid.hidden = !video;
+    if (video) {
+      vid.poster = f.dataset.full ?? "";
+      vid.src = video;
+      vid.setAttribute("aria-label", f.querySelector("video")?.getAttribute("aria-label") ?? "");
+      vid.play().catch(() => {});
+    } else {
+      vid.pause();
+      vid.removeAttribute("src");
+      img.src = f.dataset.full ?? "";
+      img.alt = f.querySelector("img")?.alt ?? "";
+    }
     cap.textContent = f.dataset.name ?? "";
   };
   const build = () => {
@@ -144,10 +158,11 @@ document.querySelectorAll<HTMLElement>("[data-acc]").forEach((group) => {
     dlg.setAttribute("aria-label", "Imagem ampliada");
     dlg.innerHTML = `<button type="button" class="t3-lb-close" aria-label="Fechar">${arrow("M6 6l12 12M18 6 6 18")}</button>
       <button type="button" class="t3-lb-nav is-prev" aria-label="Imagem anterior">${arrow("M15 6l-6 6 6 6")}</button>
-      <figure><img alt="" decoding="async" /><figcaption></figcaption></figure>
+      <figure><img alt="" decoding="async" /><video controls loop playsinline hidden></video><figcaption></figcaption></figure>
       <button type="button" class="t3-lb-nav is-next" aria-label="Próxima imagem">${arrow("M9 6l6 6-6 6")}</button>`;
     document.body.appendChild(dlg);
     img = dlg.querySelector("img") as HTMLImageElement;
+    vid = dlg.querySelector("video") as HTMLVideoElement;
     cap = dlg.querySelector("figcaption") as HTMLElement;
     dlg
       .querySelector(".t3-lb-close")
@@ -168,6 +183,7 @@ document.querySelectorAll<HTMLElement>("[data-acc]").forEach((group) => {
       else if (e.key === "ArrowRight") show(index + 1);
     });
     dlg.addEventListener("close", () => {
+      vid.pause();
       document.documentElement.style.overflow = "";
       lenis?.start();
     });
@@ -183,7 +199,7 @@ document.querySelectorAll<HTMLElement>("[data-acc]").forEach((group) => {
   figs.forEach((f) => {
     f.setAttribute("role", "button");
     f.tabIndex = 0;
-    f.setAttribute("aria-label", `Ampliar imagem: ${f.dataset.name ?? ""}`);
+    f.setAttribute("aria-label", `${f.dataset.video ? "Ampliar vídeo" : "Ampliar imagem"}: ${f.dataset.name ?? ""}`);
     f.addEventListener("click", () => open(f));
     f.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
@@ -371,6 +387,15 @@ initBlogList();
   let cur = 0;
   // the project's numbers count up each time it is shown, once the section has been seen (the first one counts on arrival)
   let seen = false;
+  // featured videos: only the shown project's plays, and only while the section is on screen (never with reduced motion:
+  // the poster stays)
+  const videos = panels.map((p) => p.querySelector<HTMLVideoElement>("video[data-vt-video]"));
+  const syncVideos = () =>
+    videos.forEach((v, k) => {
+      if (!v) return;
+      if (k === cur && onScreen && !reduced && !document.hidden) v.play().catch(() => {});
+      else v.pause();
+    });
   const visible = () => tabs.map((_, i) => i).filter((i) => !tabs[i].hidden);
   // the list scrolls when there are many projects: keep the active tab in view, and tell (fades) that there is more
   const listEl = tabs[0].parentElement as HTMLElement;
@@ -403,6 +428,7 @@ initBlogList();
       panels[k].classList.toggle("is-active", on);
     });
     if (seen) countUp(panels[i]);
+    syncVideos();
     if (user && auto) {
       auto = false;
       root.classList.add("no-auto");
@@ -459,7 +485,10 @@ initBlogList();
   // screen, so the pointer is nearly always over it and the timer would never run (a click already stops it for good)
   const setPaused = (p: boolean) => root.classList.toggle("is-paused", p);
   let onScreen = false;
-  const sync = () => setPaused(!onScreen || document.hidden);
+  const sync = () => {
+    setPaused(!onScreen || document.hidden);
+    syncVideos();
+  };
   document.addEventListener("visibilitychange", sync);
   new IntersectionObserver(
     ([en]) => {

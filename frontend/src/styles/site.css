@@ -3237,7 +3237,8 @@
   margin: 0;
   max-width: 92vw;
 }
-.t3-lightbox img {
+.t3-lightbox img,
+.t3-lightbox video {
   max-width: 92vw;
   max-height: 80dvh;
   border-radius: 16px;
@@ -5913,7 +5914,8 @@ html.js .vt-panel.is-active {
   aspect-ratio: 16 / 9;
   border-radius: 16px;
 }
-.vt-media img {
+.vt-media img,
+.vt-media video {
   display: block;
   width: 100%;
   height: 100%;
@@ -6083,7 +6085,8 @@ html.js .vt-panel.is-active {
   html.js .vt-panel {
     transition: none;
   }
-  .vt-media img {
+  .vt-media img,
+  .vt-media video {
     transform: none;
     transition: none;
   }
