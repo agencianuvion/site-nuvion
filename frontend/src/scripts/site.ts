@@ -679,13 +679,18 @@ document.querySelectorAll<HTMLElement>("[data-pslider]").forEach((root) => {
   const n = slides.length;
   const clamp = (i: number) => Math.max(0, Math.min(n - 1, i));
 
-  // the track has left padding (room for the card shadow), so slide positions are measured from it
+  // the track has left/right padding (room for the card shadow), so slide positions are measured from it
   const pad = () => parseFloat(getComputedStyle(track).paddingLeft) || 0;
+  const padR = () => parseFloat(getComputedStyle(track).paddingRight) || 0;
+  // most slides snap flush with the track's start; the trailing "ver todos" slide (CSS: scroll-snap-align: end) is
+  // narrower than the viewport on purpose, so it snaps flush with the END instead (the previous card peeks on the left)
+  const alignedLeft = (s: HTMLElement) =>
+    s.classList.contains("is-all-slide") ? s.offsetLeft + s.offsetWidth - track.clientWidth + padR() : s.offsetLeft - pad();
   const nearest = () => {
     let best = 0;
     let bestD = Infinity;
     slides.forEach((s, i) => {
-      const d = Math.abs(s.offsetLeft - pad() - track.scrollLeft);
+      const d = Math.abs(alignedLeft(s) - track.scrollLeft);
       if (d < bestD) {
         bestD = d;
         best = i;
@@ -706,7 +711,7 @@ document.querySelectorAll<HTMLElement>("[data-pslider]").forEach((root) => {
   };
   const go = (i: number) =>
     track.scrollTo({
-      left: slides[clamp(i)].offsetLeft - pad(),
+      left: alignedLeft(slides[clamp(i)]),
       behavior: reduced ? "auto" : "smooth",
     });
 

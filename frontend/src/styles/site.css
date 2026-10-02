@@ -882,6 +882,7 @@
   .t3-pslider {
     --slide-w: 88%;
     --pgap: clamp(12px, 1.6vw, 22px);
+    --all-w: clamp(220px, 40%, 600px);
   }
   .t3-ptrack {
     position: relative;
@@ -903,6 +904,12 @@
   .t3-ptrack::after {
     content: "";
     flex: 0 0 calc(100% - var(--slide-w) - var(--pgap));
+  }
+  /* The projects track's last slide (.is-all-slide) is narrower than a normal one (--slide-w), so the room it needs to
+     reach "start" is smaller too — without this, the spacer above (sized for a full-width slide) leaves the browser
+     unable to scroll far enough and the card lands short of the track's own right edge. */
+  .t3-ptrack:has(.is-all-slide)::after {
+    flex-basis: calc(100% - var(--all-w) - var(--pgap));
   }
   .t3-ptrack.is-drag {
     scroll-snap-type: none;
@@ -1014,7 +1021,15 @@
      Narrower than a real project slide on purpose, so the previous card still peeks in on the left once this one is
      reached — a visual cue that it is the end of the strip, not just another project. */
   .t3-pslide.is-all-slide {
-    flex-basis: clamp(220px, 40%, 400px);
+    flex-basis: var(--all-w);
+    /* narrower than the viewport on purpose (see .is-all-slide's comment) — snapping its END (not start) flush with
+       the track keeps the previous card peeking on the left and puts this card's own right edge flush with the track's. */
+    scroll-snap-align: end;
+  }
+  /* The dimming rule below is meant for real project slides the user has scrolled past/not reached yet — this one is
+     always the end of the strip, so it should stay fully lit instead of waiting for an .is-active it may never get. */
+  .t3-pslider.is-ready .t3-pslide.is-all-slide:not(.is-active) {
+    opacity: 1;
   }
   .t3-pcard.is-all {
     position: relative;
@@ -3183,6 +3198,7 @@
   margin-inline: calc(-1 * var(--pad-l, 0px)) calc(-1 * var(--pad-r, 0px));
   padding-inline: var(--pad-l, 0px) var(--pad-r, 0px);
   scroll-padding-left: var(--pad-l, 0px);
+  scroll-padding-right: var(--pad-r, 0px);
 }
 .t3-pname {
   font-size: clamp(30px, 3vw, 46px);
