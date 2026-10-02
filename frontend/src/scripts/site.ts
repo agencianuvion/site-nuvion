@@ -678,6 +678,8 @@ document.querySelectorAll<HTMLElement>("[data-pslider]").forEach((root) => {
   if (panelEl) new ResizeObserver(syncPad).observe(panelEl);
   const n = slides.length;
   const clamp = (i: number) => Math.max(0, Math.min(n - 1, i));
+  // the trailing "ver todos" slide is a CTA, not a project — the counter/progress stay at the last real one while it's active
+  const countedN = slides.some((s) => s.classList.contains("is-all-slide")) ? n - 1 : n;
 
   // the track has left/right padding (room for the card shadow), so slide positions are measured from it
   const pad = () => parseFloat(getComputedStyle(track).paddingLeft) || 0;
@@ -704,8 +706,9 @@ document.querySelectorAll<HTMLElement>("[data-pslider]").forEach((root) => {
     if (i === shown) return;
     shown = i;
     slides.forEach((s, k) => s.classList.toggle("is-active", k === i));
-    if (cur) cur.textContent = String(i + 1).padStart(2, "0");
-    if (bar) bar.style.width = `${((i + 1) / n) * 100}%`;
+    const shownCount = Math.min(i + 1, countedN);
+    if (cur) cur.textContent = String(shownCount).padStart(2, "0");
+    if (bar) bar.style.width = `${(shownCount / countedN) * 100}%`;
     if (prev) prev.disabled = i === 0;
     if (next) next.disabled = i === n - 1;
   };

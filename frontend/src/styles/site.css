@@ -1071,6 +1071,11 @@
     color: rgba(255, 255, 255, 0.9);
   }
   .t3-pcard.is-all .t3-pvisit {
+    /* .t3-pvisit is normally pinned bottom-left in a project card's info column (align-self: flex-start; margin-top:
+       auto) — this card centers everything instead, so both need to be cancelled here or the button sits off to the
+       side under the centered text. */
+    align-self: center;
+    margin-top: 0;
     border-color: rgba(255, 255, 255, 0.55);
     color: #fff;
   }
