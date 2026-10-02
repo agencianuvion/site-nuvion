@@ -1008,6 +1008,39 @@
     align-self: flex-start;
     margin-top: auto;
   }
+  /* Trailing slide of the home projects slider: a CTA to the full Portfólio instead of a project — same idea as the
+     blog strip's trailing "Ver todos os artigos" card (.t3-bp-all), in this slider's own card shape. */
+  .t3-pcard.is-all {
+    color: #fff;
+    text-decoration: none;
+    background: linear-gradient(140deg, #cc4e14 0%, #8a300b 100%);
+    border-color: transparent;
+  }
+  .t3-pcard.is-all .t3-pmedia {
+    background: none;
+  }
+  .t3-pcard.is-all .t3-pmedia img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 60% 50%;
+    opacity: 0.35;
+    mix-blend-mode: soft-light;
+  }
+  .t3-pcard.is-all .t3-pno {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .t3-pcard.is-all .t3-pdesc {
+    color: rgba(255, 255, 255, 0.9);
+  }
+  .t3-pcard.is-all .t3-pvisit {
+    border-color: rgba(255, 255, 255, 0.55);
+    color: #fff;
+  }
+  .t3-pcard.is-all:hover .t3-pvisit {
+    background: #fff;
+    color: #8a300b;
+  }
   .t3-pctrl {
     display: flex;
     align-items: center;

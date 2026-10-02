@@ -52,6 +52,19 @@ function site_img_data( $attachment_id, $with_srcset = false ) {
 	return $out;
 }
 
+/**
+ * Like sanitize_text_field(), but keeps ONE leading/trailing space if the admin typed one on purpose — sanitize_text_field()
+ * always trims those, which breaks small badge-style fields meant to butt up against a number (e.g. a "+" prefix or a
+ * " %" suffix where the space is part of the look). Still strips tags and collapses any other run of whitespace.
+ */
+function site_sanitize_badge( $value ) {
+	$value = (string) $value;
+	$lead  = ( '' !== $value && ' ' === $value[0] ) ? ' ' : '';
+	$trail = ( '' !== $value && strlen( $value ) > 1 && ' ' === substr( $value, -1 ) ) ? ' ' : '';
+	$value = sanitize_text_field( $value );
+	return $lead . $value . $trail;
+}
+
 /** "One item per line" textarea -> array of strings, blank lines dropped. */
 function site_lines( $value ) {
 	if ( ! is_string( $value ) || '' === trim( $value ) ) {

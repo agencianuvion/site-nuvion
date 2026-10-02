@@ -5,7 +5,7 @@
 // stats, testimonials, team photos or prices (the numbers in "stats" were given by the client).
 import BaseLayout from "../layouts/BaseLayout.astro";
 import { waLink } from "../lib/contact";
-import { highlightProjects, segmentLabel, hasText, introFromHtml, projectImg, projectSrcset } from "../lib/projects";
+import { highlightProjects, segmentLabel, hasText, homeExcerpt, projectImg, projectSrcset } from "../lib/projects";
 import { steps } from "../lib/process";
 import { getVisiblePosts } from "../lib/blog";
 import Testimonials from "../components/site/Testimonials.astro";
@@ -79,8 +79,10 @@ const services = [
 
 
 const pageSchema = faqSchema(faqs);
-// "Alguns projetos realizados": 3 projects, the ones marked "Destaque" in WordPress (the rest fill in when fewer are marked)
+// "Alguns projetos realizados": 3 projects, the ones marked "Destaque" in WordPress (the rest fill in when fewer are marked),
+// plus a 4th slide pointing at the full Portfólio (same idea as the blog strip's trailing "Ver todos os artigos" card).
 const homeProjects = highlightProjects(3);
+const projectSlideCount = homeProjects.length + 1;
 ---
 
 <BaseLayout
@@ -322,7 +324,7 @@ const homeProjects = highlightProjects(3);
         <div class="t3-ptrack" role="region" aria-roledescription="carrossel" tabindex="0" aria-label="Projetos realizados (use as setas do teclado para navegar)">
           {
             homeProjects.map((pr, i) => (
-              <div class="t3-pslide" role="group" aria-roledescription="slide" aria-label={`${i + 1} de ${homeProjects.length}`}>
+              <div class="t3-pslide" role="group" aria-roledescription="slide" aria-label={`${i + 1} de ${projectSlideCount}`}>
                 <article class="t3-pcard">
                   <figure class="t3-pmedia" data-full={projectImg(pr, 1800)} data-name={pr.name}>
                     <img
@@ -340,13 +342,13 @@ const homeProjects = highlightProjects(3);
                   </figure>
                   <div class="t3-pinfo">
                     <div class="t3-pmeta">
-                      <span class="t3-pno">{`${String(i + 1).padStart(2, "0")} / ${String(homeProjects.length).padStart(2, "0")}`}</span>
+                      <span class="t3-pno">{`${String(i + 1).padStart(2, "0")} / ${String(projectSlideCount).padStart(2, "0")}`}</span>
                     </div>
                     <h3 class="t3-pname">{pr.name}</h3>
                     <ul class="t3-pchips" role="list">
                       <li>{segmentLabel(pr.segment)}</li>
                     </ul>
-                    {hasText(pr.descriptionHtml) && <p class="t3-pdesc">{introFromHtml(pr.descriptionHtml)}</p>}
+                    {(hasText(pr.descriptionHtml) || pr.summary) && <p class="t3-pdesc">{homeExcerpt(pr)}</p>}
                     <a class="t3-btn-out t3-pvisit" href={`/portfolio/#projeto-${pr.slug}`} draggable="false">
                       Saiba mais <span aria-hidden="true">→</span>
                     </a>
@@ -355,10 +357,25 @@ const homeProjects = highlightProjects(3);
               </div>
             ))
           }
+          <div class="t3-pslide" role="group" aria-roledescription="slide" aria-label={`${projectSlideCount} de ${projectSlideCount}`}>
+            <a class="t3-pcard is-all" href="/portfolio" aria-label="Ver todos os projetos no portfólio">
+              <figure class="t3-pmedia">
+                <img src="/images/hero-seq/r12.avif" alt="" width="1920" height="1080" loading="lazy" decoding="async" />
+              </figure>
+              <div class="t3-pinfo">
+                <div class="t3-pmeta">
+                  <span class="t3-pno">{`${String(projectSlideCount).padStart(2, "0")} / ${String(projectSlideCount).padStart(2, "0")}`}</span>
+                </div>
+                <h3 class="t3-pname">Ver todos os projetos</h3>
+                <p class="t3-pdesc">Conheça o portfólio completo, com todos os setores e cases que já entregamos.</p>
+                <span class="t3-btn-out t3-pvisit">Abrir o portfólio <span aria-hidden="true">→</span></span>
+              </div>
+            </a>
+          </div>
         </div>
 
         <div class="t3-pctrl">
-          <span class="t3-pcount" aria-live="polite"><b data-pcur>01</b> / {String(homeProjects.length).padStart(2, "0")}</span>
+          <span class="t3-pcount" aria-live="polite"><b data-pcur>01</b> / {String(projectSlideCount).padStart(2, "0")}</span>
           <span class="t3-pprog" aria-hidden="true"><i data-pbar></i></span>
           <div class="t3-parrows">
             <button type="button" class="t3-parrow" data-pdir="-1" aria-label="Projeto anterior">

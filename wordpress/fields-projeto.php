@@ -5,13 +5,16 @@
  *
  *   subtitle     one line under the company name in the portfolio. EMPTY = nothing is shown
  *   url          address of the live site (the portfolio shows the host, e.g. "exemplo.com.br", under "Ver site")
- *   description  rich text (numbers, lists, links). EMPTY = nothing is shown for the description
+ *   description  rich text (numbers, lists, links), the full case on the Portfolio page. EMPTY = nothing is shown
+ *   summary      plain text, 1-2 sentences for the home card (which has no room for headings/lists). EMPTY = the
+ *                home falls back to the start of `description` with its tags stripped, which used to be the only
+ *                option and reads badly when the description actually uses headings/bold
  *   results      repeater: the project's own numbers (prefix, number, suffix, label), counters under the text. EMPTY = no strip
  *   video_id     optional featured video (media library attachment): plays instead of the photo, portfolio only
  *   featured     "Destaque" switch: the portfolio highlights the most recent featured project
  *
  * REST: GET /wp-json/wp/v2/projetos?per_page=100 → each item has `date`, `slug`, `title.rendered`, and
- * `fields: { subtitle, video: {url, type} | null, url, description, results: [{count, decimals, prefix, suffix, label}], featured, segment: {slug, name},
+ * `fields: { subtitle, summary, video: {url, type} | null, url, description, results: [{count, decimals, prefix, suffix, label}], featured, segment: {slug, name},
  * image: {url, width, height, alt, srcset} }`.
  *
  * Usage: drop into wp-content/mu-plugins/, alongside cpt-projeto.php. Needs 00-site-helpers.php + auto-deploy.php.
@@ -68,6 +71,7 @@ function site_projeto_fields_box( $post ) {
 	wp_nonce_field( 'site_save_projeto_fields', 'site_projeto_fields_nonce' );
 	$url      = get_post_meta( $post->ID, 'site_url', true );
 	$subtitle = get_post_meta( $post->ID, 'subtitle', true );
+	$summary  = get_post_meta( $post->ID, 'summary', true );
 	$results  = site_projeto_results( $post->ID );
 	$video_id = (int) get_post_meta( $post->ID, 'video_id', true );
 	$video    = $video_id ? wp_get_attachment_url( $video_id ) : '';
@@ -103,7 +107,12 @@ function site_projeto_fields_box( $post ) {
 	<div class="site-f">
 		<label>Descrição do projeto</label>
 		<?php wp_editor( get_post_meta( $post->ID, 'description', true ), 'site_projeto_description', array( 'textarea_rows' => 12, 'media_buttons' => false ) ); ?>
-		<p class="description">Quem é o cliente, o desafio e o que a Nuvion construiu. Aceita títulos, listas, números em negrito e links. Vazia, nenhum texto aparece no site.</p>
+		<p class="description">Quem é o cliente, o desafio e o que a Nuvion construiu. Aceita títulos, listas, números em negrito e links. Aparece inteira, formatada, na página do Portfólio. Vazia, nenhum texto aparece no site.</p>
+	</div>
+	<div class="site-f">
+		<label for="site_projeto_summary">Resumo (para o card da home)</label>
+		<textarea class="site-wide" id="site_projeto_summary" name="site_projeto_summary" rows="3" maxlength="220" placeholder="Um texto corrido de 1-2 frases, sem títulos nem listas."><?php echo esc_textarea( $summary ); ?></textarea>
+		<p class="description">Texto corrido (sem formatação) mostrado no cartão deste projeto na home. Vazio, a home usa o começo da descrição acima, sem a formatação (títulos e negrito não aparecem ali por falta de espaço).</p>
 	</div>
 	<div class="site-f">
 		<label>Resultados do projeto</label>
@@ -203,9 +212,9 @@ function site_projeto_result_row( $r ) {
 	};
 	?>
 	<div class="site-rs-row">
-		<input type="text" name="site_rs[prefix][]" value="<?php echo $v( 'prefix' ); ?>" maxlength="3" placeholder="+" aria-label="Antes do número">
+		<input type="text" name="site_rs[prefix][]" value="<?php echo $v( 'prefix' ); ?>" maxlength="13" placeholder="+" aria-label="Antes do número">
 		<input type="text" name="site_rs[count][]" value="<?php echo $v( 'count' ); ?>" inputmode="decimal" placeholder="120" aria-label="Número">
-		<input type="text" name="site_rs[suffix][]" value="<?php echo $v( 'suffix' ); ?>" maxlength="4" placeholder="%" aria-label="Depois do número">
+		<input type="text" name="site_rs[suffix][]" value="<?php echo $v( 'suffix' ); ?>" maxlength="14" placeholder="%" aria-label="Depois do número">
 		<input type="text" name="site_rs[label][]" value="<?php echo $v( 'label' ); ?>" maxlength="80" placeholder="em visitas orgânicas" aria-label="Legenda">
 		<button type="button" class="button site-rs-del" aria-label="Remover este número">&times;</button>
 	</div>
@@ -236,6 +245,7 @@ add_action(
 			return;
 		}
 		update_post_meta( $post_id, 'subtitle', sanitize_text_field( wp_unslash( $_POST['site_projeto_subtitle'] ?? '' ) ) );
+		update_post_meta( $post_id, 'summary', sanitize_textarea_field( wp_unslash( $_POST['site_projeto_summary'] ?? '' ) ) );
 		// the featured video: an attachment id from the media library, kept only if it really is a video
 		$video_id = absint( $_POST['site_projeto_video'] ?? 0 );
 		if ( $video_id && 0 === strpos( (string) get_post_mime_type( $video_id ), 'video/' ) ) {
@@ -249,9 +259,9 @@ add_action(
 		$rows = array();
 		foreach ( (array) ( $rs['count'] ?? array() ) as $i => $count ) {
 			$row = array(
-				'prefix' => sanitize_text_field( $rs['prefix'][ $i ] ?? '' ),
+				'prefix' => mb_substr( site_sanitize_badge( $rs['prefix'][ $i ] ?? '' ), 0, 13 ),
 				'count'  => sanitize_text_field( $count ),
-				'suffix' => sanitize_text_field( $rs['suffix'][ $i ] ?? '' ),
+				'suffix' => mb_substr( site_sanitize_badge( $rs['suffix'][ $i ] ?? '' ), 0, 14 ),
 				'label'  => sanitize_text_field( $rs['label'][ $i ] ?? '' ),
 			);
 			if ( null !== site_projeto_parse_count( $row['count'] ) && '' !== $row['label'] ) {
@@ -437,6 +447,7 @@ add_action(
 					$video    = $video_id ? wp_get_attachment_url( $video_id ) : '';
 					return array(
 						'subtitle'    => (string) get_post_meta( $id, 'subtitle', true ),
+						'summary'     => (string) get_post_meta( $id, 'summary', true ),
 						'video'       => $video ? array( 'url' => $video, 'type' => (string) get_post_mime_type( $video_id ) ) : null,
 						'url'         => (string) get_post_meta( $id, 'site_url', true ),
 						// wpautop() turns the editor's plain line breaks into real <p> tags.

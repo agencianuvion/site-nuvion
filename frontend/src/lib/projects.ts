@@ -34,6 +34,9 @@ export interface Project {
   name: string;
   /** One line under the name on the portfolio. Empty or missing = nothing is rendered. */
   subtitle?: string;
+  /** Plain text, 1-2 sentences, for the home card (which has no room for the rich description's headings/lists).
+   * Empty or missing = the home falls back to the start of descriptionHtml with tags stripped (introFromHtml). */
+  summary?: string;
   /** The "Resultados do projeto" repeater. Empty = no counters strip. */
   results?: ProjectResult[];
   /** Optional featured video (media library MP4): plays muted in a loop instead of the photo, on the portfolio only. */
@@ -75,6 +78,7 @@ interface WpProjeto {
   title: { rendered: string };
   fields?: {
     subtitle?: string;
+    summary?: string;
     video?: { url: string; type: string } | null;
     url: string;
     description: string;
@@ -100,6 +104,7 @@ async function loadProjects(): Promise<{ projects: Project[]; segments: Segment[
         slug: p.slug,
         name,
         subtitle: f.subtitle?.trim() ? decodeEntities(f.subtitle.trim()) : undefined,
+        summary: f.summary?.trim() ? decodeEntities(f.summary.trim()) : undefined,
         results: (f.results ?? [])
           .filter((r) => r.label?.trim())
           .slice(0, 4) // one row of the portfolio strip (WordPress also stops at 4)
@@ -170,4 +175,10 @@ const decodeEntitiesProj = (s: string) =>
 export function introFromHtml(html?: string): string {
   if (!html) return "";
   return cutText(decodeEntitiesProj(html), 300);
+}
+/** The text for a project's home card: the "Resumo" field when set (plain text, written for this exact spot), else
+ * the old fallback (the rich description with its tags stripped — reads fine for a short/simple description, but
+ * loses headings/bold on a longer one, which is exactly why "Resumo" exists). */
+export function homeExcerpt(p: Project): string {
+  return p.summary?.trim() || introFromHtml(p.descriptionHtml);
 }
