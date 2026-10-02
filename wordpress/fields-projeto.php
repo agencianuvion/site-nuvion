@@ -82,9 +82,10 @@ function site_projeto_fields_box( $post ) {
 		#site_projeto_fields .site-f > label { display: block; font-weight: 600; margin-bottom: 6px; }
 		#site_projeto_fields .site-f input[type=url],
 		#site_projeto_fields .site-f input.site-wide { width: 100%; }
+		#site_projeto_fields .site-f textarea.site-wide { width: 100%; max-width: 400px; }
 		#site_projeto_fields .description { margin: 6px 0 0; color: #646970; }
 		#site_projeto_fields .site-rs-head,
-		#site_projeto_fields .site-rs-row { display: grid; grid-template-columns: 70px 110px 70px minmax(0, 1fr) 32px; gap: 8px; align-items: center; }
+		#site_projeto_fields .site-rs-row { display: grid; grid-template-columns: 120px 110px 130px minmax(0, 1fr) 32px; gap: 8px; align-items: center; }
 		#site_projeto_fields .site-rs-head { margin-bottom: 4px; font-size: 12px; color: #646970; }
 		#site_projeto_fields .site-rs-row { margin-bottom: 8px; }
 		#site_projeto_fields .site-rs-row input { width: 100%; }

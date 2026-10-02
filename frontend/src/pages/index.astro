@@ -357,15 +357,10 @@ const projectSlideCount = homeProjects.length + 1;
               </div>
             ))
           }
-          <div class="t3-pslide" role="group" aria-roledescription="slide" aria-label={`${projectSlideCount} de ${projectSlideCount}`}>
+          <div class="t3-pslide is-all-slide" role="group" aria-roledescription="slide" aria-label="Ver todos os projetos">
             <a class="t3-pcard is-all" href="/portfolio" aria-label="Ver todos os projetos no portfólio">
-              <figure class="t3-pmedia">
-                <img src="/images/hero-seq/r12.avif" alt="" width="1920" height="1080" loading="lazy" decoding="async" />
-              </figure>
-              <div class="t3-pinfo">
-                <div class="t3-pmeta">
-                  <span class="t3-pno">{`${String(projectSlideCount).padStart(2, "0")} / ${String(projectSlideCount).padStart(2, "0")}`}</span>
-                </div>
+              <img class="t3-pall-bg" src="/images/hero-seq/r12.avif" alt="" aria-hidden="true" loading="lazy" decoding="async" />
+              <div class="t3-pall-body">
                 <h3 class="t3-pname">Ver todos os projetos</h3>
                 <p class="t3-pdesc">Conheça o portfólio completo, com todos os setores e cases que já entregamos.</p>
                 <span class="t3-btn-out t3-pvisit">Abrir o portfólio <span aria-hidden="true">→</span></span>
