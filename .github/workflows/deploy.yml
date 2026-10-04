@@ -40,11 +40,6 @@ jobs:
       - name: Write production .env
         run: |
           echo "PUBLIC_WP_API_URL=${{ secrets.PUBLIC_WP_API_URL }}" >> .env
-          # This workflow's DEPLOY_PATH today is the isolated preview.agencianuvion.com.br staging subfolder (see the big
-          # comment on the rsync step below), not real production — PUBLIC_NOINDEX blocks every crawler (robots.txt) and
-          # adds <meta name="robots" content="noindex"> to every page (BaseLayout), so this staging copy can never get
-          # indexed. Remove this one line (only this line) the same day DEPLOY_PATH is switched to the real production path.
-          echo "PUBLIC_NOINDEX=true" >> .env
           # TODO: add any other PUBLIC_ env vars this project needs, e.g.:
           # echo "PUBLIC_STRIPE_MEMBERSHIP_LINK=${{ secrets.PUBLIC_STRIPE_MEMBERSHIP_LINK }}" >> .env
 
@@ -73,27 +68,23 @@ jobs:
       # so removed pages actually get cleaned up on the server too.
       #
       # !!! IMPORTANT — READ BEFORE CHANGING DEPLOY_PATH !!!
+      # DEPLOY_PATH is domains/agencianuvion.com.br/public_html — the real
+      # production site (cut over 2026-10-04; the old Elementor site that
+      # used to live there was moved to a sibling
+      # public_html-elementor-backup-20261004 folder, not deleted).
       # --delete wipes ANY folder inside DEPLOY_PATH that isn't part of the
-      # Astro build. Right now DEPLOY_PATH is
-      # domains/agencianuvion.com.br/public_html/preview — an isolated
-      # staging subfolder for a NEW subdomain (preview.agencianuvion.com.br),
-      # so this is safe: it can never touch the live Elementor site at
-      # public_html root or the headless WordPress at public_html/system.
-      #
-      # When cutting over to production (DEPLOY_PATH -> public_html root):
-      #  1. Back up / remove the current Elementor site there first — this
-      #     is a manual, deliberate step, not something to automate away.
-      #  2. Add --exclude=system to the switches below — public_html/system
-      #     is the headless WordPress backend; without this, --delete wipes
-      #     it on the very next deploy. This exact mistake has already
-      #     happened once on a past project; recovery took hours.
-      #  3. Any other hand-managed folder ever placed inside DEPLOY_PATH
-      #     needs its own --exclude=<folder>, same day it's added — not a
-      #     one-time setup step, a standing rule.
+      # Astro build, so public_html/system (the headless WordPress backend)
+      # and public_html/preview (preview.agencianuvion.com.br, still a live
+      # staging subdomain) are both excluded below — without this, --delete
+      # wipes them on the very next deploy. This exact mistake has already
+      # happened once on a past project; recovery took hours. Any OTHER
+      # hand-managed folder ever placed inside DEPLOY_PATH needs its own
+      # --exclude=<folder>, same day it's added — not a one-time setup
+      # step, a standing rule.
       - name: Deploy over SSH (rsync)
         uses: burnett01/rsync-deployments@7.0.1
         with:
-          switches: -avzr --delete
+          switches: -avzr --delete --exclude=system --exclude=preview
           path: frontend/dist/
           remote_path: ${{ secrets.DEPLOY_PATH }}
           remote_host: ${{ secrets.SSH_HOST }}
