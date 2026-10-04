@@ -50,6 +50,12 @@ document.querySelectorAll<HTMLElement>("[data-month]").forEach((el) => {
   el.textContent = new Date().toLocaleDateString("pt-BR", { month: "long" });
 });
 
+/* Right away, not just once countUp() gets to each one: these start out showing their FINISHED value (the no-JS
+   fallback), so a long suffix next to a big number ("3,7 Milhões", "+412 Mil") can already be wrapped to two lines
+   the instant the page paints — countUp() itself only reaches a given number on its own reveal (a scroll-triggered
+   stagger, or fonts+images finishing before init() runs), which on a slow connection can be seconds away. */
+document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => fitNumberOneLine(el));
+
 /* ---------- Accordions (services + FAQ) — always on ---------- */
 function setOpen(item: HTMLElement, open: boolean) {
   item.classList.toggle("is-open", open);
@@ -1276,7 +1282,7 @@ function stickyPanel(panel: HTMLElement, screens: number) {
 function countUp(scope: ParentNode) {
   const elements = [...scope.querySelectorAll<HTMLElement>("[data-count]")];
   if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-    elements.forEach(fitNumberOneLine);
+    elements.forEach((el) => fitNumberOneLine(el));
     return;
   }
   elements.forEach((el) => {
@@ -1293,6 +1299,10 @@ function countUp(scope: ParentNode) {
           ? kToMEnd
           : Math.round(v) + "k"
         : pre + v.toLocaleString("pt-BR", { minimumFractionDigits: dec, maximumFractionDigits: dec }) + suf;
+    // Fit for the FINISHED text, before counting even starts: the prefix/suffix never change and the integer part only
+    // grows as the count rises toward it, so the final value is also the widest one the box will ever have to hold —
+    // fitting now (instead of waiting for onComplete) keeps every in-between frame on one line too, not just the last.
+    fitNumberOneLine(el, fmt(to));
     el.textContent = fmt(0);
     // counting the same number again (the portfolio recounts a project each time it is shown) stops the previous run first
     counting.get(el)?.kill();
@@ -1304,7 +1314,6 @@ function countUp(scope: ParentNode) {
       onUpdate: () => {
         el.textContent = fmt(state.v);
       },
-      onComplete: () => fitNumberOneLine(el),
     }));
   });
 }
@@ -1312,8 +1321,12 @@ const counting = new WeakMap<HTMLElement, gsap.core.Tween>();
 
 /* A long suffix ("Milhões", "Mil") next to a big number doesn't always fit the clamp()'d size at every column width —
    shrinks the font just enough to keep it on one line instead of wrapping ("3,7" / "Milhões" on two lines). Gives up
-   and lets it wrap at a floor size, rather than shrinking illegibly small or clipping. */
-function fitNumberOneLine(el: HTMLElement) {
+   and lets it wrap at a floor size, rather than shrinking illegibly small or clipping. `text`, when given, is measured
+   instead of the element's current content (fitting countUp()'s FINISHED text before the count-up animation starts,
+   so every in-between frame is already sized correctly too — see the call above). */
+function fitNumberOneLine(el: HTMLElement, text?: string) {
+  const prev = el.textContent;
+  if (text !== undefined) el.textContent = text;
   el.style.whiteSpace = "nowrap";
   el.style.fontSize = "";
   const max = parseFloat(getComputedStyle(el).fontSize);
@@ -1326,10 +1339,11 @@ function fitNumberOneLine(el: HTMLElement) {
   if (el.scrollWidth > el.clientWidth) {
     el.style.whiteSpace = "";
   }
+  if (text !== undefined) el.textContent = prev;
 }
 // the clamp()'d base size (and each column's own width) depends on the viewport — re-fit every counted number on resize
 window.addEventListener("resize", () => {
-  document.querySelectorAll<HTMLElement>("[data-count]").forEach(fitNumberOneLine);
+  document.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => fitNumberOneLine(el));
 });
 
 function init() {
