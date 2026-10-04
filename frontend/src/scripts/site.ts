@@ -1274,8 +1274,12 @@ function stickyPanel(panel: HTMLElement, screens: number) {
 /* Numbers that count up from zero when their block appears: <b data-count="150" data-prefix="+" data-suffix="">. The finished
    value is already in the HTML (no-JS and reduced-motion visitors just see it). */
 function countUp(scope: ParentNode) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  scope.querySelectorAll<HTMLElement>("[data-count]").forEach((el) => {
+  const elements = [...scope.querySelectorAll<HTMLElement>("[data-count]")];
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    elements.forEach(fitNumberOneLine);
+    return;
+  }
+  elements.forEach((el) => {
     const to = Number(el.dataset.count);
     const pre = el.dataset.prefix ?? "";
     const suf = el.dataset.suffix ?? "";
@@ -1300,10 +1304,33 @@ function countUp(scope: ParentNode) {
       onUpdate: () => {
         el.textContent = fmt(state.v);
       },
+      onComplete: () => fitNumberOneLine(el),
     }));
   });
 }
 const counting = new WeakMap<HTMLElement, gsap.core.Tween>();
+
+/* A long suffix ("Milhões", "Mil") next to a big number doesn't always fit the clamp()'d size at every column width —
+   shrinks the font just enough to keep it on one line instead of wrapping ("3,7" / "Milhões" on two lines). Gives up
+   and lets it wrap at a floor size, rather than shrinking illegibly small or clipping. */
+function fitNumberOneLine(el: HTMLElement) {
+  el.style.whiteSpace = "nowrap";
+  el.style.fontSize = "";
+  const max = parseFloat(getComputedStyle(el).fontSize);
+  const min = max * 0.6;
+  let size = max;
+  while (el.scrollWidth > el.clientWidth && size > min) {
+    size -= 1;
+    el.style.fontSize = `${size}px`;
+  }
+  if (el.scrollWidth > el.clientWidth) {
+    el.style.whiteSpace = "";
+  }
+}
+// the clamp()'d base size (and each column's own width) depends on the viewport — re-fit every counted number on resize
+window.addEventListener("resize", () => {
+  document.querySelectorAll<HTMLElement>("[data-count]").forEach(fitNumberOneLine);
+});
 
 function init() {
   /* Hero: headline words rise out of a mask, side elements fade in after. */
