@@ -100,7 +100,7 @@ const numText = (r: ProjectResult) =>
         <div class="vt-stage">
           {
             ordered.map((p, i) => (
-              <article class:list={["vt-panel", { "is-active": i === 0 }]} id={`vt-panel-${p.slug}`} role="tabpanel" aria-labelledby={`vt-tab-${p.slug}`}>
+              <article class:list={["vt-panel", { "is-active": i === 0, "no-nums": !p.results?.length }]} id={`vt-panel-${p.slug}`} role="tabpanel" aria-labelledby={`vt-tab-${p.slug}`}>
                 <div class="vt-info">
                   <div class="vt-id">
                     <span class="pf-seg">{segmentLabel(p.segment)}</span>

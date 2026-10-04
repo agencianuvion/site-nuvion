@@ -6068,6 +6068,16 @@ html.js .vt-panel.is-active {
 .vt-text .pf-rich {
   font-size: 16px;
 }
+/* without its own number strip, a panel is shorter than its siblings (all panels share the stage's height, set by the
+   tallest one) and the text was sitting stuck at the top with a dead gap below, reading as if something were missing.
+   .vt-info grows to take up that leftover height, and the text centers within it (margin:auto, same trick the
+   testimonial quotes use) instead of leaving the gap in one block underneath. */
+.vt-panel.no-nums .vt-info {
+  flex: 1 1 auto;
+}
+.vt-panel.no-nums .vt-text .pf-rich {
+  margin-block: auto;
+}
 /* the project's own numbers (WordPress repeater): a strip under the case, one row of up to 4 with a hairline between
    them (2 per row on phones); they count up each time the project is shown (site.ts) */
 .vt-nums {
