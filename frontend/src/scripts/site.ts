@@ -1350,32 +1350,31 @@ function init() {
   /* Hero: headline words rise out of a mask, side elements fade in after. */
   const h1 = document.querySelector<HTMLElement>(".t3-h1");
   if (h1) {
-    // autoSplit re-splits the text (brand-new line/word elements) whenever the title's own box reflows — a mobile
-    // browser's address bar collapsing as the visitor scrolls, a webfont swapping in moments after the first paint.
-    // Without a guard, a re-split AFTER the entrance already played (or is still mid-flight) created a BRAND NEW
-    // gsap.from() on the fresh words and replayed the whole rise from scratch, overlapping the already-settled text
-    // for a frame or two — reading as the title flashing/ghosting right after it first appears. Same fix already
-    // used for every other [data-t3-title] below: once the reveal has started, a re-split just jumps the new words
-    // straight to their finished state instead of animating them again.
-    let revealed = false;
-    SplitText.create(h1, {
+    // autoSplit re-splits the text (tears down the line/word wrapper spans and rebuilds brand-new ones) whenever the
+    // title's own box reflows — a mobile browser's address bar collapsing as the visitor scrolls, a webfont swapping
+    // in moments after the first paint, even just arriving on the page while that reflow is still settling. The
+    // teardown-and-rebuild isn't atomic from the browser's standpoint: for a frame or two the OLD split's words (some
+    // already at their settled position) and the brand-new split's words (freshly inserted, not yet positioned) can
+    // both be in the DOM at once, rendering as the title jumbling — different sizes/positions overlapping — right
+    // after it first appears (confirmed by scrubbing a screen recording frame by frame). Once the entrance has
+    // actually finished, there is no reason to keep watching for reflows at all — revert() undoes the split back to
+    // plain text (same finished look, since that's exactly the state it was animating TO) and stops autoSplit's own
+    // resize watcher for good, so nothing is left that could re-split and jumble the title later.
+    let split: SplitText | null = null;
+    split = SplitText.create(h1, {
       type: "lines,words",
       mask: "lines",
       autoSplit: true,
       onSplit: (self) => {
         // the title is hidden by CSS until now (no flash of the finished title before it animates)
         h1.classList.add("is-ready");
-        if (revealed) {
-          gsap.set(self.words, { yPercent: 0 });
-          return;
-        }
-        revealed = true;
         return gsap.from(self.words, {
           yPercent: 145,
           duration: 1.1,
           stagger: 0.07,
           ease: "power4.out",
           delay: 0.15,
+          onComplete: () => split?.revert(),
         });
       },
     });
@@ -1449,9 +1448,9 @@ function init() {
      replaying the reveal — reading as the title "flashing" and redoing itself, well after the page had settled.
      Now a re-split after the reveal already played just jumps the new lines straight to their finished state. */
   document.querySelectorAll<HTMLElement>("[data-t3-title]").forEach((el) => {
-    let revealed = false;
+    let split: SplitText | null = null;
     let st: ScrollTrigger | null = null;
-    SplitText.create(el, {
+    split = SplitText.create(el, {
       type: "lines",
       mask: "lines",
       autoSplit: true,
@@ -1461,23 +1460,17 @@ function init() {
         // the title never shows its finished state before SplitText gets to it, only to snap back to hidden right as
         // the reveal below starts (see the "Entrance animations" comment in site.css for the full story).
         el.classList.add("is-ready");
-        if (revealed) {
-          gsap.set(self.lines, { yPercent: 0 });
-          return;
-        }
         const tween = gsap.from(self.lines, {
           yPercent: 140,
           duration: 0.95,
           stagger: 0.09,
           ease: "power4.out",
-          scrollTrigger: {
-            trigger: el,
-            start: "top 88%",
-            once: true,
-            onEnter: () => {
-              revealed = true;
-            },
-          },
+          scrollTrigger: { trigger: el, start: "top 88%", once: true },
+          // Once the reveal has actually played, revert() undoes the split back to plain text (the exact state it
+          // was animating TO) and stops autoSplit's own resize watcher — so a LATER reflow (the title's content isn't
+          // going anywhere once it's a normal static line) can no longer re-split and jumble it, the same fix as the
+          // hero's own .t3-h1 above.
+          onComplete: () => split?.revert(),
         });
         st = tween.scrollTrigger ?? null;
         return tween;
