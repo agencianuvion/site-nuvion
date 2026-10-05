@@ -13,6 +13,11 @@ interface Props {
 }
 const { title = "Empresas que já", em = "confiaram", tailTitle = "na Nuvion", chip = "Clientes" } = Astro.props;
 
+// This panel is reused on the Portfólio page itself (plus Sobre Nós) — there, "Ver o portfólio" must not
+// re-navigate to the very page already open (a full reload of itself); it just scrolls back up to the page's
+// own h1 instead (Lenis smooths any same-page #hash click already, see site.ts's "anchors" option).
+const onPortfolio = Astro.url.pathname.replace(/\/+$/, "") === "/portfolio";
+
 // width capped at ~150px, height between 20 and 44px, so wide and tall logos look balanced
 const logoH = (l: { w: number; h: number }) => Math.round(Math.max(20, Math.min(44, 150 / (l.w / l.h))));
 const rows = [0, 1, 2].map((r) => clientLogos.filter((_, i) => i % 3 === r));
@@ -30,7 +35,7 @@ const labels = ["Empresas atendidas pela Nuvion", "Mais empresas atendidas pela 
       <h3>Segmentos diferentes, a mesma base técnica</h3>
       <p>Clínicas, indústria, comércio e serviços: cada projeto parte de um site rápido, estruturado para o Google e para as respostas das IAs.</p>
       <div class="mq-links">
-        <a class="t3-link" href="/portfolio">Ver o portfólio <span aria-hidden="true">→</span></a>
+        <a class="t3-link" href={onPortfolio ? "#t3-h1" : "/portfolio"}>Ver o portfólio <span aria-hidden="true">→</span></a>
         <a class="t3-link" href="/setores">Setores que atendemos <span aria-hidden="true">→</span></a>
       </div>
     </div>
