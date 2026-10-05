@@ -1464,12 +1464,18 @@ function init() {
       mask: "lines",
       onSplit: (self) => {
         st?.kill();
-        // CSS hides [data-t3-title] (opacity:0) until this class is on — same mechanism as the hero's own .t3-h1, so
-        // the title never shows its finished state before SplitText gets to it, only to snap back to hidden right as
-        // the reveal below starts (see the "Entrance animations" comment in site.css for the full story).
+        // Same bug as the hero's own .t3-h1: a gsap.from() gated behind something that hasn't happened yet (there a
+        // time delay, here a scrollTrigger waiting for "top 88%") doesn't render its own "from" state until that
+        // gate opens — so the lines sat fully visible at their natural, correct-looking position the WHOLE TIME the
+        // title was below the trigger point (is-ready reveals the element immediately, on page load, regardless of
+        // scroll position), then SNAPPED down out of sight the instant it scrolled into the trigger zone and the
+        // tween actually started, before rising back up from there. Reads as the title already being there, then
+        // vanishing, then doing its entrance for real. gsap.set() FIRST, synchronously, puts the hidden state in
+        // effect before "is-ready" ever reveals the element, so there's nothing left for the scrollTrigger to defer.
+        gsap.set(self.lines, { yPercent: 140 });
         el.classList.add("is-ready");
-        const tween = gsap.from(self.lines, {
-          yPercent: 140,
+        const tween = gsap.to(self.lines, {
+          yPercent: 0,
           duration: 0.95,
           stagger: 0.09,
           ease: "power4.out",
