@@ -429,8 +429,7 @@
     font-size: 12px;
     color: rgba(255, 255, 255, 0.5);
   }
-  .t3-hero-card svg,
-  .t3-arrow svg {
+  .t3-hero-card svg {
     width: 14px;
     height: 14px;
     fill: none;
@@ -578,15 +577,30 @@
     transition: color 0.3s ease;
   }
   .t3-arrow {
+    position: relative;
     display: grid;
     place-items: center;
     width: 38px;
     height: 38px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.1);
-    transition:
-      background 0.3s ease,
-      transform 0.3s var(--ease-nv);
+    transition: background 0.3s ease;
+  }
+  /* A "+" that becomes a "−" open: the horizontal bar always stays, the vertical one shrinks away. */
+  .t3-plus-h,
+  .t3-plus-v {
+    position: absolute;
+    border-radius: 1px;
+    background: #fff;
+    transition: transform 0.3s var(--ease-nv);
+  }
+  .t3-plus-h {
+    width: 14px;
+    height: 1.8px;
+  }
+  .t3-plus-v {
+    width: 1.8px;
+    height: 14px;
   }
   .t3-svc.is-open .t3-svc-title,
   .t3-svc.is-open .t3-num {
@@ -595,7 +609,9 @@
   }
   .t3-svc.is-open .t3-arrow {
     background: var(--color-nv-orange);
-    transform: rotate(45deg);
+  }
+  .t3-svc.is-open .t3-plus-v {
+    transform: scaleY(0);
   }
   .t3-svc-body {
     display: grid;
@@ -4920,15 +4936,20 @@ body:not(:has(.t3-hero-full)) main.t3 {
 }
 
 /* =====================================================================
-   Entrance animations. What the script animates on load (the hero title, the .t3-fade blocks, the interior hero visual) is
-   hidden until the script starts it, so the page never shows its finished state and then plays the entrance again.
+   Entrance animations. What the script animates on load (the hero title, the .t3-fade blocks, the interior hero visual,
+   every other [data-t3-title] on the page) is hidden until the script starts it, so the page never shows its finished
+   state, then snaps to hidden, then plays the entrance (the title "flashing" before its own reveal) — this was already
+   true for the hero's own .t3-h1, but every OTHER page/section title used [data-t3-title] with no such CSS counterpart,
+   so it sat fully visible from first paint until SplitText (inside init(), itself gated behind fonts+images loading —
+   slower on mobile) got to it, then visibly snapped into its "from" state right before animating in.
    - only when JS is on ('js' class, set in <head>) and the visitor has not asked for less motion;
    - if the script never runs, a CSS safety reveals everything after 3.5s.
    ===================================================================== */
 @media (prefers-reduced-motion: no-preference) {
   html.js .t3-fade,
   html.js .ph-vis,
-  html.js .t3-h1:not(.is-ready) {
+  html.js .t3-h1:not(.is-ready),
+  html.js [data-t3-title]:not(.is-ready) {
     opacity: 0;
     animation: t3-safety-reveal 0s linear 3.5s forwards;
   }

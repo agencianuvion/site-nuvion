@@ -1444,6 +1444,10 @@ function init() {
       autoSplit: true,
       onSplit: (self) => {
         st?.kill();
+        // CSS hides [data-t3-title] (opacity:0) until this class is on — same mechanism as the hero's own .t3-h1, so
+        // the title never shows its finished state before SplitText gets to it, only to snap back to hidden right as
+        // the reveal below starts (see the "Entrance animations" comment in site.css for the full story).
+        el.classList.add("is-ready");
         if (revealed) {
           gsap.set(self.lines, { yPercent: 0 });
           return;
