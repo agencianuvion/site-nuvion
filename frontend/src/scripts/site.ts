@@ -1645,6 +1645,13 @@ function init() {
       // animation has actually finished sliding the last card into place, leaving a sliver of it visible over the
       // next section for a moment. Ending the animation itself a bit earlier than the panel's real release gives the
       // lag time to fully resolve — the cards are already still by the time the panel actually lets go.
+      // A hard flick can cover several cards' worth of scroll in one continuous gesture — scrub just follows it, so
+      // without snap the stack can come to rest anywhere, mid-transition between two cards, half-covered. snapTo is
+      // each card's own SETTLED point on the timeline (right as it finishes rising, before the next one starts: times
+      // 0, 1, 2 … steps.length - 1 out of the timeline's total duration) — once scrolling stops, this eases the last
+      // bit of scroll the rest of the way to whichever one is nearest, instead of leaving it in between.
+      const totalDur = (steps.length - 1) * 1 + 0.2;
+      const snapPoints = Array.from({ length: steps.length }, (_, k) => k / totalDur);
       const tl = gsap.timeline({
         defaults: { ease: "none" },
         onUpdate: runCovers,
@@ -1655,6 +1662,7 @@ function init() {
           scrub: 0.8,
           invalidateOnRefresh: true,
           onScrubComplete: runCovers,
+          snap: { snapTo: snapPoints, duration: { min: 0.2, max: 0.5 }, ease: "power1.inOut" },
         },
       });
       // GSAP renders some tweens on the next tick, after the timeline own onUpdate: apply again once things settle
@@ -2042,6 +2050,15 @@ function init() {
   }
 
   window.addEventListener("load", refreshWhenIdle, { once: true });
+
+  // Mobile browsers collapse/expand their own address bar as the visitor scrolls — changing window.innerHeight
+  // WITHOUT firing a plain "resize" event (by design, to avoid exactly the layout-thrashing this would otherwise
+  // cause). Any trigger whose math reads innerHeight directly (the stacking cards' "start below the screen" position,
+  // for one) can end up computed against whatever height was current a moment before the bar collapsed, right as the
+  // visitor's first scroll into it begins — showing as a stray sliver of a card that is supposed to be off-screen,
+  // self-correcting once something else happens to refresh. visualViewport's own resize event exists for precisely
+  // this case; feed it through the same idle-aware correction as every other late layout change.
+  window.visualViewport?.addEventListener("resize", refreshWhenIdle);
 
   // Every pinned/scrubbed section above (the stacking cards, the testimonials, the author-card reveal, the h2 line
   // masks) has its scroll start/end baked in pixels at the moment it was measured. If the PAGE'S total height changes
