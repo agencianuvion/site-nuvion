@@ -58,3 +58,65 @@ add_action(
 		}
 	}
 );
+
+/* ---------------------------------------------------------------------- *
+ * Admin list — drag the rows to reorder ("Ordem"), instead of typing a number on each testimonial's own edit
+ * screen. Same mechanism as Projetos (cpt-projeto.php) — see that file's comment for the full reasoning. Only on
+ * the default, unfiltered view: that is the one list that shows every testimonial in a row, in one sequence.
+ * ---------------------------------------------------------------------- */
+
+add_action(
+	'admin_enqueue_scripts',
+	function ( $hook ) {
+		if ( 'edit.php' !== $hook || 'depoimento' !== ( $_GET['post_type'] ?? '' ) ) {
+			return;
+		}
+		if ( ! empty( $_GET['orderby'] ) || ! empty( $_GET['s'] ) || (int) ( $_GET['paged'] ?? 1 ) > 1 ) {
+			return;
+		}
+		wp_enqueue_script( 'jquery-ui-sortable' );
+		wp_add_inline_script(
+			'jquery-ui-sortable',
+			'(function ($) {
+				$(function () {
+					var $list = $("#the-list");
+					if (!$list.length) { return; }
+					$list.sortable({
+						items: "tr",
+						axis: "y",
+						cancel: "a, input, button",
+						opacity: 0.6,
+						placeholder: "site-drag-placeholder",
+						forcePlaceholderSize: true,
+						update: function () {
+							var ids = $list.children("tr").map(function () {
+								return parseInt(String(this.id).replace("post-", ""), 10);
+							}).get().filter(function (n) { return ! isNaN(n); });
+							$list.addClass("site-reordering");
+							$.post(ajaxurl, { action: "site_reorder_depoimentos", nonce: "' . esc_js( wp_create_nonce( 'site_reorder_depoimentos' ) ) . '", ids: ids } )
+								.always(function () { $list.removeClass("site-reordering"); });
+						}
+					});
+				});
+			})(jQuery);'
+		);
+		wp_add_inline_style(
+			'wp-admin',
+			'#the-list tr{cursor:move}#the-list.site-reordering{opacity:.5;pointer-events:none}.site-drag-placeholder{background:#f0f6fc;border:1px dashed #2271b1}'
+		);
+	}
+);
+
+add_action(
+	'wp_ajax_site_reorder_depoimentos',
+	function () {
+		check_ajax_referer( 'site_reorder_depoimentos', 'nonce' );
+		$ids = array_map( 'absint', (array) ( $_POST['ids'] ?? array() ) );
+		foreach ( $ids as $i => $id ) {
+			if ( $id && 'depoimento' === get_post_type( $id ) && current_user_can( 'edit_post', $id ) ) {
+				wp_update_post( array( 'ID' => $id, 'menu_order' => $i + 1 ) );
+			}
+		}
+		wp_send_json_success();
+	}
+);
