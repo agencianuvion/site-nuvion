@@ -1645,13 +1645,6 @@ function init() {
       // animation has actually finished sliding the last card into place, leaving a sliver of it visible over the
       // next section for a moment. Ending the animation itself a bit earlier than the panel's real release gives the
       // lag time to fully resolve — the cards are already still by the time the panel actually lets go.
-      // A hard flick can cover several cards' worth of scroll in one continuous gesture — scrub just follows it, so
-      // without snap the stack can come to rest anywhere, mid-transition between two cards, half-covered. snapTo is
-      // each card's own SETTLED point on the timeline (right as it finishes rising, before the next one starts: times
-      // 0, 1, 2 … steps.length - 1 out of the timeline's total duration) — once scrolling stops, this eases the last
-      // bit of scroll the rest of the way to whichever one is nearest, instead of leaving it in between.
-      const totalDur = (steps.length - 1) * 1 + 0.2;
-      const snapPoints = Array.from({ length: steps.length }, (_, k) => k / totalDur);
       const tl = gsap.timeline({
         defaults: { ease: "none" },
         onUpdate: runCovers,
@@ -1662,7 +1655,6 @@ function init() {
           scrub: 0.8,
           invalidateOnRefresh: true,
           onScrubComplete: runCovers,
-          snap: { snapTo: snapPoints, duration: { min: 0.2, max: 0.5 }, ease: "power1.inOut" },
         },
       });
       // GSAP renders some tweens on the next tick, after the timeline own onUpdate: apply again once things settle
