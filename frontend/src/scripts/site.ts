@@ -1350,6 +1350,14 @@ function init() {
   /* Hero: headline words rise out of a mask, side elements fade in after. */
   const h1 = document.querySelector<HTMLElement>(".t3-h1");
   if (h1) {
+    // autoSplit re-splits the text (brand-new line/word elements) whenever the title's own box reflows — a mobile
+    // browser's address bar collapsing as the visitor scrolls, a webfont swapping in moments after the first paint.
+    // Without a guard, a re-split AFTER the entrance already played (or is still mid-flight) created a BRAND NEW
+    // gsap.from() on the fresh words and replayed the whole rise from scratch, overlapping the already-settled text
+    // for a frame or two — reading as the title flashing/ghosting right after it first appears. Same fix already
+    // used for every other [data-t3-title] below: once the reveal has started, a re-split just jumps the new words
+    // straight to their finished state instead of animating them again.
+    let revealed = false;
     SplitText.create(h1, {
       type: "lines,words",
       mask: "lines",
@@ -1357,6 +1365,11 @@ function init() {
       onSplit: (self) => {
         // the title is hidden by CSS until now (no flash of the finished title before it animates)
         h1.classList.add("is-ready");
+        if (revealed) {
+          gsap.set(self.words, { yPercent: 0 });
+          return;
+        }
+        revealed = true;
         return gsap.from(self.words, {
           yPercent: 145,
           duration: 1.1,
