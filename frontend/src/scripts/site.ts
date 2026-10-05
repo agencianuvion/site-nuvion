@@ -1350,26 +1350,37 @@ function init() {
   /* Hero: headline words rise out of a mask, side elements fade in after. */
   const h1 = document.querySelector<HTMLElement>(".t3-h1");
   if (h1) {
-    // autoSplit re-splits the text (tears down the line/word wrapper spans and rebuilds brand-new ones) whenever the
-    // title's own box reflows — a mobile browser's address bar collapsing as the visitor scrolls, a webfont swapping
-    // in moments after the first paint, even just arriving on the page while that reflow is still settling. The
-    // teardown-and-rebuild isn't atomic from the browser's standpoint: for a frame or two the OLD split's words (some
-    // already at their settled position) and the brand-new split's words (freshly inserted, not yet positioned) can
-    // both be in the DOM at once, rendering as the title jumbling — different sizes/positions overlapping — right
-    // after it first appears (confirmed by scrubbing a screen recording frame by frame). Once the entrance has
-    // actually finished, there is no reason to keep watching for reflows at all — revert() undoes the split back to
-    // plain text (same finished look, since that's exactly the state it was animating TO) and stops autoSplit's own
-    // resize watcher for good, so nothing is left that could re-split and jumble the title later.
+    // NOT autoSplit: it re-splits the text (tears down the line/word wrapper spans and rebuilds brand-new ones)
+    // whenever the title's own box reflows — a mobile browser's address bar collapsing as the visitor scrolls, a
+    // webfont swapping in moments after the first paint, even just arriving on the page while that reflow is still
+    // settling. The teardown-and-rebuild isn't atomic from the browser's standpoint: for a frame or two the OLD
+    // split's words (some already at their settled position) and the brand-new split's words (freshly inserted, not
+    // yet positioned) can both be in the DOM at once, rendering as the title jumbling — different sizes/positions
+    // overlapping — right after it first appears (confirmed by scrubbing a screen recording frame by frame; this
+    // happened within ~200ms of the page loading, well before the entrance even finished once, so an earlier attempt
+    // at fixing this by cleaning up only AFTER the entrance's own tween completed was fixing the wrong moment). A
+    // one-time entrance animation never needs to re-split at all — the wrapper spans still reflow with the browser's
+    // normal text layout if the box resizes mid-animation (just without perfectly re-measured line-mask boundaries
+    // for that brief window) — and revert() below removes the split structure for good shortly after, so there's
+    // nothing left watching for reflows well before any real one (an actual resize, a later visit scrolling back to
+    // it) could happen anyway.
     let split: SplitText | null = null;
     split = SplitText.create(h1, {
       type: "lines,words",
       mask: "lines",
-      autoSplit: true,
       onSplit: (self) => {
-        // the title is hidden by CSS until now (no flash of the finished title before it animates)
+        // A tween's `delay` defers EVERYTHING about it, including rendering its own "from" state — the words sit at
+        // their natural (fully visible, correctly positioned) layout for the whole 0.15s, not hidden below the mask
+        // as intended. Adding "is-ready" right after creating a delayed gsap.from() revealed the h1 while the words
+        // were still in that natural state, then SNAPPED them down out of sight exactly when the delay elapsed and
+        // the tween actually started — reading as the finished title flashing in, vanishing, then rising again
+        // (confirmed on a screen recording: some words already snapped to hidden while others hadn't caught up yet,
+        // mid-snap, looked like the title jumbling). Setting the hidden state with gsap.set() FIRST, synchronously,
+        // before "is-ready" ever reveals the h1, means there's nothing ungated left for any delay to defer.
+        gsap.set(self.words, { yPercent: 145 });
         h1.classList.add("is-ready");
-        return gsap.from(self.words, {
-          yPercent: 145,
+        return gsap.to(self.words, {
+          yPercent: 0,
           duration: 1.1,
           stagger: 0.07,
           ease: "power4.out",
@@ -1440,20 +1451,17 @@ function init() {
     );
   }
 
-  /* Section titles: line-mask reveal on enter.
-     autoSplit re-splits the text (and re-fires onSplit, with all-new line elements) whenever the title's own box
-     reflows — a resize, a mobile browser's address bar showing/hiding, a late webfont swap. Without a guard, a
-     re-split AFTER the title had already played its entrance created a brand-new "once" ScrollTrigger on the fresh
-     lines, which (already being on screen) fired again immediately, snapping the finished title back to hidden and
-     replaying the reveal — reading as the title "flashing" and redoing itself, well after the page had settled.
-     Now a re-split after the reveal already played just jumps the new lines straight to their finished state. */
+  /* Section titles: line-mask reveal on enter. NOT autoSplit, same reasoning as the hero's own .t3-h1 above: it
+     re-splits (tears down and rebuilds brand-new line elements) on every reflow, which isn't atomic — the old and
+     new elements can both be in the DOM for a frame, jumbling the title — and a one-time entrance animation never
+     needs to keep re-splitting after it's set up once. revert() below removes the split structure for good shortly
+     after the reveal plays, so there's nothing left watching for reflows well before any real one could happen. */
   document.querySelectorAll<HTMLElement>("[data-t3-title]").forEach((el) => {
     let split: SplitText | null = null;
     let st: ScrollTrigger | null = null;
     split = SplitText.create(el, {
       type: "lines",
       mask: "lines",
-      autoSplit: true,
       onSplit: (self) => {
         st?.kill();
         // CSS hides [data-t3-title] (opacity:0) until this class is on — same mechanism as the hero's own .t3-h1, so
