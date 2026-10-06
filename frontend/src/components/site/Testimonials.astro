@@ -9,6 +9,7 @@
 // The texts in lib/testimonials.ts are PLACEHOLDERS until the real ones arrive.
 import { clientLogos } from "../../lib/clients";
 import { testimonials } from "../../lib/testimonials";
+import { COMPANY } from "../../lib/contact";
 
 interface Props {
   layout?: "stack" | "bento";
@@ -42,7 +43,10 @@ function quoteFontSize(quote: string): string {
     <section class="t3-panel t3-dark t3-pad tb" aria-labelledby="t3-testi-h">
       <div class="t3-head">
         <h2 id="t3-testi-h" class="t3-title" data-t3-title>{title} <em>{em}</em></h2>
-        <span class="t3-chip"><i></i>Depoimentos</span>
+        <div class="t3-head-side">
+          <span class="t3-chip"><i></i>Depoimentos</span>
+          <a href={COMPANY.mapsUrl} target="_blank" rel="noopener" class="t3-btn-out">Ver mais depoimentos <span aria-hidden="true">→</span></a>
+        </div>
       </div>
       <div class:list={["t3-pslider tsl", { "is-solo": testimonials.length === 1 }]} data-pslider>
         <div class="t3-ptrack" role="region" aria-roledescription="carrossel" tabindex="0" aria-label="Depoimentos de clientes (use as setas do teclado para navegar)">
@@ -107,7 +111,10 @@ function quoteFontSize(quote: string): string {
 <section class:list={["t3-panel t3-pad t3-testi", tone === "dark" ? "t3-dark" : "t3-light"]} aria-labelledby="t3-testi-h">
   <div class="t3-head">
     <h2 id="t3-testi-h" class="t3-title" data-t3-title>{title} <em>{em}</em></h2>
-    <span class="t3-chip"><i></i>Depoimentos</span>
+    <div class="t3-head-side">
+      <span class="t3-chip"><i></i>Depoimentos</span>
+      <a href={COMPANY.mapsUrl} target="_blank" rel="noopener" class="t3-btn-out">Ver mais depoimentos <span aria-hidden="true">→</span></a>
+    </div>
   </div>
 
   <div class:list={["t3-tgrid", { "is-solo": !logos }]}>

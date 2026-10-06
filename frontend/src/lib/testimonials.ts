@@ -67,4 +67,6 @@ async function loadTestimonials(): Promise<Testimonial[]> {
   return fromWp.length ? fromWp : localTestimonials;
 }
 
-export const testimonials: Testimonial[] = await loadTestimonials();
+// Capped at 5: the stack/slider layouts both still work with more, but the card ("Ver mais depoimentos") that
+// points to the Google Business page is itself the deliberate ceiling — past 5 on the site, the rest live there.
+export const testimonials: Testimonial[] = (await loadTestimonials()).slice(0, 5);
