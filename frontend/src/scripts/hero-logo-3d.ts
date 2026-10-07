@@ -20,9 +20,13 @@ export function initHeroLogo3D({ canvas, container, lite = false }: HeroLogo3DOp
     letterParticles: lite ? 7000 : 34000,
     dotParticles: lite ? 320 : 1500,
     hazeParticles: lite ? 800 : 4000,
-    wispRatio: 0.08,
-    shedRatio: 0.12,
-    shedAmount: 1.0,
+    // Shedding (free-flying particles that peel off the surface) is tied to rotation SPEED, not side — at any
+    // one instant it's naturally stronger on whichever edge is currently moving faster, reading as "more on
+    // the right" while idling (rotating that way at the time). Turned up across the board so there's always a
+    // generous amount drifting everywhere, rather than it only being obviously visible on the leading edge.
+    wispRatio: 0.14,
+    shedRatio: 0.2,
+    shedAmount: 1.3,
     springMin: 60,
     springMax: 160,
     springDamping: 6.5,
@@ -545,10 +549,13 @@ export function initHeroLogo3D({ canvas, container, lite = false }: HeroLogo3DOp
     const dist = halfW / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * aspect);
     // Sub-Full-HD laptop windows get a flattened hero layout instead (site.css: the copy goes full width, the
     // side nav becomes one horizontal row under it) — that's what makes room, not shrinking the logo itself,
-    // which should stay full-size up top. This only guards the truly extreme case (a very short window where
-    // even the flattened layout runs out of room), not ordinary laptop heights.
+    // which should stay full-size up top. Two separate lifts stack here: a gentle one across that whole
+    // flattened range (there's empty space between the status row and the logo there that a straight-on,
+    // vertically-centred camera leaves unused), and a stronger one that only guards the truly extreme case (a
+    // very short window where even the flattened layout runs out of room).
+    const flatLift = THREE.MathUtils.clamp((1000 - h) / 300, 0, 1);
     const shortness = THREE.MathUtils.clamp((620 - h) / 200, 0, 1);
-    points.position.y = shortness * 1.2;
+    points.position.y = flatLift * 0.7 + shortness * 1.2;
     // On a tall/narrow box (mobile: the hero media is much taller than wide), fitting the full word width
     // exactly pushes the camera absurdly far back — "nuvion" is a wide, flat shape, so fitting it to a narrow
     // container's full width shrinks it to near-invisible, with empty space above and below. Capped so it

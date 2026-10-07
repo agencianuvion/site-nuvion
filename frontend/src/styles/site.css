@@ -358,7 +358,9 @@
   .t3-hero-card {
     padding: 16px 20px 6px;
     border-radius: 20px;
-    background: rgba(9, 10, 12, 0.88);
+    background: rgba(9, 10, 12, 0.62);
+    -webkit-backdrop-filter: blur(16px) saturate(1.3);
+    backdrop-filter: blur(16px) saturate(1.3);
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: #fff;
   }
@@ -434,10 +436,18 @@
   @media (max-height: 820px) and (min-width: 900px) {
     .t3-hero-bottom {
       grid-template-columns: 1fr;
+      gap: clamp(16px, 2vw, 28px);
     }
-    .t3-h1,
+    .t3-h1 {
+      max-width: none;
+      /* Capped well under the normal clamp's own ceiling: left alone, 6.6vw keeps growing with the window
+         all the way past 1440px, re-crowding the logo above it exactly like the vertical layout did — this
+         stays visually the same compact size across the whole flattened-layout width range instead. */
+      font-size: clamp(40px, 4.2vw, 60px);
+    }
     .t3-hero-desc {
       max-width: none;
+      margin-top: clamp(12px, 1.4vw, 18px);
     }
     .t3-hero-side {
       flex-direction: row;
