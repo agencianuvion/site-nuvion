@@ -92,29 +92,26 @@ const homeProjects = highlightProjects(3);
   <main class="t3">
     <!-- HERO -->
     <section class="t3-panel t3-dark t3-hero t3-hero-full" aria-labelledby="t3-h1">
-      <!-- The hero image IS the LCP element: real <img> in the HTML (discoverable immediately),
-           high priority, never lazy, with a 1600px variant for smaller screens. Decorative → empty alt. -->
+      <!-- The "nuvion" wordmark as a WebGL particle cloud (scripts/hero-logo-3d.ts) — gently rotating, follows the
+           cursor, scatters on click. Lite on touch/no-hover devices (far fewer particles, idle sway only, no
+           pointer tracking); skipped entirely for reduced motion or if WebGL fails, leaving the panel's own dark
+           background + glow/grain below as the (perfectly fine, static) fallback — no separate poster image needed. -->
       <div class="t3-hero-media" aria-hidden="true">
-        <!-- Same picture as frame 0 of the look-around sequence, so when the canvas starts painting there is no
-             visible change. AVIF first, WebP fallback. -->
-        <picture>
-          <source type="image/avif" media="(max-width: 700px)" srcset="/images/hero-seq/r00-m.avif" />
-          <source type="image/avif" srcset="/images/hero-seq/r00.avif" />
-          <img
-            class="t3-hero-img"
-            src="/images/hero-seq/r00.webp"
-            width="1920"
-            height="1080"
-            alt=""
-            fetchpriority="high"
-            decoding="async"
-          />
-        </picture>
-        <!-- Look-around frames: painted by script on wide screens with a mouse, after the page has loaded.
-             data-right / data-left = number of frames on each side of the centre (r00…r24 from clip A, l01…l24 from clip B). -->
-        <canvas class="t3-hero-canvas" data-right="24" data-left="24" data-w="1920" data-h="1080" data-path="/images/hero-seq/"></canvas>
-        <canvas class="t3-hero-bloom" width="192" height="108" aria-hidden="true"></canvas>
+        <canvas class="t3-hero-3d"></canvas>
       </div>
+      <script>
+        import { initHeroLogo3D } from "../scripts/hero-logo-3d";
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const canvas = document.querySelector<HTMLCanvasElement>(".t3-hero-3d");
+        const container = document.querySelector<HTMLElement>(".t3-hero-media");
+        if (canvas && container && !reduced) {
+          // (hover: hover) and (pointer: fine) alone — NOT also excluding any device with maxTouchPoints > 0 (a
+          // real desktop/laptop with a touchscreen still reports that, and would otherwise wrongly lose the
+          // mouse-follow entirely: no rotation past the idle sway, no click-to-scatter).
+          const lite = !window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+          initHeroLogo3D({ canvas, container, lite });
+        }
+      </script>
       <div class="t3-hero-grain" aria-hidden="true"></div>
       <div class="t3-hero-glow" aria-hidden="true"></div>
 
