@@ -170,13 +170,14 @@
     inset: 0;
     background: radial-gradient(ellipse 75% 80% at 58% 42%, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.5) 100%);
   }
+  /* Just top/bottom now — the left-to-right darkening below was tuned for the old photo (whose own bright
+     content sat more to the right, text on the left needing the extra contrast); the 3D logo is symmetric,
+     and that gradient was reading as the left half of the wordmark sitting noticeably darker than the right. */
   .t3-hero-glow {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background:
-      linear-gradient(90deg, rgba(0, 0, 0, 0.62) 0%, rgba(0, 0, 0, 0.28) 46%, rgba(0, 0, 0, 0) 72%),
-      linear-gradient(180deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0) 34%, rgba(0, 0, 0, 0.6));
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0) 34%, rgba(0, 0, 0, 0.6));
   }
   .t3-hero-inner {
     position: relative;

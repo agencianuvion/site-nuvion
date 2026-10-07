@@ -20,13 +20,9 @@ export function initHeroLogo3D({ canvas, container, lite = false }: HeroLogo3DOp
     letterParticles: lite ? 7000 : 34000,
     dotParticles: lite ? 320 : 1500,
     hazeParticles: lite ? 800 : 4000,
-    // Shedding (free-flying particles that peel off the surface) is tied to rotation SPEED, not side — at any
-    // one instant it's naturally stronger on whichever edge is currently moving faster, reading as "more on
-    // the right" while idling (rotating that way at the time). Turned up across the board so there's always a
-    // generous amount drifting everywhere, rather than it only being obviously visible on the leading edge.
-    wispRatio: 0.14,
-    shedRatio: 0.2,
-    shedAmount: 1.3,
+    wispRatio: 0.08,
+    shedRatio: 0.12,
+    shedAmount: 1.0,
     springMin: 60,
     springMax: 160,
     springDamping: 6.5,
@@ -346,12 +342,12 @@ export function initHeroLogo3D({ canvas, container, lite = false }: HeroLogo3DOp
 
       float st = t - uShockTime;
       float ring = 0.0;
-      if (st > 0.0 && st < 3.0) {
+      if (st > 0.0 && st < 1.6) {
         vec2 sd = p.xy - uShockPos.xy;
         float sdist = length(sd);
-        ring = exp(-pow((sdist - st * 3.2) * 1.8, 2.0)) * (1.0 - st / 3.0);
-        p.xy += (sdist > 1e-4 ? sd / sdist : vec2(0.0)) * ring * 0.55;
-        p.z  += ring * (aRand.z - 0.5) * 1.4;
+        ring = exp(-pow((sdist - st * 1.6) * 2.6, 2.0)) * (1.0 - st / 1.6);
+        p.xy += (sdist > 1e-4 ? sd / sdist : vec2(0.0)) * ring * 0.95;
+        p.z  += ring * (aRand.z - 0.5) * 2.4;
       }
 
       vec4 mv = modelViewMatrix * vec4(p, 1.0);
