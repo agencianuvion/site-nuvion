@@ -543,18 +543,18 @@ export function initHeroLogo3D({ canvas, container, lite = false }: HeroLogo3DOp
     camera.aspect = aspect;
     const halfW = CFG.worldWidth * 0.66;
     const dist = halfW / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * aspect);
-    // Sub-Full-HD laptop windows: the hero itself is shorter, so the headline + "Explorar" card below leave
-    // much less clear room above them — the same size/position logo ends up crowding straight into that text
-    // instead of floating above it. Shrinks and nudges the wordmark up as height drops below a comfortable
-    // desktop reference, smoothly rather than snapping at one breakpoint.
-    const shortness = THREE.MathUtils.clamp((1050 - h) / 250, 0, 1); // ~0 at Full HD's own media height, 1 by a 720p-tall laptop window
-    points.position.y = shortness * 1.5;
+    // Sub-Full-HD laptop windows get a flattened hero layout instead (site.css: the copy goes full width, the
+    // side nav becomes one horizontal row under it) — that's what makes room, not shrinking the logo itself,
+    // which should stay full-size up top. This only guards the truly extreme case (a very short window where
+    // even the flattened layout runs out of room), not ordinary laptop heights.
+    const shortness = THREE.MathUtils.clamp((620 - h) / 200, 0, 1);
+    points.position.y = shortness * 1.2;
     // On a tall/narrow box (mobile: the hero media is much taller than wide), fitting the full word width
     // exactly pushes the camera absurdly far back — "nuvion" is a wide, flat shape, so fitting it to a narrow
     // container's full width shrinks it to near-invisible, with empty space above and below. Capped so it
     // reads as a logo band across the middle instead: the sides crop a little outside the lowest 16, but that
     // trade (a touch of the outer "n"s off-frame vs. a legible wordmark) is the right one here.
-    camera.position.set(0, 0, THREE.MathUtils.clamp(dist + shortness * 9, 11, 22));
+    camera.position.set(0, 0, THREE.MathUtils.clamp(dist + shortness * 7, 11, 22));
     camera.updateProjectionMatrix();
     renderer.setSize(w, h, false);
   }

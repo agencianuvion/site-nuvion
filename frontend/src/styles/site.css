@@ -427,6 +427,72 @@
     transform: translateX(4px);
   }
 
+  /* Sub-Full-HD laptop windows: flattens the hero's bottom row instead of shrinking the 3D logo to make room.
+     The copy goes full width, and the side nav card — normally a vertical list down the right — becomes one
+     horizontal row of compact tiles under the description, with the CTA button alongside it. Width-gated so
+     this never collides with the (separately handled) narrow-phone layout below. */
+  @media (max-height: 820px) and (min-width: 900px) {
+    .t3-hero-bottom {
+      grid-template-columns: 1fr;
+    }
+    .t3-h1,
+    .t3-hero-desc {
+      max-width: none;
+    }
+    .t3-hero-side {
+      flex-direction: row;
+      align-items: stretch;
+      gap: 14px;
+    }
+    .t3-hero-card {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 10px 14px;
+    }
+    .t3-hero-card-label {
+      margin: 0;
+      flex: 0 0 auto;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      transform: rotate(180deg);
+    }
+    .t3-hero-card ol {
+      display: flex;
+      flex: 1;
+      min-width: 0;
+    }
+    .t3-hero-card li {
+      flex: 1;
+      min-width: 0;
+    }
+    .t3-hero-card li + li {
+      border-top: none;
+      border-left: 1px solid rgba(255, 255, 255, 0.09);
+    }
+    .t3-hero-card a {
+      grid-template-columns: unset;
+      grid-template-rows: auto auto;
+      justify-items: center;
+      text-align: center;
+      gap: 2px;
+      padding: 6px 10px;
+    }
+    .t3-hero-card a svg {
+      display: none;
+    }
+    .t3-hero-link-text small {
+      display: none;
+    }
+    .t3-hero-side .t3-btn {
+      width: auto;
+      flex: 0 0 auto;
+      align-self: center;
+      white-space: nowrap;
+    }
+  }
+
   /* About — pinned on wide screens */
   .t3-about-track {
     margin-bottom: var(--t3-gap);
