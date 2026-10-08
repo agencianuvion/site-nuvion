@@ -1,21 +1,36 @@
-// The home hero's background: the "nuvion" wordmark built out of ~43,000 WebGL particles (GPU point cloud),
-// gently rotating and following the cursor — click, and it morphs into a neural-network visualization (nodes,
-// glowing cores, forming/breaking connections); click again and it reassembles back into the wordmark. Ported
-// from a standalone three.js prototype (design-reference: nuvion-morph-3d.html) into this site's own
-// module/build — same geometry/physics/shader math, just resized to the hero's own box instead of the whole
-// window. The morph click is window-wide, same as the cursor tracking — clicking the CTA/nav sitting on top
-// of the canvas also triggers it, which is intentional (scoping it to the canvas only made it feel like it
-// only worked "on the sides", since most of the hero's middle is covered by the copy/card sitting above it).
-// Desktop/hover-capable only — phones use the separate, lighter hero-logo-3d-mobile.ts (not yet morph-capable).
+// A standalone "nuvion" logo ⇄ neural-network morph for mobile, ported from the standalone prototype
+// (design-reference: nuvion-morph-3d-mobile.html). Lives in the footer's CTA panel (always a forced-dark
+// panel, regardless of site theme — see Footer.astro), before its title, lazily initialized only once that
+// panel is about to scroll into view, so it never adds load on the pages it's used on until someone actually
+// scrolls there. Starts already showing the network; same interaction as the standalone prototype — drag
+// horizontally to rotate, a quick tap morphs it into the wordmark and back.
 import * as THREE from "three";
 
-export interface HeroLogo3DOptions {
+export interface LogoMorphMobileOptions {
   canvas: HTMLCanvasElement;
-  /** Sized and listened against instead of window — this is a background INSIDE the hero, not a full-page toy. */
   container: HTMLElement;
 }
 
-export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => void {
+// The footer panel is always dark (never the light theme), so this is the only palette needed — same colors
+// as the desktop hero's own additive-blended build.
+const DARK_PALETTE = {
+  blending: THREE.AdditiveBlending as THREE.Blending,
+  alphaBoost: 1,
+  rimSoftness: 0,
+  letterA: new THREE.Color("#f4f7ff"),
+  letterB: new THREE.Color("#a3c6ff"),
+  orange: new THREE.Color("#e84a18"),
+  orangeHot: new THREE.Color("#ff8a3a"),
+  netRim: new THREE.Color("#eef3ff"),
+  steel: new THREE.Color("#9fb3d6"),
+  haze: new THREE.Color("#a3c6ff"),
+};
+
+export function initLogoMorphMobile({ canvas, container }: LogoMorphMobileOptions): () => void {
+  return buildScene(canvas, container, DARK_PALETTE);
+}
+
+function buildScene(canvas: HTMLCanvasElement, container: HTMLElement, palette: typeof DARK_PALETTE): () => void {
   const rnd = (a: number, b: number) => a + Math.random() * (b - a);
   const gauss = () => {
     let u = 0;
@@ -32,59 +47,46 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
   };
   const smooth = (x: number) => x * x * (3 - 2 * x);
 
+  const lowEnd = (navigator.hardwareConcurrency || 4) <= 4 || ((navigator as any).deviceMemory || 4) <= 3;
   const CFG = {
-    letterParticles: 34000,
-    dotParticles: 1500,
-    hazeParticles: 4000,
+    letterParticles: lowEnd ? 9000 : 13000,
+    dotParticles: lowEnd ? 320 : 450,
+    hazeParticles: lowEnd ? 900 : 1500,
     wispRatio: 0.08,
     shedRatio: 0.12,
     shedAmount: 1.0,
-    springMin: 60,
-    springMax: 160,
-    springDamping: 6.5,
-    wobbleMax: 0.045,
     airDrag: 1.3,
     buoyancy: 0.18,
     worldWidth: 9,
     depthScale: 1.0,
     maxRotY: 0.65,
-    maxRotX: 0.45,
-    orange: new THREE.Color("#e84a18"),
-    white: new THREE.Color("#f4f7ff"),
-    blue: new THREE.Color("#a3c6ff"),
+    dragSensitivity: 2.6,
+    maxPixelRatio: 1.5,
   };
   const NCFG = {
-    nodes: 22,
+    nodes: lowEnd ? 16 : 20,
     orangeRatio: 0.4,
-    shellDensity: 5200,
-    linkSlots: 90,
-    linkParticles: 110,
-    targetLinks: 58,
+    shellDensity: lowEnd ? 1700 : 2300,
+    linkSlots: lowEnd ? 48 : 64,
+    linkParticles: lowEnd ? 60 : 75,
+    targetLinks: lowEnd ? 32 : 44,
     maxLinkDist: 2.6,
     maxDegree: 6,
-    dustParticles: 2600,
-    traceCount: 46,
-    rotRange: Math.PI,
-    autoSpin: 0.06,
-    rotSmooth: 0.12,
+    dustParticles: lowEnd ? 600 : 1000,
+    traceCount: lowEnd ? 16 : 26,
+    autoSpin: 0.12,
+    swipeTurn: 2 * Math.PI,
+    spinFriction: 1.4,
     nodeSpring: 22,
     nodeDamping: 3.2,
     nodeLagMax: 0.45,
     breakRate: 1.6,
     motionScale: 3.2,
-    scale: 0.85,
-    orange: new THREE.Color("#e84a18"),
-    orangeHot: new THREE.Color("#ff8a3a"),
-    white: new THREE.Color("#eef3ff"),
-    steel: new THREE.Color("#9fb3d6"),
   };
-  const MORPH = {
-    toNetDuration: 2.8,
-    toLogoDuration: 2.6,
-    handoff: 0.72,
-    fadeDuration: 0.9,
-    swirl: 1.6,
-  };
+  const MORPH = { toNetDuration: 2.6, toLogoDuration: 2.4, handoff: 0.72, fadeDuration: 0.9, swirl: 1.4 };
+  const LOGO_COMP = Math.sqrt(34000 / CFG.letterParticles);
+  const SHELL_COMP = Math.sqrt(5200 / NCFG.shellDensity);
+  const LINK_COMP = Math.sqrt(110 / NCFG.linkParticles);
 
   interface NodeDef {
     base: THREE.Vector3;
@@ -99,12 +101,11 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
     flash: number;
     degree: number;
   }
-
   const nodes: NodeDef[] = [];
   for (let tries = 0; nodes.length < NCFG.nodes && tries < 5000; tries++) {
-    const p = new THREE.Vector3(gauss() * 1.6, gauss() * 1.15, gauss() * 1.3);
-    if (p.length() > 3.6) continue;
-    const r = Math.random() < 0.25 ? rnd(0.13, 0.2) : rnd(0.22, 0.4);
+    const p = new THREE.Vector3(gauss() * 1.5, gauss() * 1.25, gauss() * 1.2);
+    if (p.length() > 3.4) continue;
+    const r = Math.random() < 0.25 ? rnd(0.14, 0.2) : rnd(0.22, 0.4);
     if (nodes.some((n) => n.base.distanceTo(p) < n.r + r + 0.55)) continue;
     nodes.push({
       base: p,
@@ -121,11 +122,6 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
     });
   }
   const NN = nodes.length;
-  // Intro only: each node starts this far from its resting spot and eases in over the first ~1.8s (applied as
-  // a post-process on top of the uniform updateNodes() already writes, below — its own spring physics clamps
-  // how far a node can drift per frame, which is right for the idle wobble but far too tight for a multi-
-  // second "flying into place" opening, so this intro doesn't touch that physics at all).
-  const introOffset = nodes.map(() => randUnit().multiplyScalar(rnd(3, 6)));
   const nodeCdf: number[] = [];
   {
     let acc = 0;
@@ -164,7 +160,6 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
     });
   };
   const join = (...segs: number[][][]) => segs.flat();
-
   const V_A = [137.5, 4, 158, 47.5] as const;
   const V_B = [158, 47.5, 178.5, 4] as const;
   const PATHS: { pts: number[][]; avoid?: number[][]; closed?: boolean; noStartCap?: boolean }[] = [
@@ -232,7 +227,6 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
   function buildLogoGeometry() {
     const { paths, total: totalLen } = prepPaths();
     const total = CFG.letterParticles + CFG.dotParticles * DOTS.length + CFG.hazeParticles;
-
     const pos = new Float32Array(total * 3);
     const nor = new Float32Array(total * 3);
     const scatter = new Float32Array(total * 3);
@@ -246,7 +240,6 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
     const n3 = new THREE.Vector3();
     const u = new THREE.Vector3();
     let i = 0;
-
     const R = R_PX * S;
     const RZ = R * CFG.depthScale;
 
@@ -281,36 +274,13 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       tOff[i * 3 + 2] = u.z;
       i++;
     };
-
-    const letterColor = () => c.copy(CFG.white).lerp(CFG.blue, Math.random() * 0.5);
+    const letterColor = () => c.copy(palette.letterA).lerp(palette.letterB, Math.random() * 0.5);
     const letterType = () => {
       const r = Math.random();
       return r < CFG.wispRatio ? 3 : r < CFG.wispRatio + CFG.shedRatio ? 4 : 0;
     };
-    const letterSize = () => 1.6 + Math.random() * 1.6;
+    const letterSize = () => (1.6 + Math.random() * 1.6) * LOGO_COMP;
     const rejected = (px: number, py: number, z: number, avoid: number[][]) => avoid.some((seg) => insideSeg(px, py, z, seg, R, RZ, 1.02));
-
-    const ellipsoid = (
-      px: number,
-      py: number,
-      r: number,
-      rz: number,
-      count: number,
-      colorFn: () => THREE.Color,
-      sizeFn: () => number,
-      typeFn: () => number,
-    ) => {
-      const [wx, wy] = toWorld(px, py);
-      for (let k = 0; k < count; k++) {
-        const th = Math.random() * Math.PI * 2;
-        const ph = Math.acos(2 * Math.random() - 1);
-        const ux = Math.sin(ph) * Math.cos(th);
-        const uy = Math.sin(ph) * Math.sin(th);
-        const uz = Math.cos(ph);
-        const rr = shellR();
-        push(wx + ux * r * rr, wy - uy * r * rr, uz * rz * rr, ux / r, -uy / r, uz / rz, colorFn(), sizeFn(), typeFn());
-      }
-    };
 
     for (let k = 0; k < CFG.letterParticles; k++) {
       let s = Math.random() * totalLen;
@@ -349,26 +319,19 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       const [wx, wy] = toWorld(q.x + ox, q.y + oy);
       push(wx, wy, oz, ux / R, -uy / R, sz / RZ, letterColor(), letterSize(), letterType());
     }
-
     for (const [x, y] of DOTS) {
-      ellipsoid(
-        x,
-        y,
-        DOT_R_PX * S,
-        DOT_R_PX * S * CFG.depthScale,
-        CFG.dotParticles,
-        () => c.copy(CFG.orange).offsetHSL((Math.random() - 0.5) * 0.03, 0, (Math.random() - 0.5) * 0.1),
-        () => 1.3 + Math.random() * 1.4,
-        () => 1,
-      );
+      const [wx, wy] = toWorld(x, y);
+      const r = DOT_R_PX * S;
+      for (let k = 0; k < CFG.dotParticles; k++) {
+        randUnit(u);
+        const rr = shellR();
+        c.copy(palette.orange).offsetHSL((Math.random() - 0.5) * 0.03, 0, (Math.random() - 0.5) * 0.1);
+        push(wx + u.x * r * rr, wy - u.y * r * rr, u.z * r * rr, u.x, -u.y, u.z, c, (1.3 + Math.random() * 1.4) * LOGO_COMP, 1);
+      }
     }
-
     for (let k = 0; k < CFG.hazeParticles; k++) {
-      const x = (Math.random() - 0.5) * 14;
-      const y = gauss() * 1.1;
-      const z = gauss() * 1.6;
-      c.copy(CFG.blue).lerp(CFG.white, Math.random() * 0.4);
-      push(x, y, z, 0, 0, 1, c, 3 + Math.random() * 7, 2);
+      c.copy(palette.haze).lerp(palette.letterA, Math.random() * 0.4);
+      push((Math.random() - 0.5) * 14, gauss() * 1.1, gauss() * 1.6, 0, 0, 1, c, 3 + Math.random() * 7, 2);
     }
 
     const g = new THREE.BufferGeometry();
@@ -386,54 +349,49 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
     return g;
   }
 
-  // aType: 0 = letra, 1 = ponto laranja, 2 = névoa, 3 = fiapo de fumaça, 4 = desprendível
+  const SIZE_FN = /* glsl */ `uniform float uSizeScale, uCamZ;
+    float pSize(float s, float pr, float z) { return max(1.0, s * pr * uSizeScale * (uCamZ / -z)); }`;
+
   const logoVert = /* glsl */ `
-    uniform float uTime, uProgress, uPixelRatio, uShockTime, uMorph, uLogoFade;
-    uniform vec3 uShockPos, uLightDir;
+    uniform float uTime, uProgress, uPixelRatio, uMorph, uLogoFade;
+    uniform vec3 uLightDir;
     uniform vec4 uNodes[${NN}];
     uniform mat4 uNetToLogo;
+    ${SIZE_FN}
     attribute vec4 aOffset;
     attribute vec3 aScatter, aTOff;
     attribute vec4 aRand;
     attribute float aSize, aType, aTNode;
     varying vec3 vColor;
     varying float vAlpha;
-
     void main() {
       float t = uTime;
       vec3 base = position;
       float alphaMul = 1.0;
       bool isHaze = aType > 1.5 && aType < 2.5;
       bool isWisp = aType > 2.5 && aType < 3.5;
-
       if (isHaze) {
         base.x = mod(base.x + t * 0.10 * (0.4 + aRand.x) + 7.0, 14.0) - 7.0;
         alphaMul = smoothstep(7.0, 5.0, abs(base.x));
       }
-
       float pr = clamp(uProgress * 1.7 - aRand.w * 0.7, 0.0, 1.0);
       pr = 1.0 - pow(1.0 - pr, 3.0);
       vec3 p = mix(aScatter, base, pr);
-
       vec3 ph = aRand.xyz * 6.2831;
       vec3 wave = vec3(
         sin(t * 0.35 + base.y * 1.7 + ph.x) + 0.5 * sin(t * 0.81 + base.x * 2.3 + ph.y),
         cos(t * 0.30 + base.x * 1.3 + ph.y) + 0.5 * cos(t * 0.67 + base.z * 2.9 + ph.z),
-        sin(t * 0.25 + base.x * 0.9 + base.y * 1.1 + ph.z)
-      );
+        sin(t * 0.25 + base.x * 0.9 + base.y * 1.1 + ph.z));
       p += wave * (isHaze ? 0.3 : 0.008);
-
       if (isWisp) {
         float life = fract(t * 0.07 * (0.6 + aRand.x) + aRand.w);
         p += normal * life * 0.35 + vec3(0.25, 0.55, 0.0) * life * life + wave * life * 0.12;
         alphaMul = smoothstep(0.0, 0.08, life) * (1.0 - life);
       }
-
       float m = clamp(uMorph * 1.5 - aRand.w * 0.5, 0.0, 1.0);
       m = m * m * (3.0 - 2.0 * m);
       p += aOffset.xyz * pr * (1.0 - m);
       bool detached = aOffset.w < 0.995;
-
       if (m > 0.0) {
         vec4 nd = uNodes[int(aTNode + 0.5)];
         vec3 target = (uNetToLogo * vec4(nd.xyz + aTOff, 1.0)).xyz;
@@ -442,29 +400,16 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
         p = mix(p, target, m) + swirl;
         if (isWisp || isHaze) alphaMul = mix(alphaMul, isHaze ? 0.0 : 1.0, m);
       }
-
-      float st = t - uShockTime;
-      float ring = 0.0;
-      if (st > 0.0 && st < 1.6) {
-        vec2 sd = p.xy - uShockPos.xy;
-        float sdist = length(sd);
-        ring = exp(-pow((sdist - st * 1.6) * 2.6, 2.0)) * (1.0 - st / 1.6);
-        p.xy += (sdist > 1e-4 ? sd / sdist : vec2(0.0)) * ring * 0.95;
-        p.z  += ring * (aRand.z - 0.5) * 2.4;
-      }
-
       vec4 mv = modelViewMatrix * vec4(p, 1.0);
       gl_Position = projectionMatrix * mv;
-      gl_PointSize = aSize * uPixelRatio * (12.0 / -mv.z) * mix(1.0, 0.8, m);
-
+      gl_PointSize = pSize(aSize * mix(1.0, 0.8, m), uPixelRatio, mv.z);
       vec3 n = normalize(normalMatrix * normal);
       vec3 L = normalize(uLightDir);
       float diff = max(dot(n, L), 0.0);
       float spec = pow(max(dot(reflect(-L, n), vec3(0.0, 0.0, 1.0)), 0.0), 18.0);
       float rim = pow(1.0 - abs(n.z), 2.5);
-      float light = 0.6 + 0.8 * diff + 0.5 * spec + 0.3 * rim + ring;
+      float light = 0.6 + 0.8 * diff + 0.5 * spec + 0.3 * rim;
       float facing = smoothstep(-0.45, 0.2, n.z);
-
       float baseA;
       if (isHaze) { light = 0.8; facing = 1.0; baseA = 0.07; }
       else if (isWisp) { baseA = 0.45; facing = 1.0; }
@@ -472,52 +417,43 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       if (detached) { facing = 1.0; light = max(light, 0.9); }
       facing = mix(facing, 1.0, m);
       vec3 col = mix(color, mix(color, vec3(1.0, 0.55, 0.25), 0.35), sin(3.14159 * m));
-
       vColor = col * light * 1.15;
       float twinkle = 0.85 + 0.15 * sin(t * 1.7 + aRand.z * 40.0);
       vAlpha = baseA * twinkle * alphaMul * aOffset.w * mix(0.14, 1.0, facing) * mix(0.35, 1.0, pr) * uLogoFade;
     }
   `;
-
   const softFrag = /* glsl */ `
     precision mediump float;
+    uniform float uAlphaBoost;
     varying vec3 vColor;
     varying float vAlpha;
     void main() {
       float d = length(gl_PointCoord - 0.5);
       if (d > 0.5) discard;
       float a = pow(1.0 - d * 2.0, 1.2);
-      gl_FragColor = vec4(vColor, a * vAlpha);
+      gl_FragColor = vec4(vColor, min(1.0, a * vAlpha * uAlphaBoost));
     }
   `;
-
   const nodeVert = /* glsl */ `
-    uniform float uTime, uPixelRatio, uFade;
+    uniform float uTime, uPixelRatio, uFade, uNetScale, uRimSoftness;
     uniform vec4 uNodes[${NN}];
-    uniform vec3 uLightDir;
+    uniform vec3 uLightDir, uRimOff, uRimOn, uHot;
+    ${SIZE_FN}
     attribute float aNode, aKind, aSize, aOrange;
     attribute vec4 aRand;
     varying vec3 vColor;
     varying float vAlpha;
-
     void main() {
       vec4 nd = uNodes[int(aNode + 0.5)];
-      float flash = nd.w;
-      float t = uTime;
+      float flash = nd.w, t = uTime;
       vec3 local = position;
       if (aKind > 0.5 && aKind < 1.5) local *= 1.0 + 0.18 * sin(t * 2.6 + aRand.x * 6.28);
-      vec3 p = nd.xyz + local;
-
-      vec4 mv = modelViewMatrix * vec4(p, 1.0);
+      vec4 mv = modelViewMatrix * vec4(nd.xyz + local, 1.0);
       gl_Position = projectionMatrix * mv;
-      float size = aSize;
+      float size = aSize * uNetScale;
       if (aKind > 1.5) size *= 1.0 + flash * 0.8;
-      gl_PointSize = size * uPixelRatio * (12.0 / -mv.z);
-
-      vec3 orange = vec3(0.91, 0.29, 0.094);
-      vec3 hot = vec3(1.0, 0.54, 0.23);
+      gl_PointSize = pSize(size, uPixelRatio, mv.z);
       float fade = clamp(uFade * 1.4 - aRand.w * 0.4, 0.0, 1.0);
-
       if (aKind < 0.5) {
         vec3 n = normalize(normalMatrix * normal);
         vec3 L = normalize(uLightDir);
@@ -525,33 +461,42 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
         float spec = pow(max(dot(reflect(-L, n), vec3(0.0, 0.0, 1.0)), 0.0), 26.0);
         float spec2 = pow(max(dot(reflect(-normalize(vec3(0.6, -0.3, 0.5)), n), vec3(0.0, 0.0, 1.0)), 0.0), 14.0);
         float facing = smoothstep(-0.5, 0.15, n.z);
-        vec3 rimCol = aOrange > 0.5 ? mix(orange, hot, 0.3) : vec3(0.86, 0.9, 1.0);
-        vColor = rimCol * (0.25 + 1.3 * fres) + vec3(1.0) * spec * 1.4 + hot * spec2 * 0.35 + hot * flash * 0.6;
-        vAlpha = (0.07 + 0.85 * fres + spec * 0.9) * mix(0.18, 1.0, facing) * fade;
+        vec3 rimCol = aOrange > 0.5 ? mix(uRimOff, uHot, 0.3) : uRimOn;
+        // The glass-shell look (bright glowing rim, hollow centre) only reads right under additive blending on
+        // a dark bg. Under normal blending on a light bg it reads as a hard dark ring instead — uRimSoftness
+        // (0 dark theme / 1 light theme) flattens both the colour and alpha toward a soft, even tint instead.
+        vec3 sharpColor = rimCol * (0.25 + 1.3 * fres) + vec3(1.0) * spec * 1.4 + uHot * spec2 * 0.35 + uHot * flash * 0.6;
+        vec3 softColor = rimCol * 0.62 + uHot * flash * 0.4;
+        vColor = mix(sharpColor, softColor, uRimSoftness);
+        float sharpAlpha = (0.07 + 0.85 * fres + spec * 0.9) * mix(0.18, 1.0, facing);
+        float softAlpha = 0.3 * mix(0.55, 1.0, facing);
+        vAlpha = mix(sharpAlpha, softAlpha, uRimSoftness) * fade;
       } else if (aKind < 1.5) {
-        vColor = mix(orange, hot, 0.5 + 0.5 * aRand.y) * (1.4 + flash * 1.5);
+        vColor = mix(uRimOff, uHot, 0.5 + 0.5 * aRand.y) * (1.4 + flash * 1.5);
         vAlpha = 0.9 * fade;
       } else {
-        vColor = orange * (0.8 + flash * 1.2);
+        vColor = uRimOff * (0.8 + flash * 1.2);
         vAlpha = (0.16 + flash * 0.25) * fade;
       }
     }
   `;
   const linkVert = /* glsl */ `
-    uniform float uPixelRatio, uFade;
+    uniform float uPixelRatio, uFade, uNetScale;
+    ${SIZE_FN}
     attribute float aAlpha, aSize;
     varying vec3 vColor;
     varying float vAlpha;
     void main() {
       vec4 mv = modelViewMatrix * vec4(position, 1.0);
       gl_Position = projectionMatrix * mv;
-      gl_PointSize = aSize * uPixelRatio * (12.0 / -mv.z);
+      gl_PointSize = pSize(aSize * uNetScale, uPixelRatio, mv.z);
       vColor = color * 1.7;
       vAlpha = aAlpha * uFade;
     }
   `;
   const bgVert = /* glsl */ `
     uniform float uTime, uPixelRatio, uFade;
+    ${SIZE_FN}
     attribute vec4 aRand;
     attribute float aSize, aType, aTrace;
     varying vec3 vColor;
@@ -573,109 +518,91 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       }
       vec4 mv = modelViewMatrix * vec4(p, 1.0);
       gl_Position = projectionMatrix * mv;
-      gl_PointSize = aSize * uPixelRatio * (12.0 / -mv.z);
+      gl_PointSize = pSize(aSize, uPixelRatio, mv.z);
       vColor = color;
       vAlpha = aRand.z * a * uFade;
     }
   `;
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: false, alpha: true, powerPreference: "high-performance" });
-  const pixelRatio = Math.min(window.devicePixelRatio, 2);
+  let pixelRatio = Math.min(window.devicePixelRatio, CFG.maxPixelRatio);
   renderer.setPixelRatio(pixelRatio);
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 200);
   scene.add(camera);
-  const additive = { transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, vertexColors: true };
+  const additive = { transparent: true, depthWrite: false, blending: palette.blending, vertexColors: true };
   const lightDir = new THREE.Vector3(-0.45, 0.6, 0.7);
+  const alphaBoost = { value: palette.alphaBoost };
 
-  // Opens already on the network (never shows the logo until clicked) — netFade ramps in just below instead
-  // of snapping straight to 1, and each node starts offset from its resting spot (see the nodes loop above)
-  // so the spring physics already driving its idle wobble pulls it into place, reading as the spheres
-  // organizing themselves rather than just appearing. These are the network's steady-state values.
-  const netFade = { value: 0 };
-  const nodesUniform = { value: nodes.map(() => new THREE.Vector4()) };
+  // Starts already in the network — mode below is "net", not "logo", so these are its steady-state values.
+  const U = {
+    pr: { value: pixelRatio },
+    sizeScale: { value: 1 },
+    camZ: { value: 12 },
+    netScale: { value: 1 },
+    netFade: { value: 1 },
+    time: { value: 0 },
+    nodes: { value: nodes.map(() => new THREE.Vector4()) },
+    light: { value: lightDir },
+  };
+  const common = { uPixelRatio: U.pr, uSizeScale: U.sizeScale, uCamZ: U.camZ, uTime: U.time, uAlphaBoost: alphaBoost };
 
-  const uniforms = {
-    uTime: { value: 0 },
+  const logoU = {
+    ...common,
     uProgress: { value: 1 },
-    uPixelRatio: { value: pixelRatio },
-    uShockTime: { value: -10 },
-    uShockPos: { value: new THREE.Vector3() },
-    uLightDir: { value: lightDir },
+    uLightDir: U.light,
     uMorph: { value: 1 },
     uLogoFade: { value: 0 },
-    uNodes: nodesUniform,
+    uNodes: U.nodes,
     uNetToLogo: { value: new THREE.Matrix4() },
   };
-  const logoGeometry = buildLogoGeometry();
-  const logoMaterial = new THREE.ShaderMaterial({
-    uniforms,
-    vertexShader: logoVert,
-    fragmentShader: softFrag,
-    vertexColors: true,
-    transparent: true,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  });
-  const points = new THREE.Points(logoGeometry, logoMaterial);
+  const geometry = buildLogoGeometry();
+  const logoMaterial = new THREE.ShaderMaterial({ uniforms: logoU, vertexShader: logoVert, fragmentShader: softFrag, ...additive });
+  const points = new THREE.Points(geometry, logoMaterial);
   scene.add(points);
 
-  // Physics (inertia/spring + detaching) for the logo only.
   const physics = (() => {
-    const N = logoGeometry.drawRange.count;
-    const P = logoGeometry.attributes.position.array as Float32Array;
-    const NOR = logoGeometry.attributes.normal.array as Float32Array;
-    const TYP = logoGeometry.attributes.aType.array as Float32Array;
-    const offArr = new Float32Array(logoGeometry.attributes.position.count * 4);
+    const N = geometry.drawRange.count;
+    const P = geometry.attributes.position.array as Float32Array;
+    const NOR = geometry.attributes.normal.array as Float32Array;
+    const TYP = geometry.attributes.aType.array as Float32Array;
+    const offArr = new Float32Array(geometry.attributes.position.count * 4);
     for (let i = 0; i < offArr.length; i += 4) offArr[i + 3] = 1;
     const offAttr = new THREE.BufferAttribute(offArr, 4).setUsage(THREE.DynamicDrawUsage);
-    logoGeometry.setAttribute("aOffset", offAttr);
-
+    geometry.setAttribute("aOffset", offAttr);
     const act: number[] = [];
-    for (let i = 0; i < N; i++) if (TYP[i] < 1.5 || TYP[i] > 3.5) act.push(i);
-    const M = act.length;
+    for (let i = 0; i < N; i++) if (TYP[i] > 3.5) act.push(i);
     const vel = new Float32Array(N * 3);
-    const k = new Float32Array(N);
-    const maxD = new Float32Array(N);
     const life = new Float32Array(N);
     const lifeRate = new Float32Array(N);
     const det = new Uint8Array(N);
-    for (const i of act) {
-      k[i] = CFG.springMin + Math.random() * (CFG.springMax - CFG.springMin);
-      maxD[i] = CFG.wobbleMax * (0.4 + Math.random() * 0.6) * (TYP[i] > 0.5 && TYP[i] < 1.5 ? 0.6 : 1);
-    }
-
+    let busy = 0;
     function step(dt: number, dthx: number, dthy: number) {
       if (dt <= 0) return;
       const wx = dthx / dt;
       const wy = dthy / dt;
       const motion = Math.min(1, Math.hypot(wx, wy) / 0.9);
+      if (motion < 0.02 && busy === 0) return;
       const pDetach = 0.9 * motion * CFG.shedAmount * dt;
-      const springDecay = Math.exp(-CFG.springDamping * dt);
       const airDecay = Math.exp(-CFG.airDrag * dt);
-
-      for (let m = 0; m < M; m++) {
-        const i = act[m];
+      busy = 0;
+      for (const i of act) {
         const i3 = i * 3;
         const i4 = i * 4;
-        const px = P[i3];
-        const py = P[i3 + 1];
-        const pz = P[i3 + 2];
-        let dx = offArr[i4];
-        let dy = offArr[i4 + 1];
-        let dz = offArr[i4 + 2];
-        let vx = vel[i3];
-        let vy = vel[i3 + 1];
-        let vz = vel[i3 + 2];
-        const x = px + dx;
-        const y = py + dy;
-        const z = pz + dz;
-        dx -= dthy * z;
-        dy += dthx * z;
-        dz -= dthx * y - dthy * x;
-
         if (det[i]) {
+          let dx = offArr[i4];
+          let dy = offArr[i4 + 1];
+          let dz = offArr[i4 + 2];
+          let vx = vel[i3];
+          let vy = vel[i3 + 1];
+          let vz = vel[i3 + 2];
+          const x = P[i3] + dx;
+          const y = P[i3 + 1] + dy;
+          const z = P[i3 + 2] + dz;
+          dx -= dthy * z;
+          dy += dthx * z;
+          dz -= dthx * y - dthy * x;
           const tvx = vx - dthy * vz;
           const tvy = vy + dthx * vz;
           const tvz = vz - (dthx * vy - dthy * vx);
@@ -694,63 +621,42 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
             const l = life[i];
             offArr[i4 + 3] = Math.min(0.99, l * 6) * Math.pow(l, 0.8) * 0.99;
           }
-        } else {
-          vx = (vx - k[i] * dx * dt) * springDecay;
-          vy = (vy - k[i] * dy * dt) * springDecay;
-          vz = (vz - k[i] * dz * dt) * springDecay;
-          dx += vx * dt;
-          dy += vy * dt;
-          dz += vz * dt;
-          const len = Math.hypot(dx, dy, dz);
-          const lim = maxD[i];
-          if (len > lim) {
-            const s = lim / len;
-            dx *= s;
-            dy *= s;
-            dz *= s;
-            vx *= 0.6;
-            vy *= 0.6;
-            vz *= 0.6;
-          }
+          offArr[i4] = dx;
+          offArr[i4 + 1] = dy;
+          offArr[i4 + 2] = dz;
+          vel[i3] = vx;
+          vel[i3 + 1] = vy;
+          vel[i3 + 2] = vz;
+          busy++;
+        } else if (offArr[i4 + 3] < 1) {
           offArr[i4 + 3] = Math.min(1, offArr[i4 + 3] + dt * 1.5);
-          if (TYP[i] > 3.5 && offArr[i4 + 3] >= 1 && Math.random() < pDetach) {
-            det[i] = 1;
-            life[i] = 1;
-            lifeRate[i] = 1 / (1.2 + Math.random() * 2.2);
-            const carry = 0.25 + Math.random() * 0.55;
-            const push = 0.12 + Math.random() * 0.3;
-            vx = wy * z * carry + NOR[i3] * push;
-            vy = -wx * z * carry + NOR[i3 + 1] * push;
-            vz = (wx * y - wy * x) * carry + NOR[i3 + 2] * push;
-            offArr[i4 + 3] = 0.99;
-          }
+          busy++;
+        } else if (Math.random() < pDetach) {
+          const px = P[i3];
+          const py = P[i3 + 1];
+          const pz = P[i3 + 2];
+          det[i] = 1;
+          life[i] = 1;
+          lifeRate[i] = 1 / (1.2 + Math.random() * 2.2);
+          const carry = 0.25 + Math.random() * 0.55;
+          const push = 0.12 + Math.random() * 0.3;
+          vel[i3] = wy * pz * carry + NOR[i3] * push;
+          vel[i3 + 1] = -wx * pz * carry + NOR[i3 + 1] * push;
+          vel[i3 + 2] = (wx * py - wy * px) * carry + NOR[i3 + 2] * push;
+          offArr[i4 + 3] = 0.99;
+          busy++;
         }
-        offArr[i4] = dx;
-        offArr[i4 + 1] = dy;
-        offArr[i4 + 2] = dz;
-        vel[i3] = vx;
-        vel[i3 + 1] = vy;
-        vel[i3 + 2] = vz;
       }
       offAttr.needsUpdate = true;
     }
     return { step };
   })();
 
-  // Network: nodes (glass shells + glowing cores), ambient dust/traces, and the CPU-driven connections.
   const network = new THREE.Group();
-  network.scale.setScalar(NCFG.scale);
   const dustGroup = new THREE.Group();
   scene.add(dustGroup, network);
-
-  const nodeUniforms = {
-    uTime: { value: 0 },
-    uPixelRatio: { value: pixelRatio },
-    uFade: netFade,
-    uNodes: nodesUniform,
-    uLightDir: { value: lightDir },
-  };
-  const nodeGeometry = new THREE.BufferGeometry();
+  let nodeMaterial!: THREE.ShaderMaterial;
+  let nodeGeometry!: THREE.BufferGeometry;
   {
     const P: number[] = [];
     const N: number[] = [];
@@ -769,18 +675,18 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
         N.push(u.x, u.y, u.z);
         NI.push(i);
         K.push(0);
-        SZ.push(rnd(1.2, 2.4));
+        SZ.push(rnd(1.2, 2.4) * SHELL_COMP);
         OR.push(n.orange ? 1 : 0);
         RA.push(Math.random(), Math.random(), Math.random(), Math.random());
       }
-      const core = Math.round(40 + n.r * 160);
+      const core = Math.round(30 + n.r * 110);
       for (let k = 0; k < core; k++) {
         randUnit(u).multiplyScalar(n.r * 0.22 * Math.cbrt(Math.random()));
         P.push(u.x, u.y, u.z);
         N.push(0, 0, 1);
         NI.push(i);
         K.push(1);
-        SZ.push(rnd(1.6, 3.4));
+        SZ.push(rnd(1.6, 3.4) * 1.2);
         OR.push(1);
         RA.push(Math.random(), Math.random(), Math.random(), Math.random());
       }
@@ -792,6 +698,7 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       OR.push(1);
       RA.push(Math.random(), Math.random(), Math.random(), Math.random());
     });
+    nodeGeometry = new THREE.BufferGeometry();
     nodeGeometry.setAttribute("position", new THREE.Float32BufferAttribute(P, 3));
     nodeGeometry.setAttribute("normal", new THREE.Float32BufferAttribute(N, 3));
     nodeGeometry.setAttribute("aNode", new THREE.Float32BufferAttribute(NI, 1));
@@ -800,17 +707,28 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
     nodeGeometry.setAttribute("aOrange", new THREE.Float32BufferAttribute(OR, 1));
     nodeGeometry.setAttribute("aRand", new THREE.Float32BufferAttribute(RA, 4));
     nodeGeometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 50);
+    nodeMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        ...common,
+        uFade: U.netFade,
+        uNetScale: U.netScale,
+        uNodes: U.nodes,
+        uLightDir: U.light,
+        uRimOff: { value: palette.netRim },
+        // Pale near-white, not the more saturated steel-blue (matches the desktop hero's own hardcoded rim
+        // color) — steel here was reading as a distinct blue border around every sphere once scaled up.
+        uRimOn: { value: new THREE.Color("#dbe6ff") },
+        uHot: { value: palette.orangeHot },
+        uRimSoftness: { value: palette.rimSoftness },
+      },
+      vertexShader: nodeVert,
+      fragmentShader: softFrag,
+      ...additive,
+      vertexColors: false,
+    });
+    network.add(new THREE.Points(nodeGeometry, nodeMaterial));
   }
-  const nodeMaterial = new THREE.ShaderMaterial({
-    uniforms: nodeUniforms,
-    vertexShader: nodeVert,
-    fragmentShader: softFrag,
-    ...additive,
-    vertexColors: false,
-  });
-  network.add(new THREE.Points(nodeGeometry, nodeMaterial));
 
-  const bgUniforms = { uTime: { value: 0 }, uPixelRatio: { value: pixelRatio }, uFade: netFade };
   let dustGeometry!: THREE.BufferGeometry;
   let dustMaterial!: THREE.ShaderMaterial;
   let traceGeometry!: THREE.BufferGeometry;
@@ -831,15 +749,15 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       o.TR.push(tr);
     };
     for (let k = 0; k < NCFG.dustParticles; k++) {
-      const r = rnd(2.5, 14);
+      const r = rnd(2.5, 12);
       const u = randUnit();
-      const hotSpark = Math.random() < 0.55;
-      c.copy(hotSpark ? NCFG.orangeHot : NCFG.white).lerp(NCFG.orange, hotSpark ? Math.random() * 0.5 : 0);
-      add(dust, u.x * r * 1.4, u.y * r * 0.8, u.z * r, c, rnd(1.0, 3.2), 0, rnd(0.25, 0.9));
+      const hot = Math.random() < 0.55;
+      c.copy(hot ? palette.orangeHot : palette.netRim).lerp(palette.orange, hot ? Math.random() * 0.5 : 0);
+      add(dust, u.x * r * 0.9, u.y * r * 1.4, u.z * r, c, rnd(1.4, 3.6), 0, rnd(0.25, 0.9));
     }
-    for (let k = 0; k < 38; k++) {
-      c.copy(Math.random() < 0.7 ? NCFG.orange : NCFG.steel);
-      add(dust, rnd(-14, 14), rnd(-8, 8), rnd(-12, -4), c, rnd(40, 120), 1, rnd(0.04, 0.1));
+    for (let k = 0; k < 20; k++) {
+      c.copy(Math.random() < 0.7 ? palette.orange : palette.steel);
+      add(dust, rnd(-8, 8), rnd(-12, 12), rnd(-12, -4), c, rnd(40, 110), 1, rnd(0.04, 0.1));
     }
     const dirs: [number, number][] = [
       [1, 0],
@@ -852,24 +770,24 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       [-0.7071, -0.7071],
     ];
     for (let k = 0; k < NCFG.traceCount; k++) {
-      let x = rnd(-22, 22);
-      let y = rnd(-12, 12);
+      let x = rnd(-10, 10);
+      let y = rnd(-20, 20);
       let along = 0;
       let d = Math.floor(Math.random() * 4);
       const segs = 2 + Math.floor(Math.random() * 4);
-      const col = Math.random() < 0.3 ? NCFG.orange : NCFG.steel;
+      const col = Math.random() < 0.3 ? palette.orange : palette.steel;
       const alpha = rnd(0.05, 0.11);
       const pad = (px: number, py: number) => {
-        for (let a = 0; a < 18; a++) {
-          const th = (a / 18) * Math.PI * 2;
-          add(traces, px + Math.cos(th) * 0.18, py + Math.sin(th) * 0.18, 0, col, 2.2, 2, alpha * 1.3, along);
+        for (let a = 0; a < 14; a++) {
+          const th = (a / 14) * Math.PI * 2;
+          add(traces, px + Math.cos(th) * 0.18, py + Math.sin(th) * 0.18, 0, col, 2.4, 2, alpha * 1.3, along);
         }
       };
       pad(x, y);
       for (let s = 0; s < segs; s++) {
-        const len = rnd(1.2, 5.5);
+        const len = rnd(1.2, 5);
         const [dx, dy] = dirs[d];
-        for (let q = 0; q < len; q += 0.07) add(traces, x + dx * q, y + dy * q, 0, col, 2.0, 2, alpha, along + q);
+        for (let q = 0; q < len; q += 0.09) add(traces, x + dx * q, y + dy * q, 0, col, 2.4, 2, alpha, along + q);
         x += dx * len;
         y += dy * len;
         along += len;
@@ -877,6 +795,7 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       }
       pad(x, y);
     }
+    const bgU = { ...common, uFade: U.netFade };
     const build = (o: Bucket) => {
       const g = new THREE.BufferGeometry();
       g.setAttribute("position", new THREE.Float32BufferAttribute(o.P, 3));
@@ -886,7 +805,7 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       g.setAttribute("aType", new THREE.Float32BufferAttribute(o.T, 1));
       g.setAttribute("aTrace", new THREE.Float32BufferAttribute(o.TR, 1));
       g.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 100);
-      const mat = new THREE.ShaderMaterial({ uniforms: bgUniforms, vertexShader: bgVert, fragmentShader: softFrag, ...additive });
+      const mat = new THREE.ShaderMaterial({ uniforms: bgU, vertexShader: bgVert, fragmentShader: softFrag, ...additive });
       return { geo: g, mat, points: new THREE.Points(g, mat) };
     };
     const dustBuilt = build(dust);
@@ -901,7 +820,6 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
     camera.add(tracePoints);
   }
 
-  // Connections (CPU): particles streaming along an arc between two nodes, forming/breaking over time.
   const LS = NCFG.linkSlots;
   const LK = NCFG.linkParticles;
   const LP = LS * LK;
@@ -924,8 +842,8 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
     lJit[i * 3 + 1] = j.y;
     lJit[i * 3 + 2] = j.z;
     lSeed[i] = Math.random();
-    lSize[i] = lHalo[i] ? rnd(3.5, 6.5) : rnd(1.8, 3.2);
-    const c = NCFG.orange.clone().lerp(NCFG.orangeHot, Math.random() * 0.8);
+    lSize[i] = (lHalo[i] ? rnd(3.5, 6.5) : rnd(1.8, 3.2)) * LINK_COMP;
+    const c = palette.orange.clone().lerp(palette.orangeHot, Math.random() * 0.8);
     lCol[i * 3] = c.r;
     lCol[i * 3 + 1] = c.g;
     lCol[i * 3 + 2] = c.b;
@@ -954,7 +872,6 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
   }));
   const linked = new Set<number>();
   const key = (a: number, b: number) => (a < b ? a * 64 + b : b * 64 + a);
-
   const linkGeometry = new THREE.BufferGeometry();
   const lPosAttr = new THREE.BufferAttribute(lPos, 3).setUsage(THREE.DynamicDrawUsage);
   const lAlphaAttr = new THREE.BufferAttribute(lAlpha, 1).setUsage(THREE.DynamicDrawUsage);
@@ -964,7 +881,7 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
   linkGeometry.setAttribute("aSize", new THREE.BufferAttribute(lSize, 1));
   linkGeometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), 50);
   const linkMaterial = new THREE.ShaderMaterial({
-    uniforms: { uPixelRatio: { value: pixelRatio }, uFade: netFade },
+    uniforms: { ...common, uFade: U.netFade, uNetScale: U.netScale },
     vertexShader: linkVert,
     fragmentShader: softFrag,
     ...additive,
@@ -1000,7 +917,6 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
     nodes[a].degree++;
     nodes[b].degree++;
   }
-
   const tmpA = new THREE.Vector3();
   const tmpB = new THREE.Vector3();
   const dir = new THREE.Vector3();
@@ -1050,8 +966,7 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       if (s.state !== 2) continue;
       const d = nodes[s.a].pos.distanceTo(nodes[s.b].pos);
       const stretch = Math.max(0, d / NCFG.maxLinkDist - 1.3);
-      const p = (0.012 + NCFG.breakRate * motion * motion + stretch * 4) * dt;
-      if (Math.random() < p) breakLink(s, 0.6 + motion);
+      if (Math.random() < (0.012 + NCFG.breakRate * motion * motion + stretch * 4) * dt) breakLink(s, 0.6 + motion);
     }
     if (allowForm) {
       const deficit = Math.max(0, NCFG.targetLinks - alive) / NCFG.targetLinks;
@@ -1061,12 +976,10 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
         formAcc -= 1;
       }
     }
-
     for (let si = 0; si < LS; si++) {
       const s = slot[si];
       const base = si * LK;
       if (s.state === 0) continue;
-
       if (s.state === 3) {
         const drag = Math.exp(-1.5 * dt);
         let any = false;
@@ -1095,7 +1008,6 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
         if (!any) s.state = 0;
         continue;
       }
-
       if (s.state === 1) {
         s.grow += s.speed * dt;
         if (s.grow >= 1) {
@@ -1105,7 +1017,6 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
           nodes[s.b].flash += 0.4;
         }
       }
-
       const nA = nodes[s.a];
       const nB = nodes[s.b];
       dir.subVectors(nB.pos, nA.pos);
@@ -1120,7 +1031,6 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       tmpA.copy(nA.pos).addScaledVector(dir, nA.r * 0.82);
       tmpB.copy(nB.pos).addScaledVector(dir, -nB.r * 0.82);
       const half = s.grow * 0.5;
-
       for (let j = 0; j < LK; j++) {
         const i = base + j;
         const i3 = i * 3;
@@ -1162,102 +1072,124 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
       }
       n.pos.copy(tmpN).add(n.off);
       n.flash *= Math.exp(-2.2 * dt);
-      nodesUniform.value[i].set(n.pos.x, n.pos.y, n.pos.z, n.flash);
+      U.nodes.value[i].set(n.pos.x, n.pos.y, n.pos.z, n.flash);
     });
   }
 
-  // Camera: same width-fit as before, plus the sub-Full-HD laptop lift — applied to the CAMERA (not the logo
-  // mesh) since it now has to keep the logo, the network and the dust group all in the same frame together.
-  function fitCamera() {
+  const REF_LOGO_PX = 1040;
+  function fit() {
     const w = container.clientWidth || 1;
     const h = container.clientHeight || 1;
     const aspect = w / h;
     camera.aspect = aspect;
-    const halfW = CFG.worldWidth * 0.66;
-    const dist = halfW / (Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * aspect);
-    const flatLift = THREE.MathUtils.clamp((1000 - h) / 300, 0, 1);
-    const shortness = THREE.MathUtils.clamp((620 - h) / 200, 0, 1);
-    camera.position.set(0, -(flatLift * 0.7 + shortness * 1.2), THREE.MathUtils.clamp(dist + shortness * 7, 11, 22));
+    const tanH = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+    const dist = Math.max(11, (CFG.worldWidth * 0.62) / (tanH * aspect));
+    camera.position.set(0, 0, dist);
     camera.updateProjectionMatrix();
     renderer.setSize(w, h, false);
+    const logoPx = (w * CFG.worldWidth) / (2 * dist * tanH * aspect);
+    U.camZ.value = dist;
+    U.sizeScale.value = (logoPx / REF_LOGO_PX) * 1.09;
+    const halfW = dist * tanH * aspect;
+    const s = THREE.MathUtils.clamp((halfW * 0.82) / 3.3, 0.85, 1.7);
+    network.scale.setScalar(s);
+    U.netScale.value = s / 0.85;
   }
-  fitCamera();
-  const resizeObserver = new ResizeObserver(fitCamera);
+  fit();
+  const resizeObserver = new ResizeObserver(fit);
   resizeObserver.observe(container);
 
-  // Tracked across the whole window — the logo/network read the cursor wherever it is on the page; only the
-  // morph-trigger click below is scoped to the canvas (a lot more disruptive than the old click-to-scatter, so
-  // it shouldn't fire just because the CTA button sitting on top of the canvas got clicked).
-  const ndc = new THREE.Vector2(0, 0);
-  let pointerActive = false;
-  let lastMove = -10;
-  const setPointer = (e: PointerEvent) => {
-    ndc.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1);
-    pointerActive = true;
-    lastMove = clock.elapsedTime;
-  };
-  const onLeave = () => {
-    pointerActive = false;
-  };
-  window.addEventListener("pointermove", setPointer, { passive: true });
-  document.addEventListener("pointerleave", onLeave);
-  window.addEventListener("blur", onLeave);
-
-  type Mode = "logo" | "toNet" | "net" | "toLogo";
-  // Opens already showing the network — click morphs it into the wordmark, click again morphs back.
-  let mode: Mode = "net";
+  // Opens already showing the network. Same interaction as the standalone prototype: drag horizontally to
+  // rotate (the logo follows the drag directly; the network also picks up the swipe's speed as inertia once
+  // released), and a quick, stationary tap morphs logo⇄network.
+  let mode: "logo" | "toNet" | "net" | "toLogo" = "net";
   let modeT = 0;
-  const rot = { yaw: 0, pitch: 0, auto: 0, yOff: 0, pOff: 0 };
+  const rot = { yaw: 0, pitch: 0, vel: 0, pOff: 0 };
   const wrapAngle = (a: number) => Math.atan2(Math.sin(a), Math.cos(a));
+  let dragging = false;
+  let dragX0 = 0;
+  let dragY0 = 0;
+  let downT = 0;
+  let moved = 0;
+  let logoDrag0 = 0;
+  let logoDrag = 0;
+  let lastX = 0;
+  let lastXT = 0;
+  let fingerVel = 0;
+  let lastInput = -10;
 
-  const startToNet = () => {
-    rot.yaw = points.rotation.y;
-    rot.pitch = points.rotation.x;
-    rot.yOff = rot.yaw - ndc.x * NCFG.rotRange - rot.auto;
-    rot.pOff = rot.pitch + ndc.y * NCFG.rotRange;
-    for (const s of slot) {
-      if (s.state !== 0) {
-        if (s.state !== 3) {
-          linked.delete(key(s.a, s.b));
-          nodes[s.a].degree--;
-          nodes[s.b].degree--;
-        }
-        s.state = 0;
-      }
-    }
-    lAlpha.fill(0);
-    formAcc = 0;
-    mode = "toNet";
-    modeT = 0;
+  const onPointerDown = (e: PointerEvent) => {
+    dragging = true;
+    moved = 0;
+    dragX0 = lastX = e.clientX;
+    dragY0 = e.clientY;
+    downT = lastXT = performance.now();
+    logoDrag0 = logoDrag = points.rotation.y;
+    fingerVel = 0;
   };
-  const onCanvasDown = (e: PointerEvent) => {
-    ndc.set((e.clientX / window.innerWidth) * 2 - 1, -(e.clientY / window.innerHeight) * 2 + 1);
-    if (mode === "logo" && uniforms.uProgress.value >= 1) {
-      lastMove = clock.elapsedTime;
-      startToNet();
+  const onPointerMove = (e: PointerEvent) => {
+    if (!dragging) return;
+    const dx = e.clientX - dragX0;
+    moved = Math.max(moved, Math.hypot(dx, e.clientY - dragY0));
+    const now = performance.now();
+    const w = container.clientWidth;
+    logoDrag = THREE.MathUtils.clamp(logoDrag0 + (dx / w) * CFG.dragSensitivity, -CFG.maxRotY * 1.4, CFG.maxRotY * 1.4);
+    const step = ((e.clientX - lastX) / w) * NCFG.swipeTurn;
+    if (mode === "net" || mode === "toNet") rot.yaw += step;
+    const dtm = Math.max(1, now - lastXT) / 1000;
+    fingerVel = fingerVel * 0.6 + (step / dtm) * 0.4;
+    lastX = e.clientX;
+    lastXT = now;
+    lastInput = clock.elapsedTime;
+  };
+  function toggle() {
+    if (mode === "logo" && logoU.uProgress.value >= 1) {
+      rot.yaw = points.rotation.y;
+      rot.pitch = points.rotation.x;
+      rot.vel = 0;
+      rot.pOff = rot.pitch;
+      for (const s of slot) {
+        if (s.state !== 0) {
+          if (s.state !== 3) {
+            linked.delete(key(s.a, s.b));
+            nodes[s.a].degree--;
+            nodes[s.b].degree--;
+          }
+          s.state = 0;
+        }
+      }
+      lAlpha.fill(0);
+      formAcc = 0;
+      mode = "toNet";
+      modeT = 0;
     } else if (mode === "net") {
       for (const s of slot) if (s.state === 1 || s.state === 2) breakLink(s, 2.4);
       points.rotation.y = wrapAngle(rot.yaw);
       points.rotation.x = wrapAngle(rot.pitch);
-      if (Math.abs(points.rotation.x) > Math.PI / 2) {
-        points.rotation.x = wrapAngle(points.rotation.x + Math.PI);
-        points.rotation.y = wrapAngle(points.rotation.y + Math.PI);
-      }
+      rot.vel = 0;
       mode = "toLogo";
       modeT = 0;
     }
+  }
+  const endDrag = (e: PointerEvent) => {
+    if (!dragging) return;
+    dragging = false;
+    if (e.type === "pointerup" && moved < 10 && performance.now() - downT < 300) toggle();
+    else if (mode === "net" || mode === "toNet") rot.vel = THREE.MathUtils.clamp(fingerVel, -9, 9);
   };
-  window.addEventListener("pointerdown", onCanvasDown);
+  canvas.addEventListener("pointerdown", onPointerDown);
+  canvas.addEventListener("pointermove", onPointerMove);
+  canvas.addEventListener("pointerup", endDrag);
+  canvas.addEventListener("pointercancel", endDrag);
 
-  let heroOnScreen = true;
-  const io = new IntersectionObserver(([entry]) => {
-    heroOnScreen = entry.isIntersecting;
-    if (heroOnScreen) kick();
-  });
-  io.observe(container);
-
+  let visible = true;
+  let onScreen = true;
+  let running = false;
+  let raf = 0;
+  let fpsFrames = 0;
+  let fpsTime = 0;
+  let fpsChecked = false;
   const clock = new THREE.Clock();
-  const targetRot = new THREE.Vector2();
   const euler = new THREE.Euler(0, 0, 0, "YXZ");
   const qCurr = new THREE.Quaternion();
   const qPrev = new THREE.Quaternion();
@@ -1266,77 +1198,60 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
   const invLogo = new THREE.Matrix4();
   let motionS = 0;
 
-  let raf = 0;
-  const kick = () => {
-    if (!raf) raf = requestAnimationFrame(tick);
-  };
-
   function tick() {
-    raf = 0;
-    if (!heroOnScreen) return;
-    kick();
     const dt = Math.min(clock.getDelta(), 0.05);
     const t = clock.elapsedTime;
     modeT += dt;
-    uniforms.uTime.value = t;
-    uniforms.uProgress.value = Math.min(1, t / 3.2);
-    nodeUniforms.uTime.value = t;
-    bgUniforms.uTime.value = t;
-
-    // Intro: a gentle fade-in for the network's ambient dust/haze (the nodes themselves "organize" via their
-    // own idle-wobble spring physics — see the scattered starting offset where nodes are built above).
-    if (mode === "net" && netFade.value < 1) netFade.value = Math.min(1, t / 1.4);
+    U.time.value = t;
+    logoU.uProgress.value = Math.min(1, t / 3.2);
 
     if (mode === "toNet") {
       const m = Math.min(1, modeT / MORPH.toNetDuration);
-      uniforms.uMorph.value = m;
+      logoU.uMorph.value = m;
       const f = Math.min(1, Math.max(0, (modeT - MORPH.handoff * MORPH.toNetDuration) / MORPH.fadeDuration));
-      netFade.value = smooth(f);
-      uniforms.uLogoFade.value = 1 - smooth(Math.min(1, Math.max(0, (f - 0.25) / 0.75)));
+      U.netFade.value = smooth(f);
+      logoU.uLogoFade.value = 1 - smooth(Math.min(1, Math.max(0, (f - 0.25) / 0.75)));
       if (m >= 1 && f >= 1) {
         mode = "net";
         modeT = 0;
       }
     } else if (mode === "toLogo") {
       const m = 1 - Math.min(1, modeT / MORPH.toLogoDuration);
-      uniforms.uMorph.value = m;
-      netFade.value = 1 - smooth(Math.min(1, modeT / MORPH.fadeDuration));
-      uniforms.uLogoFade.value = smooth(Math.min(1, modeT / 0.5));
+      logoU.uMorph.value = m;
+      U.netFade.value = 1 - smooth(Math.min(1, modeT / MORPH.fadeDuration));
+      logoU.uLogoFade.value = smooth(Math.min(1, modeT / 0.5));
       if (m <= 0) {
         mode = "logo";
         modeT = 0;
-        netFade.value = 0;
+        U.netFade.value = 0;
       }
     }
-    const logoVisible = uniforms.uLogoFade.value > 0.001;
-    const netVisible = netFade.value > 0.001 || mode !== "logo";
+    const logoVisible = logoU.uLogoFade.value > 0.001;
+    const netVisible = U.netFade.value > 0.001 || mode !== "logo";
     points.visible = logoVisible;
     network.visible = dustGroup.visible = netVisible;
 
-    const idle = !pointerActive || t - lastMove > 4;
-    if (idle) targetRot.set(Math.sin(t * 0.22) * 0.3, Math.sin(t * 0.17) * 0.06);
-    else targetRot.set(ndc.x * CFG.maxRotY, -ndc.y * CFG.maxRotX);
-    const k = 1 - Math.pow(idle ? 0.3 : 0.04, dt);
-    const ldy = (targetRot.x - points.rotation.y) * k;
-    const ldx = (targetRot.y - points.rotation.x) * k;
+    const ty = dragging ? logoDrag : Math.sin(t * 0.22) * 0.3;
+    const tx = Math.sin(t * 0.17) * 0.06;
+    const k = 1 - Math.pow(dragging ? 0.002 : t - lastInput < 1.5 ? 0.12 : 0.3, dt);
+    const ldy = (ty - points.rotation.y) * k;
+    const ldx = (tx - points.rotation.x) * k;
     points.rotation.y += ldy;
     points.rotation.x += ldx;
     points.updateMatrixWorld();
     if (mode === "logo") physics.step(dt, ldx, ldy);
 
-    rot.auto += NCFG.autoSpin * dt;
-    const nIdle = t - lastMove > 5;
-    const tx = nIdle ? 0 : ndc.x;
-    const ty = nIdle ? 0 : ndc.y;
-    const kn = 1 - Math.pow(NCFG.rotSmooth, dt);
-    const offDecay = Math.exp(-0.45 * dt);
-    rot.yOff *= offDecay;
-    rot.pOff *= offDecay;
-    rot.yaw += (tx * NCFG.rotRange + rot.auto + rot.yOff - rot.yaw) * kn;
-    rot.pitch += (-ty * NCFG.rotRange + rot.pOff - rot.pitch) * kn;
     if (mode === "logo") {
       rot.yaw = points.rotation.y;
       rot.pitch = points.rotation.x;
+    } else {
+      if (!dragging) {
+        rot.yaw += (NCFG.autoSpin + rot.vel) * dt;
+        rot.vel *= Math.exp(-NCFG.spinFriction * dt);
+      }
+      rot.pOff *= Math.exp(-0.5 * dt);
+      const pitchTarget = Math.sin(t * 0.19) * 0.45 + rot.pOff;
+      rot.pitch += (pitchTarget - rot.pitch) * (1 - Math.pow(0.2, dt));
     }
     euler.set(rot.pitch, rot.yaw, 0);
     qPrev.copy(qCurr);
@@ -1353,37 +1268,61 @@ export function initHeroLogo3D({ canvas, container }: HeroLogo3DOptions): () => 
     motionS += (motion - motionS) * (1 - Math.exp(-(motion > motionS ? 8 : 1.5) * dt));
 
     updateNodes(dt, t, mode === "logo" ? qIdentity : qrel);
-    // Intro only (first ~1.8s of the page's life, never replays on later clicks back to "net"): nudges every
-    // node out from the scattered offset above, easing to 0 — the spheres read as flying into place/organizing.
-    if (t < 2) {
-      const introK = 1 - THREE.MathUtils.smoothstep(t, 0, 1.8);
-      if (introK > 0.0005) {
-        for (let i = 0; i < NN; i++) {
-          const v = nodesUniform.value[i];
-          v.x += introOffset[i].x * introK;
-          v.y += introOffset[i].y * introK;
-          v.z += introOffset[i].z * introK;
+    if (netVisible) updateLinks(dt, t, qrel, motionS, mode === "net" || (mode === "toNet" && U.netFade.value > 0.3));
+
+    invLogo.copy(points.matrixWorld).invert();
+    logoU.uNetToLogo.value.multiplyMatrices(invLogo, network.matrixWorld);
+
+    renderer.render(scene, camera);
+
+    if (!fpsChecked && t > 3.5) {
+      fpsFrames++;
+      fpsTime += dt;
+      if (fpsTime > 2) {
+        fpsChecked = true;
+        if (fpsFrames / fpsTime < 45 && pixelRatio > 1) {
+          pixelRatio = 1;
+          renderer.setPixelRatio(1);
+          U.pr.value = 1;
+          fit();
         }
       }
     }
-    if (netVisible) updateLinks(dt, t, qrel, motionS, mode === "net" || (mode === "toNet" && netFade.value > 0.3));
-
-    invLogo.copy(points.matrixWorld).invert();
-    uniforms.uNetToLogo.value.multiplyMatrices(invLogo, network.matrixWorld);
-
-    renderer.render(scene, camera);
+    raf = requestAnimationFrame(tick);
   }
-  tick();
+  function updateRunning() {
+    const should = visible && onScreen;
+    if (should && !running) {
+      running = true;
+      clock.getDelta();
+      raf = requestAnimationFrame(tick);
+    } else if (!should && running) {
+      running = false;
+      cancelAnimationFrame(raf);
+    }
+  }
+  const onVisibility = () => {
+    visible = !document.hidden;
+    updateRunning();
+  };
+  document.addEventListener("visibilitychange", onVisibility);
+  const io = new IntersectionObserver(([entry]) => {
+    onScreen = entry.isIntersecting;
+    updateRunning();
+  });
+  io.observe(container);
+  updateRunning();
 
   return () => {
     cancelAnimationFrame(raf);
     resizeObserver.disconnect();
     io.disconnect();
-    window.removeEventListener("pointermove", setPointer);
-    document.removeEventListener("pointerleave", onLeave);
-    window.removeEventListener("blur", onLeave);
-    window.removeEventListener("pointerdown", onCanvasDown);
-    logoGeometry.dispose();
+    document.removeEventListener("visibilitychange", onVisibility);
+    canvas.removeEventListener("pointerdown", onPointerDown);
+    canvas.removeEventListener("pointermove", onPointerMove);
+    canvas.removeEventListener("pointerup", endDrag);
+    canvas.removeEventListener("pointercancel", endDrag);
+    geometry.dispose();
     logoMaterial.dispose();
     nodeGeometry.dispose();
     nodeMaterial.dispose();

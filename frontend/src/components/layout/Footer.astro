@@ -18,6 +18,33 @@ import { footerLinks, socials, legalLinks } from "../../lib/site";
       aria-hidden="true"
     />
     <div class="t3-cta-top">
+      <!-- Phones only: the logo⇄network morph (drag to rotate, tap to transform) sitting in its own space
+           above the title — not a backdrop behind the text; only its own bottom edge is allowed to tuck
+           slightly under the title (a small negative margin), not the whole thing. This panel is always dark
+           regardless of site theme, so no light-theme palette is needed here. Lazily loaded only once this
+           panel is about to scroll into view. -->
+      <div class="t3-cta-morph-mobile" aria-hidden="true">
+        <canvas class="t3-cta-morph-canvas"></canvas>
+      </div>
+      <script>
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const lite = !window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+        const morphEl = document.querySelector<HTMLElement>(".t3-cta-morph-mobile");
+        const morphCanvas = document.querySelector<HTMLCanvasElement>(".t3-cta-morph-canvas");
+        if (morphEl && morphCanvas && lite && !reduced) {
+          const io = new IntersectionObserver(
+            ([entry]) => {
+              if (!entry.isIntersecting) return;
+              io.disconnect();
+              import("../../scripts/logo-morph-mobile").then(({ initLogoMorphMobile }) =>
+                initLogoMorphMobile({ canvas: morphCanvas, container: morphEl }),
+              );
+            },
+            { rootMargin: "200px 0px" },
+          );
+          io.observe(morphEl);
+        }
+      </script>
       <h2 id="t3-cta-h" class="t3-cta-title">Vamos colocar a sua marca no topo das buscas, e nas respostas de IA?</h2>
       <div class="t3-cta-side">
         <span class="t3-chip"><i></i>Diagnóstico gratuito</span>

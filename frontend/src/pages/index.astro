@@ -16,6 +16,27 @@ import ServiceArt from "../components/site/ServiceArt.astro";
 import { faqs, faqSchema } from "../lib/faq";
 import { authorityIcons } from "../lib/authority-icons";
 
+// Mobile hero background: a plain starfield (no WebGL — three.js was dragging LCP/Speed Index down in
+// PageSpeed) — small dots scattered over the whole hero, CSS-only twinkle. Generated here (deterministic seed,
+// so it doesn't reshuffle every build) rather than hand-placed, since a real starry sky needs dozens of them,
+// not a handful. Pure static markup: no client JS, no network request beyond the page itself.
+function mulberry32(seed: number) {
+  return () => {
+    seed = (seed + 0x6d2b79f5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const starRand = mulberry32(1337);
+const heroStars = Array.from({ length: 80 }, () => ({
+  cx: Math.round(starRand() * 400 * 10) / 10,
+  cy: Math.round(starRand() * 640 * 10) / 10,
+  r: Math.round((0.7 + starRand() * 1.5) * 10) / 10,
+  orange: starRand() < 0.07,
+  delay: Math.round(starRand() * 6 * 10) / 10,
+}));
+
 const posts = (await getVisiblePosts()).slice(0, 3);
 const catOf = (p: { categories: { slug: string; name: string }[] }) =>
   p.categories.find((c) => !["blog", "uncategorized", "agencia", "novidades"].includes(c.slug))?.name ?? "Artigo";
@@ -99,35 +120,19 @@ const homeProjects = highlightProjects(3);
       <div class="t3-hero-media" aria-hidden="true">
         <canvas class="t3-hero-3d"></canvas>
       </div>
-      <svg class="t3-hero-deco-mobile" aria-hidden="true" viewBox="0 0 400 520" preserveAspectRatio="xMidYMid slice">
-        <g class="t3-deco-lines">
-          <line x1="48" y1="96" x2="132" y2="150" />
-          <line x1="132" y1="150" x2="110" y2="238" />
-          <line x1="132" y1="150" x2="224" y2="118" />
-          <line x1="224" y1="118" x2="300" y2="172" />
-          <line x1="300" y1="172" x2="356" y2="128" />
-          <line x1="110" y1="238" x2="176" y2="296" />
-          <line x1="176" y1="296" x2="264" y2="268" />
-          <line x1="264" y1="268" x2="300" y2="172" />
-          <line x1="56" y1="330" x2="110" y2="238" />
-          <line x1="300" y1="380" x2="264" y2="268" />
-          <line x1="300" y1="380" x2="222" y2="420" />
-        </g>
-        <g class="t3-deco-dots">
-          <circle cx="48" cy="96" r="3.2" />
-          <circle cx="132" cy="150" r="2.4" />
-          <circle cx="224" cy="118" r="2.4" />
-          <circle cx="300" cy="172" r="3.2" />
-          <circle cx="356" cy="128" r="2" />
-          <circle cx="110" cy="238" r="2.4" />
-          <circle cx="176" cy="296" r="2" />
-          <circle cx="264" cy="268" r="2.8" />
-          <circle cx="56" cy="330" r="2" />
-          <circle cx="300" cy="380" r="2.4" />
-          <circle cx="222" cy="420" r="2" />
-          <circle class="t3-deco-dot-orange" cx="132" cy="150" r="4.2" />
-          <circle class="t3-deco-dot-orange" cx="264" cy="268" r="3.6" />
-          <circle class="t3-deco-dot-orange" cx="222" cy="420" r="3.2" />
+      <svg class="t3-hero-deco-mobile" aria-hidden="true" viewBox="0 0 400 640" preserveAspectRatio="xMidYMid slice">
+        <g class="t3-deco-stars">
+          {
+            heroStars.map((s) => (
+              <circle
+                cx={s.cx}
+                cy={s.cy}
+                r={s.r}
+                class={s.orange ? "t3-deco-star-orange" : undefined}
+                style={`--d:${s.delay}s`}
+              />
+            ))
+          }
         </g>
       </svg>
       <script>

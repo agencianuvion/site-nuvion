@@ -153,6 +153,20 @@
   .t3-hero-deco-mobile {
     display: none;
   }
+  /* Phone-only logo⇄network morph sitting in the footer's dark CTA panel, before its title — desktop already
+     has this in the hero, so this collapses away there (shown in the phone media query below). */
+  .t3-cta-morph-mobile {
+    display: none;
+  }
+  .t3-cta-morph-canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    /* Dragging horizontally rotates it; pan-y leaves vertical scrolling to the browser instead of fighting it. */
+    touch-action: pan-y;
+  }
   /* Very subtle static grain over the picture, only there to break up banding and tiny seams between frames.
      Generated noise (SVG turbulence, no file). Kept still on purpose: a stepped shimmer read as stutter. */
   .t3-hero-grain {
@@ -363,7 +377,7 @@
   .t3-hero-card {
     padding: 16px 20px 6px;
     border-radius: 20px;
-    background: rgba(9, 10, 12, 0.62);
+    background: rgba(9, 10, 12, 0.05);
     -webkit-backdrop-filter: blur(16px) saturate(1.3);
     backdrop-filter: blur(16px) saturate(1.3);
     border: 1px solid rgba(255, 255, 255, 0.12);
@@ -2193,6 +2207,13 @@
     .t3-cta-top {
       grid-template-columns: 1fr;
     }
+    .t3-cta-morph-mobile {
+      display: block;
+      position: relative;
+      height: min(32vh, 275px);
+      margin-top: -16px;
+      margin-bottom: -24px;
+    }
     .t3-cta-title {
       padding: 0 0 36px;
     }
@@ -3021,32 +3042,29 @@
     width: 100%;
     height: 100%;
   }
-  .t3-deco-lines line {
-    stroke: rgba(255, 255, 255, 0.14);
-    stroke-width: 1;
+  .t3-deco-stars circle {
+    fill: rgba(255, 255, 255, 0.85);
   }
-  .t3-deco-dots circle {
-    fill: rgba(255, 255, 255, 0.55);
-  }
-  .t3-deco-dots .t3-deco-dot-orange {
+  .t3-deco-stars .t3-deco-star-orange {
     fill: var(--color-nv-orange);
-    opacity: 0.85;
+    opacity: 0.95;
   }
   @media (prefers-reduced-motion: no-preference) {
-    .t3-deco-dots circle {
-      animation: t3-deco-twinkle 4.5s ease-in-out infinite;
+    .t3-deco-stars circle {
+      animation: t3-deco-twinkle 2.8s ease-in-out infinite;
+      animation-delay: var(--d, 0s);
     }
-    .t3-deco-dots circle:nth-of-type(2n) {
-      animation-delay: -1.5s;
+    .t3-deco-stars circle:nth-of-type(3n) {
+      animation-duration: 3.6s;
     }
-    .t3-deco-dots circle:nth-of-type(3n) {
-      animation-delay: -3s;
+    .t3-deco-stars circle:nth-of-type(5n) {
+      animation-duration: 2.1s;
     }
   }
   @keyframes t3-deco-twinkle {
     0%,
     100% {
-      opacity: 0.35;
+      opacity: 0.18;
     }
     50% {
       opacity: 1;

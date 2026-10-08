@@ -9,6 +9,12 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { SplitText } from "gsap/SplitText";
 
 gsap.registerPlugin(ScrollTrigger, SplitText);
+// Mobile browsers resize the viewport (by a few dozen px) as the address bar/toolbar collapses while scrolling —
+// ScrollTrigger's default resize listener treats that like a real layout change and refreshes, recalculating
+// every pinned/sticky section's start/end (and, below, the wrapper height stickyPanel() sized off innerHeight)
+// mid-scroll. That recalculation is what reads as a sudden jump/snap right after a sticky "cards" section, on
+// whichever page has one — this tells ScrollTrigger to ignore exactly that toolbar-driven case on touch devices.
+ScrollTrigger.config({ ignoreMobileResize: true });
 
 const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 // Not just "(hover: hover) and (pointer: fine)": a phone whose digitizer also supports a stylus (S-Pen and similar) can
@@ -1740,7 +1746,15 @@ function init() {
   // visitor's first scroll into it begins — showing as a stray sliver of a card that is supposed to be off-screen,
   // self-correcting once something else happens to refresh. visualViewport's own resize event exists for precisely
   // this case; feed it through the same idle-aware correction as every other late layout change.
-  window.visualViewport?.addEventListener("resize", refreshWhenIdle);
+  // { once: true }: the bar doesn't just collapse once — it toggles again on every direction change for the rest
+  // of the scroll (expands scrolling up, collapses scrolling down), firing this on every single toggle. Each one
+  // re-armed refreshWhenIdle, which fires the MOMENT the visitor stops being inside any active pin — i.e. almost
+  // always right as they scroll past a pinned "cards" section — recomputing stickyPanel()'s wrapper height (built
+  // from this same innerHeight) and shifting every section below it under the visitor's thumb. That read as a
+  // sudden jump/freeze right after the cards, on every page that has one. One correction, right after the bar's
+  // very first collapse, is enough — the page's geometry already matches the collapsed state after that, and
+  // there's nothing left to correct on the toggles that follow.
+  window.visualViewport?.addEventListener("resize", refreshWhenIdle, { once: true });
 
   // Every pinned/scrubbed section above (the stacking cards, the testimonials, the author-card reveal, the h2 line
   // masks) has its scroll start/end baked in pixels at the moment it was measured. If the PAGE'S total height changes
