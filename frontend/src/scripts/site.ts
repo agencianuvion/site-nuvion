@@ -641,16 +641,43 @@ function guardWheel(el: HTMLElement) {
   );
 }
 
-/* ---------- Testimonials: long quotes scroll inside the card (fixed card size) ---------- */
+/* ---------- Testimonials: quotes shrink to fit before falling back to scrolling (fixed card size) ----------
+   Testimonials.astro's quoteFontSize() already buckets by word count, but it can't know the real rendered
+   wrap (that depends on the card's actual width) — a quote that bucket guessed wrong for, or one that's right
+   on the edge, still overflows. Before accepting the scroll fallback, shrink it one px at a time down to a
+   15px floor; only a quote that's still too long even at 15px ever actually scrolls. */
 document.querySelectorAll<HTMLElement>(".t3-tqwrap").forEach((w) => {
-  const update = () => {
+  const q = w.querySelector<HTMLElement>(".t3-tq, .tb-q");
+  const FONT_FLOOR = 15;
+  // Captured once, before anything below ever touches it: Testimonials.astro's own quoteFontSize() renders as
+  // an inline style — a clamp() expression, not a fixed px value, so it still re-evaluates correctly if the
+  // card's width changes later (an orientation change, say). Resetting to "" instead of this exact string
+  // would fall through to unrelated/stale .t3-tq breakpoint rules in the stylesheet (dead code today only
+  // because this inline style always outranks them), landing the shrink loop's starting point on a size that
+  // has nothing to do with this quote.
+  const originalFontSize = q?.style.fontSize || "";
+  const shrinkToFit = () => {
+    if (!q) return;
+    q.style.fontSize = originalFontSize;
+    if (w.scrollHeight <= w.clientHeight + 2) return;
+    let size = parseFloat(getComputedStyle(q).fontSize);
+    while (w.scrollHeight > w.clientHeight + 2 && size > FONT_FLOOR) {
+      size -= 1;
+      q.style.fontSize = `${size}px`;
+    }
+  };
+  const updateScrollState = () => {
     w.classList.toggle("is-scroll", w.scrollHeight > w.clientHeight + 2);
     w.classList.toggle(
       "at-end",
       w.scrollTop + w.clientHeight >= w.scrollHeight - 2,
     );
   };
-  w.addEventListener("scroll", update, { passive: true });
+  const update = () => {
+    shrinkToFit();
+    updateScrollState();
+  };
+  w.addEventListener("scroll", updateScrollState, { passive: true });
   guardWheel(w);
   new ResizeObserver(update).observe(w);
   update();
@@ -1026,45 +1053,14 @@ function init() {
   /* Hero: headline words rise out of a mask, side elements fade in after. */
   const h1 = document.querySelector<HTMLElement>(".t3-h1");
   if (h1) {
-    // NOT autoSplit: it re-splits the text (tears down the line/word wrapper spans and rebuilds brand-new ones)
-    // whenever the title's own box reflows — a mobile browser's address bar collapsing as the visitor scrolls, a
-    // webfont swapping in moments after the first paint, even just arriving on the page while that reflow is still
-    // settling. The teardown-and-rebuild isn't atomic from the browser's standpoint: for a frame or two the OLD
-    // split's words (some already at their settled position) and the brand-new split's words (freshly inserted, not
-    // yet positioned) can both be in the DOM at once, rendering as the title jumbling — different sizes/positions
-    // overlapping — right after it first appears (confirmed by scrubbing a screen recording frame by frame; this
-    // happened within ~200ms of the page loading, well before the entrance even finished once, so an earlier attempt
-    // at fixing this by cleaning up only AFTER the entrance's own tween completed was fixing the wrong moment). A
-    // one-time entrance animation never needs to re-split at all — the wrapper spans still reflow with the browser's
-    // normal text layout if the box resizes mid-animation (just without perfectly re-measured line-mask boundaries
-    // for that brief window) — and revert() below removes the split structure for good shortly after, so there's
-    // nothing left watching for reflows well before any real one (an actual resize, a later visit scrolling back to
-    // it) could happen anyway.
-    let split: SplitText | null = null;
-    split = SplitText.create(h1, {
-      type: "lines,words",
-      mask: "lines",
-      onSplit: (self) => {
-        // A tween's `delay` defers EVERYTHING about it, including rendering its own "from" state — the words sit at
-        // their natural (fully visible, correctly positioned) layout for the whole 0.15s, not hidden below the mask
-        // as intended. Adding "is-ready" right after creating a delayed gsap.from() revealed the h1 while the words
-        // were still in that natural state, then SNAPPED them down out of sight exactly when the delay elapsed and
-        // the tween actually started — reading as the finished title flashing in, vanishing, then rising again
-        // (confirmed on a screen recording: some words already snapped to hidden while others hadn't caught up yet,
-        // mid-snap, looked like the title jumbling). Setting the hidden state with gsap.set() FIRST, synchronously,
-        // before "is-ready" ever reveals the h1, means there's nothing ungated left for any delay to defer.
-        gsap.set(self.words, { yPercent: 145 });
-        h1.classList.add("is-ready");
-        return gsap.to(self.words, {
-          yPercent: 0,
-          duration: 1.1,
-          stagger: 0.07,
-          ease: "power4.out",
-          delay: 0.15,
-          onComplete: () => split?.revert(),
-        });
-      },
-    });
+    // Whole title fades/rises in as ONE block — not word-by-word anymore (that was SplitText's line-mask
+    // wrapper divs, confirmed to be what caused the line-height glitch: without them, no glitch). gsap.set()
+    // first, synchronously, so the hidden state is already in place before "is-ready" lets the CSS safety-
+    // reveal rule stop hiding it — same ordering as every other entrance on this page, so there's nothing
+    // ungated left for a delay to defer (see .t3-fade below for the same pattern).
+    gsap.set(h1, { opacity: 0, y: 24 });
+    h1.classList.add("is-ready");
+    gsap.to(h1, { opacity: 1, y: 0, duration: 1, ease: "power3.out", delay: 0.15 });
   }
   gsap.fromTo(
     ".t3-fade",
@@ -1127,44 +1123,18 @@ function init() {
     );
   }
 
-  /* Section titles: line-mask reveal on enter. NOT autoSplit, same reasoning as the hero's own .t3-h1 above: it
-     re-splits (tears down and rebuilds brand-new line elements) on every reflow, which isn't atomic — the old and
-     new elements can both be in the DOM for a frame, jumbling the title — and a one-time entrance animation never
-     needs to keep re-splitting after it's set up once. revert() below removes the split structure for good shortly
-     after the reveal plays, so there's nothing left watching for reflows well before any real one could happen. */
+  // Section titles: whole title fades/rises in as ONE block on scroll — not word-by-word (SplitText's line
+  // masks, confirmed to cause the line-height glitch). Same gsap.set()-before-"is-ready" ordering as the
+  // hero's own .t3-h1 above, so nothing is left for the scrollTrigger to defer.
   document.querySelectorAll<HTMLElement>("[data-t3-title]").forEach((el) => {
-    let split: SplitText | null = null;
-    let st: ScrollTrigger | null = null;
-    split = SplitText.create(el, {
-      type: "lines",
-      mask: "lines",
-      onSplit: (self) => {
-        st?.kill();
-        // Same bug as the hero's own .t3-h1: a gsap.from() gated behind something that hasn't happened yet (there a
-        // time delay, here a scrollTrigger waiting for "top 88%") doesn't render its own "from" state until that
-        // gate opens — so the lines sat fully visible at their natural, correct-looking position the WHOLE TIME the
-        // title was below the trigger point (is-ready reveals the element immediately, on page load, regardless of
-        // scroll position), then SNAPPED down out of sight the instant it scrolled into the trigger zone and the
-        // tween actually started, before rising back up from there. Reads as the title already being there, then
-        // vanishing, then doing its entrance for real. gsap.set() FIRST, synchronously, puts the hidden state in
-        // effect before "is-ready" ever reveals the element, so there's nothing left for the scrollTrigger to defer.
-        gsap.set(self.lines, { yPercent: 140 });
-        el.classList.add("is-ready");
-        const tween = gsap.to(self.lines, {
-          yPercent: 0,
-          duration: 0.95,
-          stagger: 0.09,
-          ease: "power4.out",
-          scrollTrigger: { trigger: el, start: "top 88%", once: true },
-          // Once the reveal has actually played, revert() undoes the split back to plain text (the exact state it
-          // was animating TO) and stops autoSplit's own resize watcher — so a LATER reflow (the title's content isn't
-          // going anywhere once it's a normal static line) can no longer re-split and jumble it, the same fix as the
-          // hero's own .t3-h1 above.
-          onComplete: () => split?.revert(),
-        });
-        st = tween.scrollTrigger ?? null;
-        return tween;
-      },
+    gsap.set(el, { opacity: 0, y: 20 });
+    el.classList.add("is-ready");
+    gsap.to(el, {
+      opacity: 1,
+      y: 0,
+      duration: 0.8,
+      ease: "power3.out",
+      scrollTrigger: { trigger: el, start: "top 88%", once: true },
     });
   });
 

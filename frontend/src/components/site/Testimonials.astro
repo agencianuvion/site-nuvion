@@ -26,14 +26,18 @@ const stars = (n: number) => Array.from({ length: 5 }, (_, i) => i < n);
  * A short testimonial gets a much bigger quote than a long one, so it fills roughly the same amount of the card
  * instead of leaving empty space above the name (the card's height is fixed — see .tsl's --tsl-h). Word count reads
  * more consistently across punctuation styles than character count. Long quotes land back at the original small
- * size and rely on the card's existing internal scroll (.t3-tqwrap's "is-scroll" class, in site.ts) as the fallback.
+ * size; if a card STILL overflows at that size (text this bucketing can't predict at build time — real pixel
+ * wrapping depends on the rendered width), site.ts's shrinkToFit() below shrinks it further, down to a 15px floor,
+ * before finally falling back to the card's internal scroll (.t3-tqwrap's "is-scroll" class).
+ * The clamp()'s first (floor) value is what actually renders on a phone — the vw-based middle term only wins on
+ * wide screens, where it's fine for a short quote to go big; on mobile every bucket's floor stays within 15-17px.
  */
 function quoteFontSize(quote: string): string {
   const words = quote.trim().split(/\s+/).filter(Boolean).length;
-  if (words <= 12) return "clamp(22px, 3.6vw, 34px)";
-  if (words <= 25) return "clamp(19px, 3vw, 30px)";
-  if (words <= 45) return "clamp(17px, 2.55vw, 26px)";
-  if (words <= 80) return "clamp(16px, 2vw, 21px)";
+  if (words <= 12) return "clamp(17px, 3.6vw, 34px)";
+  if (words <= 25) return "clamp(16.5px, 3vw, 30px)";
+  if (words <= 45) return "clamp(16px, 2.55vw, 26px)";
+  if (words <= 80) return "clamp(15.5px, 2vw, 21px)";
   return "clamp(15px, 1.6vw, 18px)";
 }
 ---

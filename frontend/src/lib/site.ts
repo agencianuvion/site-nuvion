@@ -1,14 +1,25 @@
 import { waLink, CONTACT } from "./contact";
 
-/** Main pages, shown in the footer (the header keeps a shorter list). */
-export const footerLinks = [
-  { href: "/sites-de-alta-performance", label: "Sites" },
-  { href: "/seo-tecnico", label: "SEO Técnico" },
-  { href: "/geo-generative-engine-optimization", label: "GEO" },
-  { href: "/portfolio", label: "Portfólio" },
-  { href: "/setores", label: "Setores" },
-  { href: "/sobre-nos", label: "Sobre Nós" },
-  { href: "/blog", label: "Blog" },
+/** Main pages, shown in the footer (the header keeps a shorter list). Grouped: phones show each group as a
+ *  titled column; desktop runs them all together in one row (titles hidden). */
+export const footerLinkGroups = [
+  {
+    label: "Serviços",
+    links: [
+      { href: "/sites-de-alta-performance", label: "Sites" },
+      { href: "/seo-tecnico", label: "SEO Técnico" },
+      { href: "/geo-generative-engine-optimization", label: "GEO" },
+    ],
+  },
+  {
+    label: "Empresa",
+    links: [
+      { href: "/portfolio", label: "Portfólio" },
+      { href: "/setores", label: "Setores" },
+      { href: "/sobre-nos", label: "Sobre Nós" },
+      { href: "/blog", label: "Blog" },
+    ],
+  },
 ];
 
 export const socials = [

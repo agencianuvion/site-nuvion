@@ -2,7 +2,7 @@
 // Closing panel of every page: call to action, links, socials and legal links, with the Nuvion wordmark
 // sliding in behind (animated in scripts/site.ts). Same skeleton as the Flowrix footer the client liked.
 import { waLink } from "../../lib/contact";
-import { footerLinks, socials, legalLinks } from "../../lib/site";
+import { footerLinkGroups, socials, legalLinks } from "../../lib/site";
 ---
 
 <div class="t3 t3-foot">
@@ -60,7 +60,14 @@ import { footerLinks, socials, legalLinks } from "../../lib/site";
 
     <div class="t3-cta-mid">
       <nav aria-label="Rodapé">
-        {footerLinks.map((l) => <a href={l.href}>{l.label}</a>)}
+        {
+          footerLinkGroups.map((g) => (
+            <div class="t3-foot-group">
+              <p class="t3-foot-label">{g.label}</p>
+              {g.links.map((l) => <a href={l.href}>{l.label}</a>)}
+            </div>
+          ))
+        }
       </nav>
       <div class="t3-socials">
         {
@@ -74,10 +81,20 @@ import { footerLinks, socials, legalLinks } from "../../lib/site";
     </div>
 
     <div class="t3-cta-bot">
-      <p>&copy; {new Date().getFullYear()} Nuvion. Todos os direitos reservados.</p>
+      <p>&copy; {new Date().getFullYear()} Nuvion.<span> Todos os direitos reservados.</span></p>
       <nav aria-label="Legal">
         {legalLinks.map((l) => <a href={l.href}>{l.label}</a>)}
       </nav>
+      <!-- Phones only (the home is a long scroll there): closes the footer with a way back up. -->
+      <button type="button" class="t3-totop" aria-label="Voltar ao topo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7" /></svg>
+      </button>
+      <script>
+        document.querySelector(".t3-totop")?.addEventListener("click", () => {
+          const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+          window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+        });
+      </script>
     </div>
   </section>
 </div>

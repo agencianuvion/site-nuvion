@@ -132,6 +132,14 @@
   /* Hero */
   .t3-hero {
     min-height: clamp(620px, 88vh, 900px);
+    /* svh (stable: the browser-UI-maximized viewport) overrides the vh fallback above wherever supported —
+       plain vh changes as the mobile address bar collapses/expands while scrolling, which kept changing the
+       hero's own height and, through it, the whole page's height. A ResizeObserver on <body> (further down
+       this file) treats any body-size change as "something real changed layout, re-measure the pinned
+       sections" — with vh here, that fired on every single toolbar toggle for the rest of the scroll, each
+       one landing its correction right as whichever pinned section the visitor was currently leaving let go,
+       which is what read as a sudden tilt/snap, most visible right after the last "como trabalhamos" card. */
+    min-height: clamp(620px, 88svh, 900px);
     display: flex;
   }
   .t3-hero-media {
@@ -2089,6 +2097,10 @@
   .t3-cta-side .t3-chip {
     padding-top: 0;
   }
+  /* "available" green, same as the hero's status dot — the free diagnosis is open now */
+  .t3-cta-side .t3-chip i {
+    background: var(--color-nv-success);
+  }
   .t3-cta-side p {
     margin: 0;
     max-width: 34ch;
@@ -2110,6 +2122,14 @@
     display: flex;
     flex-wrap: wrap;
     gap: 8px 40px;
+  }
+  /* link groups (Serviços / Empresa): only phones show them as titled columns; here they flow as one row */
+  .t3-foot-group {
+    display: contents;
+  }
+  .t3-foot-label,
+  .t3-totop {
+    display: none;
   }
   .t3-cta-mid nav a {
     font-size: 15px;
@@ -2210,9 +2230,9 @@
     .t3-cta-morph-mobile {
       display: block;
       position: relative;
-      height: min(32vh, 275px);
-      margin-top: -16px;
-      margin-bottom: -24px;
+      height: min(36vh, 300px);
+      margin-top: -44px;
+      margin-bottom: 22px;
     }
     .t3-cta-title {
       padding: 0 0 36px;
@@ -2966,31 +2986,101 @@
     margin-right: 10px;
   }
 
-  /* footer: links in two columns with comfortable rows, legal links stacked instead of cut off */
+  /* footer, top to bottom: two titled link columns (Serviços / Empresa), the socials on their own band, the legal
+     links as a plain list, the copyright last — and enough room under it that the wordmark sits below the text
+     instead of behind it. Every link keeps a 44px tap row. */
+  .t3-cta {
+    padding-bottom: 88px;
+  }
   .t3-cta-mid {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 18px;
+    align-items: stretch;
+    gap: 0;
+    padding-block: 28px 0;
   }
   .t3-cta-mid nav {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0 16px;
-    width: 100%;
+    padding-bottom: 20px;
   }
-  .t3-cta-mid nav a,
-  .t3-cta-bot nav a {
+  .t3-foot-group {
+    display: flex;
+    flex-direction: column;
+  }
+  .t3-foot-label {
+    display: block;
+    margin: 0 0 6px;
+    font-family: var(--t3-mono);
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  .t3-cta-mid nav a {
     display: flex;
     align-items: center;
     min-height: 44px;
   }
+  /* socials: four equal buttons spanning the full width, lined up with the columns above (no divider needed,
+     the band itself separates) */
+  .t3-socials {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    padding-block: 4px 28px;
+  }
+  .t3-socials a {
+    width: auto;
+    height: 52px;
+    border-radius: 999px;
+  }
+  /* legal links (secondary, so tighter and dimmer) on top; then the copyright with the "Topo" button beside it */
   .t3-cta-bot {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 20px 16px;
+    padding-top: 20px;
   }
   .t3-cta-bot nav {
-    gap: 0 24px;
+    grid-column: 1 / -1;
+    order: -1;
+    flex-direction: column;
+    gap: 0;
+  }
+  .t3-cta-bot nav a {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+    color: rgba(255, 255, 255, 0.55);
+  }
+  .t3-cta-bot p {
+    font-size: 12px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.45);
+  }
+  /* round, icon-only (same look as the social buttons) so the copyright beside it keeps its two lines */
+  .t3-totop {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, #fff 16%, var(--t3-dark));
+    background: color-mix(in srgb, #fff 6%, var(--t3-dark));
+    color: #fff;
+    cursor: pointer;
+  }
+  .t3-totop svg {
+    width: 20px;
+    height: 20px;
+  }
+  /* too long for one line at this width: break it on purpose after "Nuvion." rather than wherever it falls */
+  .t3-cta-bot p span {
+    display: block;
   }
 }
 

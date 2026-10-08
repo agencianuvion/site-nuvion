@@ -1090,8 +1090,15 @@ function buildScene(canvas: HTMLCanvasElement, container: HTMLElement, palette: 
     const logoPx = (w * CFG.worldWidth) / (2 * dist * tanH * aspect);
     U.camZ.value = dist;
     U.sizeScale.value = (logoPx / REF_LOGO_PX) * 1.09;
+    // Scaled to fit BOTH dimensions of whatever box this ends up in — a short/wide one (like the footer strip)
+    // previously only fit the width, so the network (a roughly round cluster) ran taller than the visible
+    // frustum and cropped at the top/bottom. Taking the smaller of the two fits guarantees neither crops,
+    // at the cost of sometimes reading a bit smaller than before on a very short box.
     const halfW = dist * tanH * aspect;
-    const s = THREE.MathUtils.clamp((halfW * 0.82) / 3.3, 0.85, 1.7);
+    const halfH = dist * tanH;
+    const sByWidth = (halfW * 0.82) / 3.3;
+    const sByHeight = (halfH * 0.82) / 3.3;
+    const s = THREE.MathUtils.clamp(Math.min(sByWidth, sByHeight), 0.5, 1.7);
     network.scale.setScalar(s);
     U.netScale.value = s / 0.85;
   }

@@ -29,10 +29,10 @@ function mulberry32(seed: number) {
   };
 }
 const starRand = mulberry32(1337);
-const heroStars = Array.from({ length: 80 }, () => ({
+const heroStars = Array.from({ length: 160 }, () => ({
   cx: Math.round(starRand() * 400 * 10) / 10,
   cy: Math.round(starRand() * 640 * 10) / 10,
-  r: Math.round((0.7 + starRand() * 1.5) * 10) / 10,
+  r: Math.round((0.3 + starRand() * 0.8) * 10) / 10,
   orange: starRand() < 0.07,
   delay: Math.round(starRand() * 6 * 10) / 10,
 }));
