@@ -1,0 +1,1036 @@
+---
+// LP de parceiro: Pacote Corretor Autoridade, benefício da WEGG em parceria com a Agência Nuvion.
+// Isolada de propósito: nenhum import de BaseLayout/Header/Footer/componentes do site, nenhuma edição em
+// site.css/global.css. Usa a identidade visual da Nuvion só como referência (mesma cor laranja, mesmas fontes,
+// reaproveitando os arquivos de fonte já publicados em /fonts), tudo escrito e estilizado aqui dentro. noindex e
+// fora do fluxo normal do site: o corretor chega, entende o benefício e solicita pelo WhatsApp.
+const waMessage = "Olá! Sou corretor parceiro da WEGG e quero solicitar o Pacote Corretor Autoridade.";
+function waLink(msg: string) {
+  return `https://wa.me/5548996964116?text=${encodeURIComponent(msg)}`;
+}
+
+const pacoteItems = [
+  {
+    title: "Uma landing page só sua, fácil de atualizar",
+    text: "Você recebe uma página profissional, pensada para transformar visita em contato de verdade. Com um painel de administração simples, você mesmo cadastra e remove imóveis, troca banners e atualiza seus dados de contato sempre que quiser, sem depender de ninguém e sem pagar nada a mais por isso.",
+    icon: "toggle",
+  },
+  {
+    title: "Fotos profissionais feitas por Inteligência Artificial",
+    text: "Você ganha três fotos corporativas de alta qualidade, com aquele acabamento de produção de estúdio, para usar na sua página e nos seus anúncios. Sem agenda, sem maquiagem e sem precisar se deslocar até lugar nenhum.",
+    icon: "sparkles",
+  },
+  {
+    title: "Consultoria especializada em Meta Ads",
+    text: "A gente te orienta na prática sobre como anunciar os seus próprios serviços de consultoria imobiliária e construir a sua autoridade, atraindo o cliente certo direto para o seu atendimento.",
+    icon: "target",
+  },
+  {
+    title: "Incentivo de mídia da WEGG",
+    text: "Enquanto você estiver no projeto, a WEGG libera uma verba extra de anúncios, exclusiva para quem participa do pacote, para te ajudar a impulsionar suas campanhas e acelerar suas vendas.",
+    icon: "gift",
+  },
+];
+
+const faqs = [
+  {
+    question: "Quem pode solicitar esse benefício?",
+    answer:
+      "Todo corretor parceiro ativo da WEGG pode solicitar o Pacote Corretor Autoridade. É um benefício oferecido pela construtora, em parceria com a Agência Nuvion.",
+  },
+  {
+    question: "Posso anunciar os mesmos imóveis que a WEGG já divulga?",
+    answer:
+      "Dentro do programa, o seu foco passa a ser anunciar a sua própria autoridade como corretor e os seus serviços de consultoria, não os mesmos lançamentos que já fazem parte das campanhas oficiais da WEGG. É assim que o pacote constrói a sua marca pessoal no mercado.",
+  },
+  {
+    question: "O site fica sendo meu?",
+    answer:
+      "Sim, de verdade. Você paga pelo setup, então a landing page é sua. Enquanto estiver ativo na parceria com a WEGG, a mensalidade fica subsidiada em R$ 30. Se um dia você se desligar da construtora, ela passa a custar o valor normal da agência, R$ 60 por mês, e o incentivo de mídia da WEGG é encerrado.",
+  },
+  {
+    question: "Como funciona o contato e o suporte depois que eu entrar?",
+    answer:
+      "Tudo acontece direto com a Agência Nuvion: adesão, setup, mensalidade e qualquer suporte que você precisar. A WEGG participa liberando o incentivo de mídia para impulsionar suas campanhas.",
+  },
+  {
+    question: "Como eu solicito o meu benefício agora?",
+    answer: "É simples. Clique em um dos botões desta página e fale com a gente pelo WhatsApp. A gente confirma a sua vinculação com a WEGG e já começa o setup da sua página.",
+  },
+];
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pacote Corretor Autoridade · Benefício WEGG + Agência Nuvion</title>
+    <meta name="description" content="Benefício exclusivo para corretores parceiros da WEGG: landing page própria, fotos por IA, consultoria de Meta Ads e verba extra de anúncios." />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#0b0b0c" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preload" href="/fonts/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin />
+
+    {/* Open Graph/Twitter: este link circula direto entre corretores (grupos de WhatsApp), então o preview do
+       link importa tanto quanto a própria página. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Pacote Corretor Autoridade · Benefício WEGG + Agência Nuvion" />
+    <meta property="og:description" content="Landing page própria, fotos por IA, consultoria de Meta Ads e verba extra de anúncios. Exclusivo para corretores parceiros da WEGG." />
+    <meta property="og:image" content="https://agencianuvion.com.br/images/og-nuvion.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pacote Corretor Autoridade · Benefício WEGG + Agência Nuvion" />
+    <meta name="twitter:description" content="Landing page própria, fotos por IA, consultoria de Meta Ads e verba extra de anúncios. Exclusivo para corretores parceiros da WEGG." />
+  </head>
+  <body>
+    <div class="wg-cursor-glow" id="wg-cursor-glow" aria-hidden="true"></div>
+    <main>
+      <section class="wg-hero">
+        <div class="wg-hero-media">
+          <canvas id="wg-scene" aria-hidden="true"></canvas>
+        </div>
+        <div class="wg-hero-glow" aria-hidden="true"></div>
+        <div class="wg-hero-inner">
+          <span class="wg-eyebrow">Benefício WEGG + Agência Nuvion</span>
+          <div class="wg-hero-copy">
+            <h1>Pacote Corretor <em>Autoridade</em></h1>
+            <p class="wg-lead">
+              Um pacote completo para você se posicionar como autoridade no mercado imobiliário: uma página profissional só sua, fotos de estúdio
+              feitas por Inteligência Artificial, consultoria especializada em anúncios e ainda uma verba extra da WEGG para impulsionar suas
+              campanhas. Tudo isso por uma fração do que essa estrutura custaria fora da parceria.
+            </p>
+            <div class="wg-hero-actions">
+              <a class="wg-btn" href={waLink(waMessage)} target="_blank" rel="noopener">Quero solicitar meu benefício</a>
+              <a class="wg-btn-ghost" href="#pacote">Ver o que está incluso</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="wg-panel wg-light" id="pacote" aria-labelledby="wg-pack-h">
+        <div class="wg-head">
+          <h2 id="wg-pack-h">O que você recebe no <em>Pacote Corretor Autoridade</em></h2>
+          <span class="wg-chip">Benefício WEGG</span>
+        </div>
+        <p class="wg-sub">
+          Um conjunto de ferramentas pensado para você captar clientes com a força e a imagem de uma agência completa, por um valor que nenhuma
+          agência tradicional ofereceria sozinha.
+        </p>
+        <div class="wg-pack-grid" data-reveal-group>
+          {
+            pacoteItems.map((it, i) => (
+              <article class:list={["wg-card", "wg-reveal", i % 2 === 0 ? "wg-reveal-left" : "wg-reveal-right"]}>
+                <div class={`wg-art wg-art-${it.icon}`} aria-hidden="true">
+                  {it.icon === "toggle" && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <path d="M2 8.5h20" />
+                      <rect class="wg-track" x="6" y="12.5" width="10" height="5" rx="2.5" />
+                      <circle class="wg-knob" cx="8.5" cy="15" r="1.7" fill="currentColor" stroke="none" />
+                    </svg>
+                  )}
+                  {it.icon === "sparkles" && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="10.5" cy="10" r="4" />
+                      <path d="M4 20.5c0-3.6 2.9-6.5 6.5-6.5S17 16.9 17 20.5" />
+                      <path class="wg-spark wg-spark-a" d="M19 4.4l.7 1.7 1.7.7-1.7.7-.7 1.7-.7-1.7-1.7-.7 1.7-.7z" fill="currentColor" stroke="none" />
+                      <path class="wg-spark wg-spark-b" d="M21 10.5l.45 1.1 1.1.45-1.1.45-.45 1.1-.45-1.1-1.1-.45 1.1-.45z" fill="currentColor" stroke="none" />
+                    </svg>
+                  )}
+                  {it.icon === "target" && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                      <circle class="wg-ping" cx="12" cy="12" r="9.2" />
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2.4" fill="currentColor" stroke="none" />
+                    </svg>
+                  )}
+                  {it.icon === "gift" && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="3" y="10" width="18" height="11" rx="1.5" />
+                      <path d="M3 14.5h18" />
+                      <path d="M12 10v11" />
+                      <path d="M9.3 10c-1.8 0-3.3-1.2-3.3-2.7S7.3 5 9 5c2.3 0 3 5 3 5" />
+                      <path d="M14.7 10c1.8 0 3.3-1.2 3.3-2.7S16.7 5 15 5c-2.3 0-3 5-3 5" />
+                      <circle class="wg-coin" cx="12" cy="4" r="1.6" fill="currentColor" stroke="none" />
+                    </svg>
+                  )}
+                </div>
+                <div class="wg-card-body">
+                  <h3>{it.title}</h3>
+                  <p>{it.text}</p>
+                </div>
+              </article>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="wg-panel wg-dark" id="investimento" aria-labelledby="wg-price-h">
+        <div class="wg-head">
+          <h2 id="wg-price-h">Uma estrutura completa de agência por uma <em>fração do valor</em></h2>
+          <span class="wg-chip">Investimento</span>
+        </div>
+        <p class="wg-sub">
+          Para caber no bolso de quem está começando, a parceria entre a WEGG e a Nuvion fechou uma condição exclusiva, bem abaixo do que esse mesmo
+          pacote custaria contratado separadamente no mercado.
+        </p>
+        <div class="wg-price-row" data-reveal-group>
+          <div class="wg-price-card wg-reveal wg-reveal-left">
+            <span class="wg-price-label">Fora da parceria</span>
+            <span class="wg-price-big">R$ 2.500+</span>
+            <p>É o que essa mesma estrutura de landing page, fotos profissionais e consultoria custaria contratada separadamente no mercado.</p>
+          </div>
+          <div class="wg-price-link" aria-hidden="true">
+            <span class="wg-price-save">Você economiza mais de 75%</span>
+            <svg class="wg-price-arrow" viewBox="0 0 48 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12h40M34 4l10 8-10 8" />
+            </svg>
+          </div>
+          <div class="wg-price-card is-hot wg-reveal wg-reveal-right">
+            <span class="wg-price-label">Como corretor parceiro WEGG</span>
+            <span class="wg-price-big">R$ 600<small>+ R$ 30/mês</small></span>
+            <p>Um setup único de R$ 600 e uma mensalidade de R$ 30 enquanto você estiver ativo na parceria. O restante do investimento é viabilizado pela WEGG.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="wg-panel wg-light" aria-labelledby="wg-faq-h">
+        <div class="wg-head">
+          <h2 id="wg-faq-h">Perguntas <em>frequentes</em></h2>
+          <span class="wg-chip">Antes de solicitar</span>
+        </div>
+        <div class="wg-faq-list" data-reveal-group>
+          {
+            faqs.map((f, i) => (
+              <details class="wg-faq-row wg-reveal">
+                <summary>
+                  <span class="wg-num">{`${String(i + 1).padStart(2, "0")}.`}</span>
+                  <span>{f.question}</span>
+                  <span class="wg-plus" aria-hidden="true" />
+                </summary>
+                <p>{f.answer}</p>
+              </details>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="wg-panel wg-cta" aria-labelledby="wg-cta-h">
+        <div class="wg-head">
+          <h2 id="wg-cta-h">Pronto para dar o próximo passo e <em>vender mais?</em></h2>
+          <span class="wg-chip">Próximo passo</span>
+        </div>
+        <p class="wg-sub">
+          Fale agora com a Agência Nuvion pelo WhatsApp e solicite a ativação do seu Pacote Corretor Autoridade. Em poucos minutos a gente confirma
+          tudo e já coloca a sua página em produção.
+        </p>
+        <a class="wg-btn" href={waLink(waMessage)} target="_blank" rel="noopener">Solicitar meu benefício agora</a>
+      </section>
+
+      <footer class="wg-foot">
+        <div class="wg-foot-nuvion">
+          <p>Quem está por trás desse benefício é a Agência Nuvion. Quer conhecer melhor a agência e tudo que ela faz?</p>
+          <a class="wg-link" href="https://agencianuvion.com.br" target="_blank" rel="noopener">Visitar o site da Nuvion <span aria-hidden="true">→</span></a>
+        </div>
+        <p class="wg-foot-copy">Pacote Corretor Autoridade · benefício da WEGG em parceria com a Agência Nuvion.</p>
+      </footer>
+    </main>
+
+    <div class="wg-sticky" id="wg-sticky">
+      <a class="wg-btn" href={waLink(waMessage)} target="_blank" rel="noopener">Solicitar meu benefício</a>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("wg-scene") as HTMLCanvasElement | null;
+      const container = canvas?.parentElement ?? null;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (canvas && container) {
+        import("../../scripts/wegg-morph-3d").then(({ initWeggMorph }) => initWeggMorph(canvas, container, reduced)).catch(() => {
+          canvas.style.display = "none";
+        });
+      }
+
+      // Barra fixa com o CTA no mobile, só depois que o hero (com o botão já visível) saiu da tela.
+      const hero = document.querySelector(".wg-hero");
+      const sticky = document.getElementById("wg-sticky");
+      if (hero && sticky) {
+        const io = new IntersectionObserver(([entry]) => sticky.classList.toggle("on", !entry.isIntersecting), { rootMargin: "-50% 0px 0px 0px" });
+        io.observe(hero);
+      }
+
+      // Entrada em cascata: cada cartão/linha sobe e aparece ao entrar na tela (uma vez só), com um pequeno
+      // atraso por posição dentro do próprio grupo, pra não disparar tudo junto.
+      if (!reduced) {
+        const groups = document.querySelectorAll<HTMLElement>("[data-reveal-group]");
+        groups.forEach((group) => {
+          const items = Array.from(group.querySelectorAll<HTMLElement>(".wg-reveal"));
+          items.forEach((el, i) => el.style.setProperty("--d", `${i * 90}ms`));
+          const revealIo = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add("is-in");
+                  revealIo.unobserve(entry.target);
+                }
+              });
+            },
+            { threshold: 0.15, rootMargin: "0px 0px -8% 0px" },
+          );
+          items.forEach((el) => revealIo.observe(el));
+        });
+      } else {
+        document.querySelectorAll(".wg-reveal").forEach((el) => el.classList.add("is-in"));
+      }
+
+      // Glow que mora na página e segue o cursor com um atraso suave (lerp a cada frame), em vez de um brilho
+      // parado. Só em telas com mouse de verdade (a própria media query no CSS já tira isso do mobile/reduced
+      // motion, então aqui só liga o listener quando o elemento está de fato visível).
+      const glowEl = document.getElementById("wg-cursor-glow");
+      if (glowEl && !reduced && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        let tx = window.innerWidth / 2,
+          ty = window.innerHeight * 0.4;
+        let cx = tx,
+          cy = ty;
+        let on = false;
+        window.addEventListener(
+          "pointermove",
+          (e) => {
+            tx = e.clientX;
+            ty = e.clientY;
+            if (!on) {
+              on = true;
+              glowEl.classList.add("is-on");
+            }
+          },
+          { passive: true },
+        );
+        function tick() {
+          cx += (tx - cx) * 0.08;
+          cy += (ty - cy) * 0.08;
+          glowEl!.style.transform = `translate(${cx}px, ${cy}px)`;
+          requestAnimationFrame(tick);
+        }
+        tick();
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  :root {
+    color-scheme: dark;
+  }
+  @font-face {
+    font-family: "Inter Tight";
+    font-style: normal;
+    font-weight: 300 800;
+    font-display: swap;
+    src: url("/fonts/inter-tight-latin.woff2") format("woff2");
+  }
+  * {
+    box-sizing: border-box;
+  }
+  html,
+  body {
+    margin: 0;
+    color: #fff;
+    font-family: "Inter Tight", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* O gradiente sozinho no body quase não aparece: a hero (opaca) cobre bem onde ele seria mais forte, e o
+     resto da página é só vãos estreitos entre painéis. O que dá vida de verdade é: grão repetido no body
+     inteiro (textura, não cor lisa) + cada painel "vazando" um brilho pra fora de si mesmo via box-shadow,
+     direto nesses vãos escuros que se vê. */
+  body {
+    background: #0b0b0c
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .18 0 0 0 0 .16 0 0 0 0 .22 0 0 0 .4 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>")
+      0 0 / 200px 200px;
+  }
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+  }
+  /* Elemento que "mora" na página e segue o cursor com um atraso suave (JS no fim do arquivo), pra dar uma
+     presença viva por trás do conteúdo, visível nos vãos entre painéis — em vez de um brilho fixo e estático. */
+  .wg-cursor-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 620px;
+    height: 620px;
+    margin: -310px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(202, 77, 19, 0.32) 0%, rgba(42, 70, 110, 0.22) 55%, transparent 78%);
+    filter: blur(50px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    transform: translate(50vw, 40vh);
+  }
+  .wg-cursor-glow.is-on {
+    opacity: 1;
+  }
+  @media (max-width: 860px), (prefers-reduced-motion: reduce) {
+    .wg-cursor-glow {
+      display: none;
+    }
+  }
+  em {
+    font-style: normal;
+    color: #ca4d13;
+  }
+
+  /* Hero: o canvas 3D fica confinado numa faixa superior própria (não a seção inteira) — assim as letras nunca
+     disputam espaço com o título, que vem abaixo, em largura total, igual ao padrão da home (texto cheio, sem
+     coluna estreita). O clique/arrasto no canvas precisa atravessar o .wg-hero-inner (senão a caixa do texto,
+     mesmo "vazia" nas bordas, intercepta todo o pointer antes de chegar no canvas) — por isso pointer-events:
+     none ali, com auto de volta só nos botões. */
+  .wg-hero {
+    position: relative;
+    min-height: clamp(640px, 92vh, 880px);
+    border-radius: 28px;
+    overflow: clip;
+    background: radial-gradient(ellipse at 50% 20%, #0d1826 0%, #04070c 70%);
+    display: flex;
+    margin-inline: -20px;
+  }
+  .wg-hero-media {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 58%;
+  }
+  .wg-hero-media canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: pan-y;
+    cursor: pointer;
+  }
+  .wg-hero-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.72) 68%, rgba(0, 0, 0, 0.88));
+  }
+  .wg-hero-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    text-align: center;
+    gap: 16px;
+    padding: clamp(28px, 4vw, 56px);
+    pointer-events: none;
+  }
+  .wg-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ca4d13;
+  }
+  .wg-hero-copy {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .wg-hero-copy h1 {
+    margin: 14px 0 0;
+    font-size: clamp(36px, 6vw, 68px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  .wg-lead {
+    margin: 20px 0 0;
+    font-size: clamp(16px, 1.6vw, 19px);
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .wg-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 32px;
+    pointer-events: auto;
+  }
+  .wg-btn,
+  .wg-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 26px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .wg-btn {
+    background: #ca4d13;
+    color: #fff;
+    transition: background 0.2s ease;
+  }
+  .wg-btn:hover {
+    background: #b54212;
+  }
+  .wg-btn-ghost {
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #fff;
+    backdrop-filter: blur(6px);
+  }
+  @media (max-width: 860px) {
+    .wg-hero {
+      min-height: clamp(560px, 92vh, 820px);
+      border-radius: 20px;
+    }
+    /* No mobile, uma % da altura da hero varia demais de aparelho pra aparelho e deixava as letras do logo
+       pequenas/esparsas (a câmera se afasta pra caber a largura do mundo 3D num enquadramento quase quadrado).
+       Fixando 16:9 (a mesma proporção em que o efeito foi desenhado) garante o mesmo enquadramento bom em
+       qualquer tela, só a faixa fica mais baixa — exatamente o espaço que o logo precisa, nem mais nem menos. */
+    .wg-hero-media {
+      height: auto;
+      aspect-ratio: 16 / 9;
+    }
+  }
+
+  /* Panels */
+  .wg-panel {
+    margin-top: clamp(20px, 3vw, 32px);
+    padding: clamp(28px, 4vw, 56px) 0;
+    border-radius: 28px;
+  }
+  .wg-light,
+  .wg-dark {
+    position: relative;
+    overflow: clip;
+    padding-inline: clamp(20px, 4vw, 48px);
+    margin-inline: calc(-1 * clamp(20px, 4vw, 48px) + 20px);
+  }
+  .wg-light {
+    background: radial-gradient(ellipse 60% 70% at 88% 0%, rgba(202, 77, 19, 0.1), transparent 60%), #f5f5f5;
+    color: #1a1a1a;
+  }
+  .wg-dark {
+    background: radial-gradient(ellipse 65% 75% at 82% -5%, rgba(202, 77, 19, 0.22), transparent 60%), radial-gradient(ellipse
+          55% 60% at 5% 105%, rgba(42, 70, 110, 0.4), transparent 60%), #14171c;
+    box-shadow: 0 0 90px rgba(202, 77, 19, 0.22);
+  }
+  .wg-dark::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+    opacity: 0.5;
+    background-size: 200px 200px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+  }
+  .wg-dark > * {
+    position: relative;
+  }
+  .wg-cta {
+    position: relative;
+    overflow: clip;
+    background: radial-gradient(ellipse 90% 120% at 18% -10%, #e3671c 0%, #ca4d13 45%, #8a300b 100%);
+    padding-inline: clamp(20px, 4vw, 48px);
+    margin-inline: calc(-1 * clamp(20px, 4vw, 48px) + 20px);
+    text-align: center;
+    box-shadow: 0 0 120px rgba(202, 77, 19, 0.38);
+  }
+  .wg-cta::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.16) 1px, transparent 1.6px);
+    background-size: 26px 26px;
+  }
+  .wg-cta > * {
+    position: relative;
+  }
+  .wg-cta .wg-head {
+    justify-content: center;
+    text-align: center;
+  }
+  .wg-cta em {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 0.03em 0.18em;
+    border-radius: 8px;
+  }
+  .wg-cta .wg-sub {
+    max-width: 560px;
+    margin-inline: auto;
+    color: rgba(255, 255, 255, 0.88);
+  }
+  .wg-cta .wg-chip {
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  .wg-cta .wg-btn {
+    background: #fff;
+    color: #ca4d13;
+    margin-top: 24px;
+  }
+  .wg-cta .wg-btn:hover {
+    background: rgba(255, 255, 255, 0.88);
+  }
+  .wg-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .wg-head h2 {
+    margin: 0;
+    font-size: clamp(26px, 3.2vw, 38px);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    max-width: 700px;
+  }
+  .wg-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .wg-dark .wg-chip {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+  .wg-sub {
+    margin: 18px 0 0;
+    max-width: 680px;
+    font-size: 16px;
+    line-height: 1.65;
+    color: rgba(0, 0, 0, 0.62);
+  }
+  .wg-dark .wg-sub {
+    color: rgba(255, 255, 255, 0.66);
+  }
+
+  /* Pacote cards */
+  .wg-pack-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 32px;
+  }
+  .wg-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 22px;
+    padding: clamp(20px, 2vw, 28px);
+    border-radius: 22px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+  .wg-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(202, 77, 19, 0.5);
+  }
+  .wg-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+  .wg-card h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+  .wg-card p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(0, 0, 0, 0.6);
+  }
+  @media (max-width: 860px) {
+    .wg-pack-grid {
+      grid-template-columns: 1fr;
+    }
+    .wg-card {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+    }
+    #pacote .wg-head {
+      flex-direction: column;
+      text-align: center;
+    }
+    #pacote .wg-head h2 {
+      max-width: none;
+    }
+    #pacote .wg-sub {
+      max-width: none;
+      margin-inline: auto;
+      text-align: center;
+    }
+  }
+
+  .wg-art {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: clamp(120px, 13vw, 150px);
+    height: clamp(120px, 13vw, 150px);
+    border-radius: 16px;
+    background: radial-gradient(circle at 50% 38%, rgba(202, 77, 19, 0.16), rgba(202, 77, 19, 0.05) 72%);
+    color: #ca4d13;
+  }
+  .wg-art svg {
+    width: clamp(56px, 6.5vw, 76px);
+    height: clamp(56px, 6.5vw, 76px);
+  }
+  @media (max-width: 860px) {
+    .wg-art {
+      width: 100%;
+      height: clamp(130px, 30vw, 160px);
+    }
+  }
+  .wg-track {
+    stroke-opacity: 0.55;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .wg-knob,
+    .wg-spark,
+    .wg-ping,
+    .wg-coin {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .wg-knob {
+      animation: wg-knob 2.6s ease-in-out infinite;
+    }
+    .wg-spark-a {
+      animation: wg-spark 2.1s ease-in-out infinite;
+    }
+    .wg-spark-b {
+      animation: wg-spark 2.1s ease-in-out infinite 0.65s;
+    }
+    .wg-ping {
+      animation: wg-ping 2.2s cubic-bezier(0.3, 0.6, 0.4, 1) infinite;
+    }
+    .wg-coin {
+      animation: wg-coin 1.7s ease-in-out infinite;
+    }
+  }
+  @keyframes wg-knob {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(6px);
+    }
+  }
+  @keyframes wg-spark {
+    0%,
+    100% {
+      opacity: 0.15;
+      transform: scale(0.65);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+  @keyframes wg-ping {
+    0% {
+      opacity: 0.85;
+      transform: scale(0.55);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.3);
+    }
+  }
+  @keyframes wg-coin {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-2.5px);
+    }
+  }
+
+  /* Investimento */
+  .wg-price-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: clamp(16px, 3vw, 32px);
+    margin-top: 32px;
+  }
+  .wg-price-card {
+    padding: clamp(24px, 2.6vw, 36px);
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .wg-price-card.is-hot {
+    background: linear-gradient(140deg, #ca4d13 0%, #8a300b 100%);
+    border-color: transparent;
+  }
+  .wg-price-label {
+    display: block;
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ca4d13;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .wg-price-card.is-hot .wg-price-label {
+    color: rgba(255, 255, 255, 0.86);
+  }
+  .wg-price-big {
+    display: block;
+    font-size: clamp(32px, 3.6vw, 46px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 14px;
+    color: rgba(255, 255, 255, 0.45);
+  }
+  .wg-price-card.is-hot .wg-price-big {
+    color: #fff;
+  }
+  .wg-price-big small {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.4em;
+    font-weight: 500;
+    letter-spacing: 0;
+    opacity: 0.88;
+  }
+  .wg-price-card p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.66);
+  }
+  .wg-price-card.is-hot p {
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .wg-price-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: #ca4d13;
+  }
+  .wg-price-save {
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    max-width: 120px;
+  }
+  .wg-price-arrow {
+    width: 44px;
+    height: 22px;
+  }
+  @media (max-width: 860px) {
+    .wg-price-row {
+      grid-template-columns: 1fr;
+    }
+    .wg-price-link {
+      flex-direction: row;
+    }
+    .wg-price-arrow {
+      transform: rotate(90deg);
+    }
+  }
+
+  /* FAQ */
+  .wg-faq-list {
+    margin-top: 28px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .wg-faq-row {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .wg-faq-row summary {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 0;
+    cursor: pointer;
+    list-style: none;
+    font-size: 17px;
+    font-weight: 500;
+  }
+  .wg-faq-row summary::-webkit-details-marker {
+    display: none;
+  }
+  .wg-num {
+    font-size: 13px;
+    color: #ca4d13;
+    font-weight: 600;
+  }
+  .wg-faq-row summary span:nth-child(2) {
+    flex: 1;
+  }
+  .wg-plus {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
+  .wg-plus::before,
+  .wg-plus::after {
+    content: "";
+    position: absolute;
+    background: currentColor;
+    inset: auto;
+  }
+  .wg-plus::before {
+    width: 100%;
+    height: 1.5px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .wg-plus::after {
+    width: 1.5px;
+    height: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: transform 0.2s ease;
+  }
+  .wg-faq-row[open] .wg-plus::after {
+    transform: translateX(-50%) rotate(90deg);
+  }
+  .wg-faq-row p {
+    margin: 0 0 22px;
+    padding-right: 34px;
+    font-size: 15px;
+    line-height: 1.65;
+    color: rgba(0, 0, 0, 0.62);
+  }
+
+  .wg-foot {
+    padding: 48px 20px 48px;
+    text-align: center;
+  }
+  .wg-foot-nuvion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 32px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .wg-foot-nuvion p {
+    margin: 0;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.75);
+    max-width: 440px;
+  }
+  .wg-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #ca4d13;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+  }
+  .wg-link:hover {
+    color: #e3671c;
+  }
+  .wg-foot-copy {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 13px;
+  }
+
+  /* Barra de CTA fixa: só no mobile, só depois que o hero (que já tem o botão à vista) sai da tela. */
+  .wg-sticky {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(11, 11, 12, 0.92);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+  .wg-sticky.on {
+    transform: translateY(0);
+  }
+  .wg-sticky .wg-btn {
+    display: flex;
+    width: 100%;
+  }
+  @media (max-width: 860px) {
+    .wg-sticky {
+      display: block;
+    }
+    .wg-foot {
+      padding-bottom: 84px;
+    }
+  }
+
+  /* Entrada em cascata dos cartões/linhas (JS liga .is-in via IntersectionObserver, com --d calculado por item). */
+  .wg-reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--d, 0ms);
+  }
+  /* Em telas largas, os cards do pacote e os cartões de preço "convergem" de lados opostos em vez de só subir —
+     o efeito de slide que pedimos, sem trocar a rolagem da página inteira por um carrossel horizontal (isso
+     fica arriscado pro FAQ/preço, que as pessoas querem ler no próprio ritmo). No mobile (empilhado em 1
+     coluna) o lado perde sentido, então some e volta a subir normal. */
+  .wg-reveal.wg-reveal-left {
+    transform: translate(-48px, 10px);
+  }
+  .wg-reveal.wg-reveal-right {
+    transform: translate(48px, 10px);
+  }
+  @media (max-width: 860px) {
+    .wg-reveal.wg-reveal-left,
+    .wg-reveal.wg-reveal-right {
+      transform: translateY(26px);
+    }
+  }
+  .wg-reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+</style>
