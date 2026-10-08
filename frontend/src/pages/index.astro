@@ -100,16 +100,28 @@ const homeProjects = highlightProjects(3);
         <canvas class="t3-hero-3d"></canvas>
       </div>
       <script>
-        import { initHeroLogo3D } from "../scripts/hero-logo-3d";
         const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const canvas = document.querySelector<HTMLCanvasElement>(".t3-hero-3d");
         const container = document.querySelector<HTMLElement>(".t3-hero-media");
+        // The logo moves into the gap .t3-hero-top/.t3-eyebrow leave open on phones (site.css) instead of
+        // sitting centred behind the copy — measured live off these two, not guessed, so it lands right no
+        // matter the device's text metrics.
+        const gapAbove = document.querySelector<HTMLElement>(".t3-hero-top");
+        const gapBelow = document.querySelector<HTMLElement>(".t3-eyebrow");
         if (canvas && container && !reduced) {
           // (hover: hover) and (pointer: fine) alone — NOT also excluding any device with maxTouchPoints > 0 (a
           // real desktop/laptop with a touchscreen still reports that, and would otherwise wrongly lose the
           // mouse-follow entirely: no rotation past the idle sway, no click-to-scatter).
           const lite = !window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-          initHeroLogo3D({ canvas, container, lite });
+          // Dynamic imports: desktop and mobile never both run, so neither should have to download the other's
+          // module (each has its own ~large geometry/physics code, on top of the shared three.js runtime).
+          if (lite) {
+            import("../scripts/hero-logo-3d-mobile").then(({ initHeroLogo3DMobile }) =>
+              initHeroLogo3DMobile({ canvas, container, gapAbove, gapBelow }),
+            );
+          } else {
+            import("../scripts/hero-logo-3d").then(({ initHeroLogo3D }) => initHeroLogo3D({ canvas, container }));
+          }
         }
       </script>
       <div class="t3-hero-grain" aria-hidden="true"></div>
@@ -123,7 +135,7 @@ const homeProjects = highlightProjects(3);
 
         <div class="t3-hero-bottom">
           <div class="t3-hero-copy">
-            <p class="t3-fade t3-mono">Ecossistema de crescimento</p>
+            <p class="t3-fade t3-mono t3-eyebrow">Ecossistema de crescimento</p>
             <h1 id="t3-h1" class="t3-h1">Domine a nova era das <em>buscas.</em></h1>
             <p class="t3-hero-desc t3-fade">
               Sites de alta performance, SEO técnico e GEO (Generative Engine Optimization) para marcas que querem ser encontradas no Google{" "}

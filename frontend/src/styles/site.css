@@ -148,6 +148,9 @@
     display: block;
     width: 100%;
     height: 100%;
+    /* Phones only use this for vertical scroll (hero-logo-3d-mobile.ts drags horizontally to rotate via pointer
+       events) — pan-y leaves vertical scrolling to the browser instead of fighting it for every touch. */
+    touch-action: pan-y;
   }
   /* Very subtle static grain over the picture, only there to break up banding and tiny seams between frames.
      Generated noise (SVG turbulence, no file). Kept still on purpose: a stepped shimmer read as stutter. */
@@ -3003,10 +3006,19 @@
   }
 }
 @media (max-width: 860px) {
-  /* Hero: the picture is a mood, not the background of the text. It is dimmed, fades to near black where the
-     text sits, and the film grain (which adds contrast) is off on phones. */
+  /* Hero: a real, reserved gap opens between the status badge and the eyebrow (floor set here via margin,
+     topped up by .t3-hero-inner's own space-between if the box ends up taller than the content needs) — that's
+     where the 3D logo sits (hero-logo-3d.ts measures this exact gap live and places/sizes itself in it), not
+     hidden behind the copy as a watermark. Dimmed lightly up there, fading to near black further down where
+     the text sits; the film grain (which adds contrast) is off on phones. */
+  .t3-hero {
+    min-height: clamp(700px, 98vh, 940px);
+  }
+  .t3-hero-top {
+    margin-bottom: clamp(110px, 16vh, 160px);
+  }
   .t3-hero-media {
-    opacity: 0.68;
+    opacity: 0.85;
   }
   .t3-hero-grain {
     display: none;
@@ -3015,9 +3027,10 @@
   .t3-phero .t3-hero-glow {
     background: linear-gradient(
       180deg,
-      rgba(0, 0, 0, 0.3) 0%,
-      rgba(0, 0, 0, 0.55) 28%,
-      rgba(0, 0, 0, 0.84) 52%,
+      rgba(0, 0, 0, 0.1) 0%,
+      rgba(0, 0, 0, 0.22) 20%,
+      rgba(0, 0, 0, 0.62) 46%,
+      rgba(0, 0, 0, 0.88) 68%,
       rgba(0, 0, 0, 0.94) 100%
     );
   }
