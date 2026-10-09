@@ -511,6 +511,10 @@ export function initWeggMorph(canvas: HTMLCanvasElement, container: HTMLElement,
     }),
   );
   scene.add(points);
+  // No mobile a faixa é baixa (16:9 fixo) e o texto vem logo abaixo dela — sem isso a logo (centrada por
+  // padrão) fica colada/sobrepondo o título. Desloca só o conteúdo pra cima dentro do próprio quadro (a
+  // rotação continua em torno do centro local do objeto, então não muda o giro).
+  if (small) points.position.y = 0.3;
 
   const physics = (() => {
     const total = geometry.attributes.position.count;

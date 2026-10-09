@@ -416,7 +416,10 @@ const faqs = [
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.72) 68%, rgba(0, 0, 0, 0.88));
+    /* Some 0% até 56% (a faixa toda do canvas: .wg-hero-media tem 58% de altura) — nada escurecendo a logo
+       3D, igual ao arquivo de referência original (lá não tem nada sobreposto ao canvas). Só escurece depois
+       disso, onde o texto realmente fica. */
+    background: linear-gradient(180deg, transparent 0%, transparent 56%, rgba(0, 0, 0, 0.55) 66%, rgba(0, 0, 0, 0.88) 85%);
   }
   .wg-hero-inner {
     position: relative;
@@ -495,17 +498,33 @@ const faqs = [
     backdrop-filter: blur(6px);
   }
   @media (max-width: 860px) {
+    /* No mobile a logo deixa de ser um fundo absoluto atrás do texto (a altura da hero variava demais pra
+       garantir espaço sem sobrepor) e passa a ser um bloco normal, empilhado: espaço pequeno, logo, espaço
+       pequeno, começa o eyebrow — exatamente a ordem natural do documento, sem matemática de altura. */
     .wg-hero {
-      min-height: clamp(560px, 92vh, 820px);
+      display: block;
+      min-height: 0;
       border-radius: 20px;
     }
-    /* No mobile, uma % da altura da hero varia demais de aparelho pra aparelho e deixava as letras do logo
-       pequenas/esparsas (a câmera se afasta pra caber a largura do mundo 3D num enquadramento quase quadrado).
-       Fixando 16:9 (a mesma proporção em que o efeito foi desenhado) garante o mesmo enquadramento bom em
-       qualquer tela, só a faixa fica mais baixa — exatamente o espaço que o logo precisa, nem mais nem menos. */
     .wg-hero-media {
+      position: static;
       height: auto;
-      aspect-ratio: 16 / 9;
+      /* 16:9 deixava muito espaço morto em cima/baixo da palavra (que é bem mais larga que alta) — uma faixa
+         mais baixa corta mais perto da logo de verdade, reduzindo os dois vãos. */
+      aspect-ratio: 2.6 / 1;
+      margin: 10px 18px 0;
+      border-radius: 16px;
+      overflow: clip;
+    }
+    .wg-hero-glow {
+      display: none;
+    }
+    .wg-hero-inner {
+      position: static;
+      flex: none;
+      padding-top: 12px;
+      justify-content: flex-start;
+      pointer-events: auto;
     }
   }
 

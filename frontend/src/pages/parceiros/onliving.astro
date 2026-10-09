@@ -1,0 +1,1326 @@
+---
+// LP de parceiro: Pacote Corretor Autoridade, benefício da On Living em parceria com a Agência Nuvion.
+// Mesma arquitetura isolada da LP da WEGG (src/pages/parceiros/wegg.astro): nenhum import de
+// BaseLayout/Header/Footer/componentes do site, nenhuma edição em site.css/global.css — tudo escrito e
+// estilizado aqui dentro. noindex e fora do fluxo normal do site. Diferenças do modelo WEGG: a On Living não
+// entra com verba de mídia nem consultoria de ads, só o desconto no pacote (landing page + fotos por IA); por
+// isso a seção de investimento é uma tabela comparativa item a item, em vez do card único "fora da parceria".
+const waMessage = "Olá! Sou corretor parceiro da On Living e quero solicitar o Pacote Corretor Autoridade.";
+function waLink(msg: string) {
+  return `https://wa.me/5548996964116?text=${encodeURIComponent(msg)}`;
+}
+
+const pacoteItems = [
+  {
+    title: "Uma landing page só sua, fácil de atualizar",
+    text: "Você recebe uma página profissional, pensada para transformar visita em contato de verdade. Com um painel de administração simples, você mesmo cadastra imóveis, troca banners e atualiza seus dados de contato sempre que quiser, sem depender de ninguém.",
+    icon: "toggle",
+  },
+  {
+    title: "Fotos profissionais feitas por Inteligência Artificial",
+    text: "Você ganha três fotos corporativas de alta qualidade, com aquele acabamento de produção de estúdio, para usar na sua página e nos seus anúncios. Sem agenda, sem maquiagem e sem precisar se deslocar até lugar nenhum.",
+    icon: "sparkles",
+  },
+];
+
+const priceRows = [
+  { item: "Landing page profissional + painel administrativo", price: "R$ 1.200 – R$ 2.500" },
+  { item: "Fotos profissionais por IA (3 fotos)", price: "R$ 100 – R$ 200" },
+];
+
+const benefitItems = [
+  {
+    title: "Um canal seu, disponível 24 horas",
+    text: "Hoje, sem uma página própria, a sua captação depende de grupos, indicações e portais onde você compete com centenas de outros corretores. Com a sua página, você tem um canal que é só seu, trabalhando por você mesmo fora do horário comercial.",
+    icon: "clock",
+  },
+  {
+    title: "Mais credibilidade na hora de fechar",
+    text: "Fotos profissionais e uma página bem feita mudam a forma como o cliente te vê antes mesmo de conversar com você. Autoridade visual gera confiança, e confiança fecha negócio mais rápido.",
+    icon: "shield",
+  },
+  {
+    title: "Você não depende de ninguém pra atualizar",
+    text: "O painel é seu: você mesmo troca os imóveis, os banners e os seus contatos quando quiser, sem esperar resposta de ninguém.",
+    icon: "sliders",
+  },
+  {
+    title: "Uma fração do que custaria sozinho",
+    text: "Com a parceria On Living, você tem acesso a uma estrutura que custaria entre R$ 1.300 e R$ 2.700 no mercado, por R$ 650 de setup e R$ 40 por mês.",
+    icon: "tag",
+  },
+];
+
+const faqs = [
+  {
+    question: "Quem pode solicitar esse benefício?",
+    answer:
+      "Todo corretor parceiro ativo da On Living pode solicitar o Pacote Corretor Autoridade. É um benefício oferecido pela imobiliária, em parceria com a Agência Nuvion.",
+  },
+  {
+    question: "O site fica sendo meu?",
+    answer: "Sim, de verdade. Você paga pelo setup, então a landing page é sua, com painel próprio para você gerenciar os seus imóveis e banners quando quiser.",
+  },
+  {
+    question: "Quantos imóveis posso cadastrar?",
+    answer:
+      "São até 12 imóveis. Isso porque a sua landing page não é pra ser um catálogo completo, como um portal imobiliário. A ideia é mostrar só alguns imóveis que representam o seu trabalho, sem entrar em detalhe demais, pra o visitante entender a sua expertise e a sua consultoria e preferir falar direto com você pelo WhatsApp, em vez de rolar a página comparando imóvel por imóvel.",
+  },
+  {
+    question: "Como funciona o contato e o suporte depois que eu entrar?",
+    answer: "Tudo acontece direto com a Agência Nuvion: adesão, setup, mensalidade e qualquer suporte que você precisar.",
+  },
+  {
+    question: "Como eu solicito o meu benefício agora?",
+    answer: "É simples. Clique em um dos botões desta página e fale com a gente pelo WhatsApp. A gente confirma a sua vinculação com a On Living e já começa o setup da sua página.",
+  },
+];
+---
+
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pacote Corretor Autoridade · Benefício On Living + Agência Nuvion</title>
+    <meta name="description" content="Benefício exclusivo para corretores parceiros da On Living: landing page própria e fotos por IA, com desconto exclusivo de parceria." />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#0b0b0c" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preload" href="/fonts/inter-tight-latin.woff2" as="font" type="font/woff2" crossorigin />
+
+    {/* Open Graph/Twitter: este link circula direto entre corretores (grupos de WhatsApp), então o preview do
+       link importa tanto quanto a própria página. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Pacote Corretor Autoridade · Benefício On Living + Agência Nuvion" />
+    <meta property="og:description" content="Landing page própria e fotos por IA, com desconto exclusivo para corretores parceiros da On Living." />
+    <meta property="og:image" content="https://agencianuvion.com.br/images/og-nuvion.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Pacote Corretor Autoridade · Benefício On Living + Agência Nuvion" />
+    <meta name="twitter:description" content="Landing page própria e fotos por IA, com desconto exclusivo para corretores parceiros da On Living." />
+  </head>
+  <body>
+    <div class="ol-cursor-glow" id="ol-cursor-glow" aria-hidden="true"></div>
+    <main>
+      <section class="ol-hero">
+        <div class="ol-hero-media">
+          <canvas id="ol-scene" aria-hidden="true"></canvas>
+        </div>
+        <div class="ol-hero-glow" aria-hidden="true"></div>
+        <div class="ol-hero-inner">
+          <span class="ol-eyebrow">Benefício On Living + Agência Nuvion</span>
+          <div class="ol-hero-copy">
+            <h1>Pacote Corretor <em>Autoridade</em></h1>
+            <p class="ol-lead">
+              Uma página profissional só sua e fotos de estúdio feitas por Inteligência Artificial, com um desconto exclusivo para corretores
+              parceiros da On Living. Tudo isso por uma fração do que essa estrutura custaria fora da parceria.
+            </p>
+            <div class="ol-hero-actions">
+              <a class="ol-btn" href={waLink(waMessage)} target="_blank" rel="noopener">Quero solicitar meu benefício</a>
+              <a class="ol-btn-ghost" href="#pacote">Ver o que está incluso</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ol-panel ol-light" id="pacote" aria-labelledby="ol-pack-h">
+        <div class="ol-head">
+          <h2 id="ol-pack-h">O que você recebe no <em>Pacote Corretor Autoridade</em></h2>
+          <span class="ol-chip">Benefício On Living</span>
+        </div>
+        <p class="ol-sub">
+          Uma estrutura profissional pra você captar clientes com a imagem de uma agência completa, por um valor que nenhuma agência tradicional
+          ofereceria sozinha.
+        </p>
+        <div class="ol-pack-grid" data-reveal-group>
+          {
+            pacoteItems.map((it, i) => (
+              <article class:list={["ol-card", "ol-reveal", i % 2 === 0 ? "ol-reveal-left" : "ol-reveal-right"]}>
+                <div class={`ol-art ol-art-${it.icon}`} aria-hidden="true">
+                  {it.icon === "toggle" && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="4" width="20" height="16" rx="2" />
+                      <path d="M2 8.5h20" />
+                      <rect class="ol-track" x="6" y="12.5" width="10" height="5" rx="2.5" />
+                      <circle class="ol-knob" cx="8.5" cy="15" r="1.7" fill="currentColor" stroke="none" />
+                    </svg>
+                  )}
+                  {it.icon === "sparkles" && (
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="10.5" cy="10" r="4" />
+                      <path d="M4 20.5c0-3.6 2.9-6.5 6.5-6.5S17 16.9 17 20.5" />
+                      <path class="ol-spark ol-spark-a" d="M19 4.4l.7 1.7 1.7.7-1.7.7-.7 1.7-.7-1.7-1.7-.7 1.7-.7z" fill="currentColor" stroke="none" />
+                      <path class="ol-spark ol-spark-b" d="M21 10.5l.45 1.1 1.1.45-1.1.45-.45 1.1-.45-1.1-1.1-.45 1.1-.45z" fill="currentColor" stroke="none" />
+                    </svg>
+                  )}
+                </div>
+                <div class="ol-card-body">
+                  <h3>{it.title}</h3>
+                  <p>{it.text}</p>
+                </div>
+              </article>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="ol-panel ol-dark" id="investimento" aria-labelledby="ol-price-h">
+        <div class="ol-head">
+          <h2 id="ol-price-h">Quanto você economiza com a <em>parceria On Living</em></h2>
+          <span class="ol-chip">Investimento</span>
+        </div>
+        <p class="ol-sub">Veja quanto cada item custaria contratado separadamente no mercado, e por quanto fica dentro da parceria entre a On Living e a Nuvion.</p>
+        <div class="ol-price-grid" data-reveal-group>
+          <div class="ol-price-table-wrap ol-reveal ol-reveal-left">
+            <table class="ol-price-table">
+              <thead>
+                <tr>
+                  <th>Item</th>
+                  <th>Preço de mercado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  priceRows.map((r) => (
+                    <tr>
+                      <td>{r.item}</td>
+                      <td>{r.price}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td>Total no mercado</td>
+                  <td>R$ 1.300 – R$ 2.700</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <div class="ol-price-link" aria-hidden="true">
+            <span class="ol-price-save">Você economiza entre 50% e 76%</span>
+            <svg class="ol-price-arrow" viewBox="0 0 48 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 12h40M34 4l10 8-10 8" />
+            </svg>
+          </div>
+          <div class="ol-price-partner ol-reveal ol-reveal-right">
+            <span class="ol-price-label">Com a parceria On Living</span>
+            <span class="ol-price-big">R$ 650<small>setup único + R$ 40/mês</small></span>
+            <p>Um setup único de R$ 650 e uma mensalidade de R$ 40 de hospedagem e suporte enquanto você estiver ativo na parceria.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="ol-panel ol-light ol-stack" aria-labelledby="ol-benefit-h">
+        <div class="ol-head">
+          <h2 id="ol-benefit-h">O que isso muda no seu <em>dia a dia</em></h2>
+          <span class="ol-chip">Para o corretor</span>
+        </div>
+        <div class="ol-steps">
+          {
+            benefitItems.map((it, i) => (
+              <article class="ol-step" style={`--i:${i}`}>
+                <div class="ol-step-in">
+                  <span class="ol-step-n">{String(i + 1).padStart(2, "0")}</span>
+                  <div class="ol-step-text">
+                    <h3>{it.title}</h3>
+                    <p>{it.text}</p>
+                  </div>
+                  <svg class="ol-step-art" viewBox="0 0 240 240" fill="none" aria-hidden="true">
+                    <g class="ol-ring-spin">
+                      <circle cx="120" cy="120" r="112" stroke="currentColor" stroke-opacity="0.22" stroke-dasharray="2 7" />
+                      <circle cx="120" cy="18" r="3.2" fill="#ca4d13" />
+                      <circle cx="208" cy="170" r="2.4" fill="currentColor" fill-opacity="0.45" />
+                    </g>
+                    <circle cx="120" cy="120" r="82" stroke="currentColor" stroke-opacity="0.13" />
+                    <circle cx="120" cy="120" r="52" stroke="currentColor" stroke-opacity="0.13" />
+                    <path d="M120 8v44M120 188v44M8 120h44M188 120h44" stroke="currentColor" stroke-opacity="0.14" />
+                    <path d="M34 34 86 86M154 154 206 206" stroke="#ca4d13" stroke-opacity="0.35" stroke-dasharray="3 5" />
+                    <circle cx="86" cy="86" r="3" fill="#ca4d13" />
+                    <circle cx="154" cy="154" r="3" fill="currentColor" fill-opacity="0.5" />
+                    <circle cx="120" cy="120" r="34" class="ol-art-core" stroke="#ca4d13" stroke-opacity="0.4" />
+                    <g transform="translate(94 94) scale(2.17)" stroke="#ca4d13" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                      {it.icon === "clock" && (
+                        <>
+                          <circle cx="12" cy="12" r="9" />
+                          <path d="M12 7v5l3 2" />
+                        </>
+                      )}
+                      {it.icon === "shield" && (
+                        <>
+                          <path d="M12 3l7 3v6c0 4.2-3 7.4-7 9-4-1.6-7-4.8-7-9V6z" />
+                          <path d="M9 12l2 2 4-4" />
+                        </>
+                      )}
+                      {it.icon === "sliders" && (
+                        <>
+                          <path d="M4 6h16M4 12h10M4 18h7" />
+                          <circle cx="18" cy="6" r="1.6" fill="#ca4d13" stroke="none" />
+                          <circle cx="14" cy="12" r="1.6" fill="#ca4d13" stroke="none" />
+                          <circle cx="9" cy="18" r="1.6" fill="#ca4d13" stroke="none" />
+                        </>
+                      )}
+                      {it.icon === "tag" && (
+                        <>
+                          <circle cx="7" cy="7" r="2.3" />
+                          <circle cx="17" cy="17" r="2.3" />
+                          <path d="M18 6 6 18" />
+                        </>
+                      )}
+                    </g>
+                  </svg>
+                </div>
+              </article>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="ol-panel ol-dark" aria-labelledby="ol-faq-h">
+        <div class="ol-head">
+          <h2 id="ol-faq-h">Perguntas <em>frequentes</em></h2>
+          <span class="ol-chip">Antes de solicitar</span>
+        </div>
+        <div class="ol-faq-list" data-reveal-group data-faq>
+          {
+            faqs.map((f, i) => (
+              <div class="ol-faq-row ol-reveal" data-faq-item>
+                <button type="button" class="ol-faq-trigger" aria-expanded="false">
+                  <span class="ol-num">{`${String(i + 1).padStart(2, "0")}.`}</span>
+                  <span>{f.question}</span>
+                  <span class="ol-plus" aria-hidden="true" />
+                </button>
+                <div class="ol-faq-panel">
+                  <p>{f.answer}</p>
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <section class="ol-panel ol-cta" aria-labelledby="ol-cta-h">
+        <div class="ol-head">
+          <h2 id="ol-cta-h">Pronto para dar o próximo passo e <em>vender mais?</em></h2>
+          <span class="ol-chip">Próximo passo</span>
+        </div>
+        <p class="ol-sub">
+          Fale agora com a Agência Nuvion pelo WhatsApp e solicite a ativação do seu Pacote Corretor Autoridade. Em poucos minutos a gente confirma
+          tudo e já coloca a sua página em produção.
+        </p>
+        <a class="ol-btn" href={waLink(waMessage)} target="_blank" rel="noopener">Solicitar meu benefício agora</a>
+      </section>
+
+      <footer class="ol-foot">
+        <div class="ol-foot-nuvion">
+          <p>Quem está por trás desse benefício é a Agência Nuvion. Quer conhecer melhor a agência e tudo que ela faz?</p>
+          <a class="ol-link" href="https://agencianuvion.com.br" target="_blank" rel="noopener">Visitar o site da Nuvion <span aria-hidden="true">→</span></a>
+        </div>
+        <p class="ol-foot-copy">Pacote Corretor Autoridade · benefício da On Living em parceria com a Agência Nuvion.</p>
+      </footer>
+    </main>
+
+    <div class="ol-sticky" id="ol-sticky">
+      <a class="ol-btn" href={waLink(waMessage)} target="_blank" rel="noopener">Solicitar meu benefício</a>
+    </div>
+
+    <script>
+      const canvas = document.getElementById("ol-scene") as HTMLCanvasElement | null;
+      const container = canvas?.parentElement ?? null;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if (canvas && container) {
+        import("../../scripts/onliving-morph-3d").then(({ initOnLivingMorph }) => initOnLivingMorph(canvas, container, reduced)).catch(() => {
+          canvas.style.display = "none";
+        });
+      }
+
+      // Stack de cards do "O que isso muda no seu dia a dia", igual ao "Como trabalhamos" da home.
+      const stackPanel = document.querySelector<HTMLElement>(".ol-stack");
+      if (stackPanel) {
+        import("../../scripts/onliving-stack").then(({ initOnLivingStack }) => initOnLivingStack(stackPanel)).catch(() => {});
+      }
+
+      // Barra fixa com o CTA no mobile, só depois que o hero (com o botão já visível) saiu da tela.
+      const hero = document.querySelector(".ol-hero");
+      const sticky = document.getElementById("ol-sticky");
+      if (hero && sticky) {
+        const io = new IntersectionObserver(([entry]) => sticky.classList.toggle("on", !entry.isIntersecting), { rootMargin: "-50% 0px 0px 0px" });
+        io.observe(hero);
+      }
+
+      // Entrada em cascata: cada cartão/linha sobe e aparece ao entrar na tela (uma vez só), com um pequeno
+      // atraso por posição dentro do próprio grupo, pra não disparar tudo junto.
+      if (!reduced) {
+        const groups = document.querySelectorAll<HTMLElement>("[data-reveal-group]");
+        groups.forEach((group) => {
+          const items = Array.from(group.querySelectorAll<HTMLElement>(".ol-reveal"));
+          items.forEach((el, i) => el.style.setProperty("--d", `${i * 90}ms`));
+          const revealIo = new IntersectionObserver(
+            (entries) => {
+              entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                  entry.target.classList.add("is-in");
+                  revealIo.unobserve(entry.target);
+                }
+              });
+            },
+            { threshold: 0.15, rootMargin: "0px 0px -8% 0px" },
+          );
+          items.forEach((el) => revealIo.observe(el));
+        });
+      } else {
+        document.querySelectorAll(".ol-reveal").forEach((el) => el.classList.add("is-in"));
+      }
+
+      // Glow que mora na página e segue o cursor com um atraso suave (lerp a cada frame). Só em telas com
+      // mouse de verdade (a media query no CSS já tira isso do mobile/reduced motion).
+      const glowEl = document.getElementById("ol-cursor-glow");
+      if (glowEl && !reduced && window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+        let tx = window.innerWidth / 2,
+          ty = window.innerHeight * 0.4;
+        let cx = tx,
+          cy = ty;
+        let on = false;
+        window.addEventListener(
+          "pointermove",
+          (e) => {
+            tx = e.clientX;
+            ty = e.clientY;
+            if (!on) {
+              on = true;
+              glowEl.classList.add("is-on");
+            }
+          },
+          { passive: true },
+        );
+        function tick() {
+          cx += (tx - cx) * 0.08;
+          cy += (ty - cy) * 0.08;
+          glowEl!.style.transform = `translate(${cx}px, ${cy}px)`;
+          requestAnimationFrame(tick);
+        }
+        tick();
+      }
+
+      // FAQ: só uma pergunta aberta por vez (abrir uma fecha a anterior), abre/fecha suave via CSS
+      // (grid-template-rows 0fr/1fr em .ol-faq-panel — só a classe is-open muda aqui).
+      document.querySelectorAll<HTMLElement>("[data-faq]").forEach((list) => {
+        const items = Array.from(list.querySelectorAll<HTMLElement>("[data-faq-item]"));
+        items.forEach((item) => {
+          const trigger = item.querySelector<HTMLButtonElement>(".ol-faq-trigger");
+          trigger?.addEventListener("click", () => {
+            const wasOpen = item.classList.contains("is-open");
+            items.forEach((other) => {
+              other.classList.remove("is-open");
+              other.querySelector(".ol-faq-trigger")?.setAttribute("aria-expanded", "false");
+            });
+            if (!wasOpen) {
+              item.classList.add("is-open");
+              trigger.setAttribute("aria-expanded", "true");
+            }
+          });
+        });
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  :root {
+    color-scheme: dark;
+  }
+  @font-face {
+    font-family: "Inter Tight";
+    font-style: normal;
+    font-weight: 300 800;
+    font-display: swap;
+    src: url("/fonts/inter-tight-latin.woff2") format("woff2");
+  }
+  * {
+    box-sizing: border-box;
+  }
+  html,
+  body {
+    margin: 0;
+    color: #fff;
+    font-family: "Inter Tight", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background: #0b0b0c
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .18 0 0 0 0 .16 0 0 0 0 .22 0 0 0 .4 0'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>")
+      0 0 / 200px 200px;
+  }
+  main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 20px;
+    position: relative;
+    z-index: 1;
+  }
+  .ol-cursor-glow {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 620px;
+    height: 620px;
+    margin: -310px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(202, 77, 19, 0.32) 0%, rgba(42, 70, 110, 0.22) 55%, transparent 78%);
+    filter: blur(50px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    transform: translate(50vw, 40vh);
+  }
+  .ol-cursor-glow.is-on {
+    opacity: 1;
+  }
+  @media (max-width: 860px), (prefers-reduced-motion: reduce) {
+    .ol-cursor-glow {
+      display: none;
+    }
+  }
+  em {
+    font-style: normal;
+    color: #ca4d13;
+  }
+
+  /* Hero: mesmo esquema da LP da WEGG — canvas 3D confinado numa faixa superior própria, texto em largura
+     total abaixo, centralizado. */
+  .ol-hero {
+    position: relative;
+    min-height: clamp(640px, 92vh, 880px);
+    border-radius: 28px;
+    overflow: clip;
+    background: radial-gradient(ellipse at 50% 20%, #0d1826 0%, #04070c 70%);
+    display: flex;
+    margin-inline: -20px;
+  }
+  .ol-hero-media {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 58%;
+  }
+  .ol-hero-media canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    touch-action: pan-y;
+    cursor: pointer;
+  }
+  .ol-hero-glow {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    /* Some 0% até 56% (a faixa toda do canvas: .ol-hero-media tem 58% de altura) — nada escurecendo a logo
+       3D, igual ao arquivo de referência original (lá não tem nada sobreposto ao canvas). Só escurece depois
+       disso, onde o texto realmente fica. */
+    background: linear-gradient(180deg, transparent 0%, transparent 56%, rgba(0, 0, 0, 0.55) 66%, rgba(0, 0, 0, 0.88) 85%);
+  }
+  .ol-hero-inner {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    text-align: center;
+    gap: 16px;
+    padding: clamp(28px, 4vw, 56px);
+    pointer-events: none;
+  }
+  .ol-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #ca4d13;
+  }
+  .ol-hero-copy {
+    width: 100%;
+    max-width: 760px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .ol-hero-copy h1 {
+    margin: 14px 0 0;
+    font-size: clamp(36px, 6vw, 68px);
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+  .ol-lead {
+    margin: 20px 0 0;
+    font-size: clamp(16px, 1.6vw, 19px);
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  .ol-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 14px;
+    margin-top: 32px;
+    pointer-events: auto;
+  }
+  .ol-btn,
+  .ol-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 15px 26px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .ol-btn {
+    background: #ca4d13;
+    color: #fff;
+    transition: background 0.2s ease;
+  }
+  .ol-btn:hover {
+    background: #b54212;
+  }
+  .ol-btn-ghost {
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    color: #fff;
+    backdrop-filter: blur(6px);
+  }
+  @media (max-width: 860px) {
+    /* No mobile a logo deixa de ser um fundo absoluto atrás do texto (a altura da hero variava demais pra
+       garantir espaço sem sobrepor) e passa a ser um bloco normal, empilhado: espaço pequeno, logo, espaço
+       pequeno, começa o eyebrow — exatamente a ordem natural do documento, sem matemática de altura. */
+    .ol-hero {
+      display: block;
+      min-height: 0;
+      border-radius: 20px;
+    }
+    .ol-hero-media {
+      position: static;
+      height: auto;
+      /* 16:9 deixava muito espaço morto em cima/baixo da palavra (que é bem mais larga que alta) — uma faixa
+         mais baixa corta mais perto da logo de verdade, reduzindo os dois vãos. */
+      aspect-ratio: 2.6 / 1;
+      margin: 10px 18px 0;
+      border-radius: 16px;
+      overflow: clip;
+    }
+    .ol-hero-glow {
+      display: none;
+    }
+    .ol-hero-inner {
+      position: static;
+      flex: none;
+      padding-top: 12px;
+      justify-content: flex-start;
+      pointer-events: auto;
+    }
+  }
+
+  /* Panels */
+  .ol-panel {
+    margin-top: clamp(20px, 3vw, 32px);
+    padding: clamp(28px, 4vw, 56px) 0;
+    border-radius: 28px;
+  }
+  .ol-light,
+  .ol-dark {
+    position: relative;
+    overflow: clip;
+    padding-inline: clamp(20px, 4vw, 48px);
+    margin-inline: calc(-1 * clamp(20px, 4vw, 48px) + 20px);
+  }
+  .ol-light {
+    background: radial-gradient(ellipse 60% 70% at 88% 0%, rgba(202, 77, 19, 0.1), transparent 60%), #f5f5f5;
+    color: #1a1a1a;
+  }
+  .ol-dark {
+    background: radial-gradient(ellipse 65% 75% at 82% -5%, rgba(202, 77, 19, 0.22), transparent 60%), radial-gradient(ellipse
+          55% 60% at 5% 105%, rgba(42, 70, 110, 0.4), transparent 60%), #14171c;
+    box-shadow: 0 0 90px rgba(202, 77, 19, 0.22);
+  }
+  .ol-dark::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: soft-light;
+    opacity: 0.5;
+    background-size: 200px 200px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n' x='0' y='0' width='100%25' height='100%25'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='1 0 0 0 0 1 0 0 0 0 1 0 0 0 0 0 0 0 0 1'/></filter><rect width='200' height='200' filter='url(%23n)'/></svg>");
+  }
+  .ol-dark > * {
+    position: relative;
+  }
+  .ol-cta {
+    position: relative;
+    overflow: clip;
+    background: radial-gradient(ellipse 90% 120% at 18% -10%, #e3671c 0%, #ca4d13 45%, #8a300b 100%);
+    padding-inline: clamp(20px, 4vw, 48px);
+    margin-inline: calc(-1 * clamp(20px, 4vw, 48px) + 20px);
+    text-align: center;
+    box-shadow: 0 0 120px rgba(202, 77, 19, 0.38);
+  }
+  .ol-cta::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.16) 1px, transparent 1.6px);
+    background-size: 26px 26px;
+  }
+  .ol-cta > * {
+    position: relative;
+  }
+  .ol-cta .ol-head {
+    flex-direction: column-reverse;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+  .ol-cta em {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.18);
+    padding: 0.03em 0.18em;
+    border-radius: 8px;
+  }
+  .ol-cta .ol-sub {
+    max-width: 560px;
+    margin-inline: auto;
+    color: rgba(255, 255, 255, 0.88);
+  }
+  .ol-cta .ol-chip {
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  .ol-cta .ol-btn {
+    background: #fff;
+    color: #ca4d13;
+    margin-top: 24px;
+  }
+  .ol-cta .ol-btn:hover {
+    background: rgba(255, 255, 255, 0.88);
+  }
+  .ol-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .ol-head h2 {
+    margin: 0;
+    font-size: clamp(26px, 3.2vw, 38px);
+    line-height: 1.12;
+    letter-spacing: -0.02em;
+    font-weight: 600;
+    max-width: 700px;
+  }
+  .ol-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    font-size: 12.5px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .ol-dark .ol-chip {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #fff;
+  }
+  .ol-sub {
+    margin: 18px 0 0;
+    max-width: 680px;
+    font-size: 16px;
+    line-height: 1.65;
+    color: rgba(0, 0, 0, 0.62);
+  }
+  .ol-dark .ol-sub {
+    color: rgba(255, 255, 255, 0.66);
+  }
+
+  /* Pacote cards */
+  .ol-pack-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+    margin-top: 32px;
+  }
+  .ol-card {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 22px;
+    padding: clamp(20px, 2vw, 28px);
+    border-radius: 22px;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+  .ol-card:hover {
+    transform: translateY(-3px);
+    border-color: rgba(202, 77, 19, 0.5);
+  }
+  .ol-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+  }
+  .ol-card h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+  .ol-card p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(0, 0, 0, 0.6);
+  }
+  @media (max-width: 860px) {
+    .ol-pack-grid {
+      grid-template-columns: 1fr;
+    }
+    .ol-card {
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 14px;
+    }
+    #pacote .ol-head {
+      flex-direction: column;
+      text-align: center;
+    }
+    #pacote .ol-head h2 {
+      max-width: none;
+    }
+    #pacote .ol-sub {
+      max-width: none;
+      margin-inline: auto;
+      text-align: center;
+    }
+  }
+
+  .ol-art {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: clamp(120px, 13vw, 150px);
+    height: clamp(120px, 13vw, 150px);
+    border-radius: 16px;
+    background: radial-gradient(circle at 50% 38%, rgba(202, 77, 19, 0.16), rgba(202, 77, 19, 0.05) 72%);
+    color: #ca4d13;
+  }
+  .ol-art svg {
+    width: clamp(56px, 6.5vw, 76px);
+    height: clamp(56px, 6.5vw, 76px);
+  }
+  @media (max-width: 860px) {
+    .ol-art {
+      width: 100%;
+      height: clamp(130px, 30vw, 160px);
+    }
+  }
+  .ol-track {
+    stroke-opacity: 0.55;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ol-knob,
+    .ol-spark {
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    .ol-knob {
+      animation: ol-knob 2.6s ease-in-out infinite;
+    }
+    .ol-spark-a {
+      animation: ol-spark 2.1s ease-in-out infinite;
+    }
+    .ol-spark-b {
+      animation: ol-spark 2.1s ease-in-out infinite 0.65s;
+    }
+  }
+  @keyframes ol-knob {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    50% {
+      transform: translateX(6px);
+    }
+  }
+  @keyframes ol-spark {
+    0%,
+    100% {
+      opacity: 0.15;
+      transform: scale(0.65);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  /* Benefícios: o "porquê" além do "o quê" — cartões menores, ícone simples (sem a animação grande dos cards
+     de entrega), pra não competir visualmente com a seção do pacote. */
+  /* Benefícios: stack de cards que se sobrepõem ao rolar, igual ao "Como trabalhamos" da home — mesma técnica
+     (position: sticky + gap em svh, sem precisar de GSAP/ScrollTrigger aqui: é a base em CSS puro que o
+     próprio site usa como fallback de mobile/no-JS, e já fica ótima sozinha). Cada card tem sua arte circular
+     com anel pontilhado girando bem lento (90s) e dois pontinhos de destaque — igual ao .t3-step-art da home. */
+  .ol-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 60svh;
+    margin-top: 32px;
+  }
+  .ol-steps::after {
+    content: "";
+    flex: none;
+    height: 32svh;
+    margin-top: -60svh;
+  }
+  .ol-step {
+    position: sticky;
+    top: calc(20px + var(--i) * 18px);
+    padding: clamp(24px, 3vw, 44px);
+    border-radius: 22px;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fff;
+    box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.06);
+  }
+  .ol-step-in {
+    display: grid;
+    grid-template-columns: minmax(90px, 0.5fr) 1.3fr minmax(130px, 0.75fr);
+    gap: 20px;
+    align-items: center;
+    min-height: 220px;
+  }
+  .ol-step-n {
+    font-size: clamp(52px, 6.5vw, 96px);
+    font-weight: 600;
+    letter-spacing: -0.06em;
+    line-height: 0.9;
+    color: #ca4d13;
+  }
+  .ol-step h3 {
+    margin: 0 0 10px;
+    font-size: clamp(20px, 2.2vw, 27px);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .ol-step p {
+    margin: 0;
+    max-width: 46ch;
+    font-size: 15px;
+    line-height: 1.62;
+    color: rgba(0, 0, 0, 0.6);
+  }
+  .ol-step-art {
+    width: 100%;
+    max-width: 190px;
+    justify-self: end;
+    color: rgba(0, 0, 0, 0.78);
+  }
+  .ol-art-core {
+    fill: #f5f5f5;
+  }
+  .ol-ring-spin {
+    transform-origin: 120px 120px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ol-ring-spin {
+      animation: ol-spin 90s linear infinite;
+    }
+  }
+  @keyframes ol-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @media (max-width: 860px) {
+    .ol-steps {
+      gap: 42svh;
+    }
+    .ol-step-in {
+      grid-template-columns: 1fr;
+      min-height: 0;
+    }
+    .ol-step-n {
+      font-size: 44px;
+    }
+    .ol-step-art {
+      max-width: 140px;
+      justify-self: center;
+      order: 2;
+    }
+    .ol-step-text {
+      order: 3;
+    }
+  }
+
+  /* Modo "pinned" (JS/GSAP liga via onliving-stack.ts, igual ao .t3-pinned da home): o painel fica fixo no
+     lugar, no tamanho final, enquanto os cards 2+ sobem por cima um do outro. Sem isso, o fallback acima (só
+     CSS, position: sticky) fica com vãos grandes entre os cards — é essa versão com pin que fica "apertada"
+     como na home. */
+  .ol-panel.ol-pinned {
+    padding-block: clamp(36px, 7vh, 96px);
+    overflow: visible;
+    z-index: 2;
+    /* O GSAP ScrollTrigger congela a largura do painel (em px, via style inline) no momento em que o pin
+       liga, pra evitar reflow — e isso ficava um pouco menor que os vizinhos. Força 100% da coluna, igual
+       aos outros painéis. */
+    width: 100% !important;
+  }
+  .ol-pinned .ol-steps {
+    --card-h: clamp(260px, 36vh, 360px);
+    display: block;
+    position: relative;
+    height: calc(var(--card-h) + 3 * 18px);
+  }
+  .ol-pinned .ol-steps::after {
+    display: none;
+  }
+  .ol-pinned .ol-step {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(var(--i) * 18px);
+    height: var(--card-h);
+  }
+  .ol-pinned .ol-step-in {
+    height: 100%;
+    min-height: 0;
+  }
+  .ol-pinned .ol-step-art {
+    width: auto;
+    height: auto;
+    max-height: calc(var(--card-h) - 56px);
+    aspect-ratio: 1;
+  }
+  @media (max-width: 860px) {
+    .ol-pinned .ol-steps {
+      --card-h: clamp(360px, 72vh, 560px);
+    }
+    .ol-pinned .ol-step-in {
+      grid-template-columns: 1fr;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 12px;
+    }
+    .ol-pinned .ol-step-art {
+      max-height: 110px;
+    }
+  }
+
+  /* Investimento: tabela item a item (mercado) + cartão de destaque (parceria), em vez do comparativo de 2
+     totais usado na LP da WEGG — aqui a On Living pediu o comparativo detalhado por item. */
+  .ol-price-grid {
+    display: grid;
+    grid-template-columns: 1.3fr auto 1fr;
+    align-items: center;
+    gap: clamp(16px, 3vw, 32px);
+    margin-top: 32px;
+  }
+  .ol-price-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    color: #ca4d13;
+  }
+  .ol-price-arrow {
+    width: 44px;
+    height: 22px;
+  }
+  .ol-price-table-wrap {
+    padding: clamp(20px, 2.2vw, 28px);
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .ol-price-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  .ol-price-table th,
+  .ol-price-table td {
+    text-align: left;
+    padding: 14px 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .ol-price-table th {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 600;
+  }
+  .ol-price-table td:last-child,
+  .ol-price-table th:last-child {
+    text-align: right;
+    white-space: nowrap;
+    padding-left: 16px;
+    color: rgba(255, 255, 255, 0.86);
+    font-weight: 600;
+  }
+  .ol-price-table tfoot td {
+    border-bottom: none;
+    border-top: 2px solid rgba(255, 255, 255, 0.22);
+    font-weight: 700;
+    color: #fff;
+    padding-top: 18px;
+  }
+  .ol-price-partner {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding: clamp(24px, 2.6vw, 36px);
+    border-radius: 22px;
+    background: linear-gradient(140deg, #ca4d13 0%, #8a300b 100%);
+  }
+  .ol-price-label {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.86);
+    font-weight: 600;
+  }
+  .ol-price-big {
+    font-size: clamp(32px, 3.6vw, 46px);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    color: #fff;
+  }
+  .ol-price-big small {
+    display: block;
+    margin-top: 5px;
+    font-size: 0.38em;
+    font-weight: 500;
+    letter-spacing: 0;
+    opacity: 0.9;
+  }
+  .ol-price-partner p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.92);
+  }
+  .ol-price-save {
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    max-width: 120px;
+  }
+  @media (max-width: 860px) {
+    .ol-price-grid {
+      grid-template-columns: 1fr;
+    }
+    .ol-price-link {
+      flex-direction: row;
+    }
+    .ol-price-arrow {
+      transform: rotate(90deg);
+    }
+  }
+
+  /* FAQ */
+  .ol-faq-list {
+    margin-top: 28px;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .ol-faq-row {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  .ol-faq-trigger {
+    display: flex;
+    width: 100%;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 0;
+    cursor: pointer;
+    background: none;
+    border: 0;
+    text-align: left;
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 500;
+    color: inherit;
+  }
+  .ol-num {
+    font-size: 13px;
+    color: #ca4d13;
+    font-weight: 600;
+  }
+  .ol-faq-trigger span:nth-child(2) {
+    flex: 1;
+  }
+  .ol-plus {
+    position: relative;
+    width: 18px;
+    height: 18px;
+    flex: none;
+  }
+  .ol-plus::before,
+  .ol-plus::after {
+    content: "";
+    position: absolute;
+    background: currentColor;
+    inset: auto;
+  }
+  .ol-plus::before {
+    width: 100%;
+    height: 1.5px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+  .ol-plus::after {
+    width: 1.5px;
+    height: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: transform 0.25s ease;
+  }
+  .ol-faq-row.is-open .ol-plus::after {
+    transform: translateX(-50%) rotate(90deg);
+  }
+  /* Grid de 1 linha animável entre 0fr/1fr: abre e fecha suave sem precisar medir altura em JS. */
+  .ol-faq-panel {
+    display: grid;
+    grid-template-rows: 0fr;
+    overflow: hidden;
+    transition: grid-template-rows 0.35s ease;
+  }
+  .ol-faq-row.is-open .ol-faq-panel {
+    grid-template-rows: 1fr;
+  }
+  .ol-faq-panel > p {
+    overflow: hidden;
+    margin: 0 0 22px;
+    padding-right: 34px;
+    font-size: 15px;
+    line-height: 1.65;
+    color: rgba(0, 0, 0, 0.62);
+  }
+  .ol-dark .ol-faq-list {
+    border-top-color: rgba(255, 255, 255, 0.14);
+  }
+  .ol-dark .ol-faq-row {
+    border-bottom-color: rgba(255, 255, 255, 0.14);
+  }
+  .ol-dark .ol-faq-panel > p {
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .ol-foot {
+    padding: 48px 20px 48px;
+    text-align: center;
+  }
+  .ol-foot-nuvion {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 32px;
+    margin-bottom: 28px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .ol-foot-nuvion p {
+    margin: 0;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.75);
+    max-width: 440px;
+  }
+  .ol-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #ca4d13;
+    font-weight: 600;
+    font-size: 15px;
+    text-decoration: none;
+  }
+  .ol-link:hover {
+    color: #e3671c;
+  }
+  .ol-foot-copy {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 13px;
+  }
+
+  /* Barra de CTA fixa: só no mobile, só depois que o hero (que já tem o botão à vista) sai da tela. */
+  .ol-sticky {
+    display: none;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 20;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: rgba(11, 11, 12, 0.92);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+  }
+  .ol-sticky.on {
+    transform: translateY(0);
+  }
+  .ol-sticky .ol-btn {
+    display: flex;
+    width: 100%;
+  }
+  @media (max-width: 860px) {
+    .ol-sticky {
+      display: block;
+    }
+    .ol-foot {
+      padding-bottom: 84px;
+    }
+  }
+
+  /* Entrada em cascata (JS liga .is-in via IntersectionObserver, com --d calculado por item). */
+  .ol-reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--d, 0ms);
+  }
+  .ol-reveal.ol-reveal-left {
+    transform: translate(-48px, 10px);
+  }
+  .ol-reveal.ol-reveal-right {
+    transform: translate(48px, 10px);
+  }
+  @media (max-width: 860px) {
+    .ol-reveal.ol-reveal-left,
+    .ol-reveal.ol-reveal-right {
+      transform: translateY(26px);
+    }
+  }
+  .ol-reveal.is-in {
+    opacity: 1;
+    transform: none;
+  }
+</style>
