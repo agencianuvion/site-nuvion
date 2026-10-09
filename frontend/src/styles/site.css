@@ -846,6 +846,12 @@
   .t3-pinned .t3-step-in {
     height: 100%;
     min-height: 0;
+    /* The covered card's blur+fade (site.ts) is the only place this element is ever filtered — without this
+       hint the browser only promotes it to its own GPU layer the instant the first blur() is actually
+       applied, which is a real one-time cost and reads as a small stutter right as card 1 starts to recede.
+       .t3-step itself already has will-change:transform for the same reason; this is the same fix for the
+       inner element, where the EXPENSIVE part (filter) actually happens. */
+    will-change: filter, opacity;
   }
   .t3-pinned .t3-step-art {
     width: auto;
