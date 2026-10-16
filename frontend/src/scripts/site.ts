@@ -383,9 +383,11 @@ initBlogList();
 
 /* ---------- Portfolio showcase ----------
    Tabs on the left, the selected project on the right (crossfade). Pointer hover picks a project (with a short delay), click and
-   the arrow keys too. It advances by itself (7 s, a bar fills in the active tab) until the visitor picks one; it pauses while the
-   section is off screen or the tab hidden, and never runs with reduced motion. The segment chips hide
-   the projects of other segments. The big picture follows the pointer a little (depth). */
+   the arrow keys too. On hover-capable (desktop) devices it also advances by itself (7 s, a bar fills in the active tab) until
+   the visitor picks one; it pauses while the section is off screen or the tab hidden, and never runs with reduced motion. On
+   touch devices it never auto-advances — there's no hover to warn it's a timed carousel or to pause it, so a project only
+   changes when picked by hand (tap a tab, arrow keys). The segment chips hide the projects of other segments. The big picture
+   follows the pointer a little (depth). */
 (() => {
   const root = document.querySelector<HTMLElement>("[data-vt]");
   if (!root) return;
@@ -395,7 +397,10 @@ initBlogList();
   const status = root.querySelector<HTMLElement>("[data-vt-status]");
   const stage = root.querySelector<HTMLElement>(".vt-stage");
   if (!tabs.length || panels.some((p) => !p)) return;
-  let auto = !reduced;
+  // touch devices have no hover to signal "this is a timed showcase" (and no way to pause it by resting the
+  // pointer) — a visitor reading a panel gets no warning before it switches under them. Desktop keeps advancing
+  // on its own; touch requires picking a project by hand, same as the home's project/testimonial sliders.
+  let auto = !reduced && canHover;
   let cur = 0;
   // the project's numbers count up only when their strip is actually on screen (on phones it sits far below the picture
   // and the text): a project shown while its strip is out of view is left "pending" and counts when the strip scrolls in
