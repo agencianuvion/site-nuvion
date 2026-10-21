@@ -1,0 +1,4 @@
+# Without this, Apache may serve .vcf as application/octet-stream, which on iOS Safari
+# downloads the file instead of showing the native "Add Contact" preview.
+AddType text/vcard .vcf
+AddType text/x-vcard .vcf
