@@ -119,7 +119,8 @@ const pageSchemas = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
       <slot />
     </div>
     {!noFooter && <Footer />}
-    <WhatsappFloat />
+    {/* Disabled for now — OutboundPro's own WhatsApp widget (its tracking script above) is taking over this spot. */}
+    {/* <WhatsappFloat /> */}
     <script>
       import "../scripts/site.ts";
     </script>
