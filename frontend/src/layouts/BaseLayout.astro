@@ -109,6 +109,9 @@ const pageSchemas = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
     {pageSchemas.map((schema) => (
       <script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />
     ))}
+
+    {/* OutboundPro tracking — async, so it loads after the page itself (no render-blocking impact). */}
+    <script async src="https://track.outboundpro.com.br/t/s/otbs_b21c3afc8b860a6a2c06813c.js" is:inline></script>
   </head>
   <body class="flex min-h-dvh flex-col">
     <Header />
